@@ -1,0 +1,11 @@
+ack
+cloc
+git
+mc
+
+openjdk 11, 17, 20
+visualvm
+
+wget
+starship
+zsh
