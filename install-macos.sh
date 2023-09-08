@@ -1,7 +1,11 @@
 #!/bin/bash
 
+info() {
+	printf "  [ \033[00;34m..\033[0m ] $1\n"
+}
+
 fail() {
-	echo "$1" >> /dev/stderr
+	printf "\033[2K  [\033[0;31mFAIL\033[0m] $1\n" >> /dev/stderr
 	exit 1
 }
 
@@ -18,11 +22,11 @@ check_working_dir() {
 }
 
 install_apps() {
-	echo "=== Install Apps ==="
+	info "=== Install Apps ==="
 }
 
 create_directory_structure() {
-	echo "=== Create directory structure ==="
+	info "=== Create directory structure ==="
 	local src_dir=$1
 	local dst_dir=$2
 
@@ -34,7 +38,7 @@ create_directory_structure() {
 			continue
 		fi
 		
-		echo "Create $dst_path"
+		info "Create dir $dst_path"
 		mkdir -p "$dst_path" || fail "Cannot create $dst_path"
 	done
 
@@ -46,7 +50,7 @@ clone_git_project() {
 	local repo_dir=$2
 	local repo_url=$3
 
-	echo "$project_name"
+	info "Clone or update $project_name"
 	if [ -d "$repo_dir/.git" ]; then
 		pushd "$repo_dir" >> /dev/null
 		git pull || fail "Cannot pull Git repository $repo_url into $repo_dir"
@@ -57,7 +61,7 @@ clone_git_project() {
 }
 
 clone_git_projects() {
-	echo "=== Clone/update Git projects ==="
+	info "=== Clone/update Git projects ==="
 	local dst_dir=$1
 
 	clone_git_project "zsh-autosuggestions" \
@@ -78,7 +82,7 @@ normalpath() {
 }
 
 create_links() {
-	echo "=== Create links ==="
+	info "=== Create links ==="
         local src_dir=$1
         local dst_dir=$2
 
@@ -93,7 +97,7 @@ create_links() {
                         fail "Cannot symlink into existing regular file $dst_path"
                 fi
 
-                echo "Create $dst_path"
+                info "Create $dst_path"
 		ln -s "$src_path" "$dst_path" || fail "Cannot create symlink $dst_path"
         done
 
