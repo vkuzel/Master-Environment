@@ -38,7 +38,7 @@ create_directory_structure() {
 			continue
 		fi
 		
-		info "Create dir $dst_path"
+		info "Create $dst_path"
 		mkdir -p "$dst_path" || fail "Cannot create $dst_path"
 	done
 
