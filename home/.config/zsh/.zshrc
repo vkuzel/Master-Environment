@@ -23,6 +23,8 @@ bindkey '^[^[[D' backward-word
 bindkey '^[^[[C' forward-word
 bindkey '^[[H' beginning-of-line
 bindkey '^[[F' end-of-line
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
 
 # mixins
 [ -f "$HOME/.config/zsh/.zshrc.mixins.zsh" ] && source "$HOME/.config/zsh/.zshrc.mixins.zsh"
