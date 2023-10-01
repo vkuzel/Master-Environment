@@ -14,6 +14,7 @@ source "$HOME/.config/zsh/zsh-history-substring-search/zsh-history-substring-sea
 alias l="LSCOLORS='Exfxcxdxbxegedabagacad' ls -Gl"
 alias ll='LSCOLORS='Exfxcxdxbxegedabagacad' ls -GlA'
 alias mc='LANG=C mc'
+alias vi='vim'
 alias uuidgen-lower="uuidgen | tr '[:upper:]' '[:lower:]'"
 alias cdd="cd $HOME/Downloads"
 alias cdD="cd $HOME/Google Drive/Documents"
