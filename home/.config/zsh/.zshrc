@@ -20,8 +20,8 @@ alias cdd="cd $HOME/Downloads"
 alias cdD="cd $HOME/Google Drive/Documents"
 alias cdp="cd $HOME/projects"
 
-bindkey '^[^[[D' backward-word
-bindkey '^[^[[C' forward-word
+bindkey '^[[1;3D' backward-word
+bindkey '^[[1;3C' forward-word
 bindkey '^[[H' beginning-of-line
 bindkey '^[[F' end-of-line
 bindkey '^[[A' history-substring-search-up
