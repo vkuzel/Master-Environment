@@ -1,6 +1,6 @@
 
 autoload -U colors && colors
-LSCOLORS='xefxcxdxbxegedabagacad'
+[ -x /usr/bin/dircolors ] && eval "$(dircolors -b)"
 
 EDITOR=vi
 PAGER=less
@@ -11,8 +11,10 @@ source "$HOME/.config/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 source "$HOME/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
 source "$HOME/.config/zsh/zsh-history-substring-search/zsh-history-substring-search.zsh"
 
-alias l="LSCOLORS='Exfxcxdxbxegedabagacad' ls -Gl"
-alias ll='LSCOLORS='Exfxcxdxbxegedabagacad' ls -GlA'
+alias ls='ls --color=auto'
+alias l="ls -l"
+alias ll='ls -lA'
+alias grep='grep --color=auto'
 alias mc='LANG=C mc'
 alias vi='vim'
 alias uuidgen-lower="uuidgen | tr '[:upper:]' '[:lower:]'"
