@@ -1,3 +1,4 @@
+# Ubuntu server post-install steps
 
 1. Make interface optional in `/etc/netplan/00-installer-config.yaml`
 
