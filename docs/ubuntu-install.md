@@ -26,3 +26,32 @@
 	
 	Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
 
+3. Install Sway & related packages
+
+	```shell
+	sudo apt install \
+		xwayland \
+		sway \
+		waybar \
+		fonts-font-awesome \
+		wofi \
+		mpd \
+		brightnessctl \
+		pulseaudio-utils
+	```
+
+	Enable services:
+
+	```shell
+	# Add the user into the video group to use brightnessctl
+	sudo usermod -aG video ${USER}
+
+	# Music Player Daemon
+	sudo systemctl enable mpd
+	sudo systemctl start mpd
+	```
+
+4. Install Firefox from APT
+
+	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
+
