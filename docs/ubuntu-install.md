@@ -32,6 +32,7 @@
 	sudo apt install \
 		xwayland \
 		sway \
+		swaylock \
 		waybar \
 		fonts-font-awesome \
 		wofi \
