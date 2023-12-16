@@ -110,6 +110,13 @@ create_links() {
         popd > /dev/null
 }
 
+chsh_zsh() {
+        info "=== ChSh to ZSH ==="
+        if [ "$SHELL" != "/bin/zsh" ]; then
+                chsh $USER -s /bin/zsh
+        fi
+}
+
 check_os
 check_working_dir
 
@@ -120,4 +127,4 @@ install_apps
 create_directory_structure $SRC_DIR $DST_DIR
 clone_git_projects $DST_DIR
 create_links $SRC_DIR $DST_DIR
-
+chsh_zsh
