@@ -26,6 +26,18 @@
 	
 	Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
 
+3. Instal Nerd-Fonts (system-wide)
+
+	```shell
+	wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/DejaVuSansMono.zip
+	sudo mkdir -p /usr/share/fonts/truetype/dejavu-nerd
+	sudo unzip DejaVuSansMono.zip -d /usr/share/fonts/truetype/dejavu-nerd
+	# Refresh font cache
+	sudo fc-cache -fv
+	# Verify font was installed
+	fc-list
+	```
+
 3. Install Sway & related packages
 
 	```shell
