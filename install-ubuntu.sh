@@ -27,7 +27,7 @@ install_apps() {
 		sudo apt install zsh
 	fi
 	if ! command -v starship &> /dev/null; then
-		sudo apt install starship
+		curl -sS https://starship.rs/install.sh | sh
 	fi
 }
 
