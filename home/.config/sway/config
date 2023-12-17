@@ -8,6 +8,8 @@
 #
 # Logo key. Use Mod1 for Alt.
 set $mod Mod4
+# Alt key
+set $alt Mod1
 # Home row direction keys, like vim
 set $left h
 set $down j
@@ -70,10 +72,21 @@ output * background #018281 solid_color
 # You can get the names of your inputs by running: swaymsg -t get_inputs
 # Read `man 5 sway-input` for more information about this section.
 
+
+input * {
+    xkb_layout "us,cz(qwerty)"
+    # Doesn't work on the current Sway version, see keyboard-layout-toggle.sh
+    # xkb_switch_layout next
+    # xkb_options "grp:alt_space_toggle"
+}
+
 ### Key bindings
 #
 # Basics:
 #
+    # Toggle keyboard layout (hack)
+    bindsym $alt+Space exec $HOME/.config/sway/keyboard-layout-toggle.sh
+
     # Start a terminal
     bindsym $mod+Return exec $term
 
