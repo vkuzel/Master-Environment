@@ -26,7 +26,13 @@
 	
 	Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
 
-3. Instal Nerd-Fonts (system-wide)
+3. Set timezone if not set correctly
+
+	```shell
+	ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
+	```
+
+4. Instal Nerd-Fonts (system-wide)
 
 	```shell
 	wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/DejaVuSansMono.zip
@@ -38,7 +44,7 @@
 	fc-list
 	```
 
-3. Install Sway & related packages
+5. Install Sway & related packages
 
 	```shell
 	sudo apt install \
@@ -46,12 +52,22 @@
 		sway \
 		swaylock \
 		waybar \
-		fonts-font-awesome \
 		wofi \
 		mpd \
-		brightnessctl \
-		pulseaudio-utils
+		brightnessctl
 	```
+	
+	Audio:
+	```shell
+	sudo apt install \
+		pipewire \
+		pipewire-pulse \
+		pipewire-audio-client-libraries \
+		libspa-0.2-bluetooth \
+		libspa-0.2-jack \
+		wireplumber
+	```
+
 
 	Enable services:
 
@@ -64,7 +80,7 @@
 	sudo systemctl start mpd
 	```
 
-4. Install Firefox from APT
+6. Install Firefox from APT
 
 	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
 
