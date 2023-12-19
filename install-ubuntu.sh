@@ -21,6 +21,22 @@ check_working_dir() {
 	fi
 }
 
+install_nerd_fonts() {
+	info "=== Install Nerd Fonts ==="
+	if [ ! -d "/usr/share/fonts/truetype/dejavu-nerd" ]; then
+		local fontFile="DejaVuSansMono.zip"
+		local fontUrl="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/$fontFile"
+		local targetDir="/usr/share/fonts/truetype/dejavu-nerd"
+
+		curl --location --output-dir "/tmp/" --remote-name "$fontUrl"
+		sudo mkdir -p "$targetDir"
+		sudo unzip "/tmp/$fontFile" -d "$targetDir"
+		info "Refresh font cache"
+		sudo fc-cache -fv
+		# Verify font installed: `fc-list`
+	fi
+}
+
 install_apps() {
 	info "=== Install Apps ==="
 	if ! command -v zsh &> /dev/null; then
@@ -123,6 +139,7 @@ check_working_dir
 SRC_DIR=home
 DST_DIR=$HOME
 
+install_nerd_fonts
 install_apps
 create_directory_structure $SRC_DIR $DST_DIR
 clone_git_projects $DST_DIR

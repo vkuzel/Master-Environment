@@ -32,19 +32,7 @@
 	ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
 	```
 
-4. Instal Nerd-Fonts (system-wide)
-
-	```shell
-	wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/DejaVuSansMono.zip
-	sudo mkdir -p /usr/share/fonts/truetype/dejavu-nerd
-	sudo unzip DejaVuSansMono.zip -d /usr/share/fonts/truetype/dejavu-nerd
-	# Refresh font cache
-	sudo fc-cache -fv
-	# Verify font was installed
-	fc-list
-	```
-
-5. Install Sway & related packages
+4. Install Sway & related packages
 
 	```shell
 	sudo apt install \
@@ -80,7 +68,7 @@
 	sudo systemctl start mpd
 	```
 
-6. Install Firefox from APT
+5. Install Firefox from APT
 
 	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
 
