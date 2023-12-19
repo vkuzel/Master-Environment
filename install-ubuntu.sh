@@ -88,13 +88,13 @@ clone_git_projects() {
 
 	clone_git_project "zsh-autosuggestions" \
 		"$dst_dir/.config/zsh/zsh-autosuggestions" \
-		"git@github.com:zsh-users/zsh-autosuggestions.git"
+		"https://github.com/zsh-users/zsh-autosuggestions.git"
 	clone_git_project "zsh-history-substring-search" \
 		"$dst_dir/.config/zsh/zsh-history-substring-search" \
-		"git@github.com:zsh-users/zsh-history-substring-search.git"
+		"https://github.com/zsh-users/zsh-history-substring-search.git"
 	clone_git_project "zsh-syntax-highlighting" \
 		"$dst_dir/.config/zsh/zsh-syntax-highlighting" \
-		"git@github.com:zsh-users/zsh-syntax-highlighting.git"
+		"https://github.com/zsh-users/zsh-syntax-highlighting.git"
 }
 
 normalpath() {
