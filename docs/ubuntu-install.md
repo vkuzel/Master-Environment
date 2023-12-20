@@ -39,6 +39,7 @@
 		xwayland \
 		sway \
 		swaylock \
+		swayidle \
 		waybar \
 		wofi \
 		mpd \
