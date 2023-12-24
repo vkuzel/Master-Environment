@@ -57,6 +57,11 @@
 		wireplumber
 	```
 
+	Additional toos:
+	```shell
+	sudo apt install \
+		libfuse2
+	```
 
 	Enable services:
 
