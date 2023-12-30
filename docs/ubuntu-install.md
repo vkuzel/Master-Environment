@@ -57,6 +57,15 @@
 		wireplumber
 	```
 
+	Bluetooth:
+	```shell
+	sudo apt install \
+		bluez \
+		bluez-obexd
+	# Install bluez-cups for Bluetooth printers
+	sudo systemctl enable --now bluetooth
+	```
+
 	Additional toos:
 	```shell
 	sudo apt install \
