@@ -65,6 +65,13 @@
 	# Install bluez-cups for Bluetooth printers
 	sudo systemctl enable --now bluetooth
 	```
+	Run `bluetoothctl`
+	```
+	scan on
+	pair <device id>
+	trust <device id>
+	connect <device id>
+	```
 
 	Additional toos:
 	```shell
