@@ -81,8 +81,15 @@
 		libfuse2
 	```
 
-	Enable services:
+	Video player MPV - successor to mplayer
+	```shell
+	sudo apt install \
+		mpv
+	```
+	Current version (Ubuntu 22.04) of MPV does not support PipeWire (`--ao=pipewire`), set it as a default ao as soon as it will.
 
+
+	Enable services:
 	```shell
 	# Add the user into the video group to use brightnessctl
 	sudo usermod -aG video ${USER}
