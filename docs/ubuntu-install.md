@@ -96,7 +96,11 @@
 
 	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
 
-6. Install and setup Google Drive
+6. Install Thunderbird
+
+	`sudo apt install thunderbird`
+
+7. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
 
