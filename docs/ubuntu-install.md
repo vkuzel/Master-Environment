@@ -54,8 +54,10 @@
 		pipewire-audio-client-libraries \
 		libspa-0.2-bluetooth \
 		libspa-0.2-jack \
-		wireplumber
+		wireplumber \
+		pulseaudio-utils
 	```
+	The `pulseaudio-utils` package for the `pactl` control command. Pipewire seems to not have native equivalent at the moment.
 
 	Bluetooth:
 	```shell
