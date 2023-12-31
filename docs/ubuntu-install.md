@@ -100,6 +100,12 @@
 
 	`sudo apt install thunderbird`
 
+7. Install Geany GUI editor
+
+	`apt install geany`
+
+	Download and install "Dark" theme: https://www.geany.org/download/themes/
+
 7. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
