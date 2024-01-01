@@ -17,6 +17,8 @@ alias ll='ls -lA'
 alias grep='grep --color=auto'
 alias mc='LANG=C mc'
 alias vi='vim'
+# Most servers does not recognize "foot" terminal
+alias ssh='env TERM=xterm-256color ssh'
 alias uuidgen-lower="uuidgen | tr '[:upper:]' '[:lower:]'"
 alias cdd="cd $HOME/Downloads"
 alias cdD="cd $HOME/Google Drive/Documents"
