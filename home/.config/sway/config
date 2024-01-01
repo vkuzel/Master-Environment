@@ -65,7 +65,7 @@ exec swayidle -w
 
 input * {
     xkb_layout "us,cz(qwerty)"
-    # Doesn't work on the current Sway version, see keyboard-layout-toggle.sh
+    # Switching doesn't work on the current Sway version, see keyboard-layout-toggle.sh
     # xkb_switch_layout next
     # xkb_options "grp:alt_space_toggle"
 }
@@ -75,7 +75,8 @@ input * {
 # Basics:
 #
     # Toggle keyboard layout (hack)
-    bindsym $alt+Space exec $HOME/.config/sway/keyboard-layout-toggle.sh
+    # The action is executed on-release to inhibit the Alt-key release function in Firefox, etc. which shows the file-menu.
+    bindsym --release --locked --no-repeat $alt+Space exec $HOME/.config/sway/keyboard-layout-toggle.sh
 
     # Start a terminal
     bindsym $mod+Return exec $term
