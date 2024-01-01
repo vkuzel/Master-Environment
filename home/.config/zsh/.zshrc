@@ -23,7 +23,6 @@ alias uuidgen-lower="uuidgen | tr '[:upper:]' '[:lower:]'"
 alias cdd="cd $HOME/Downloads"
 alias cdD="cd $HOME/Google Drive/Documents"
 alias cdp="cd $HOME/projects"
-alias java-home="$HOME/.config/zsh/java-home.sh"
 # get keys by running `showkey -a`
 bindkey '^[[1;5D' backward-word
 bindkey '^[[1;5C' forward-word
