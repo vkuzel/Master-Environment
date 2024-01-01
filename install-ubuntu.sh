@@ -28,7 +28,7 @@ install_nerd_fonts() {
 		local fontUrl="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/$fontFile"
 		local targetDir="/usr/share/fonts/truetype/dejavu-nerd"
 
-		curl --location --output-dir "/tmp/" --remote-name "$fontUrl"
+		curl --location --output-dir "/tmp/" --remote-name "$fontUrl" || fail "Cannot download font!"
 		sudo mkdir -p "$targetDir"
 		sudo unzip "/tmp/$fontFile" -d "$targetDir"
 		info "Refresh font cache"
