@@ -111,7 +111,7 @@
 
 	`apt install geany`
 
-	Download and install "Dark" theme: https://www.geany.org/download/themes/
+	Download and install "Solarized (dark)" theme: https://www.geany.org/download/themes/
 
 7. Install and setup Google Drive
 
