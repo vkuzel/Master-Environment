@@ -113,7 +113,22 @@
 
 	Download and install "Solarized (dark)" theme: https://www.geany.org/download/themes/
 
-7. Install and setup Google Drive
+8. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
+
+9. Printer & scanner
+
+	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
+	```shell
+	sudo apt install cups
+	```
+	Install Brother DCP-L2532DW Linux drivers
+
+	https://support.brother.com/g/b/downloadtop.aspx?c=eu_ot&lang=en&prod=dcpl2532dw_eu
+
+	Install Simple scan (Document Scanner)
+	```shell
+	apt install simple-scan
+	```
 
