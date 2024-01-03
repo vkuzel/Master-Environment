@@ -15,7 +15,6 @@ alias ls='ls --color=auto'
 alias l="ls -l"
 alias ll='ls -lA'
 alias grep='grep --color=auto'
-alias mc='LANG=C mc'
 alias vi='vim'
 # Most servers does not recognize "foot" terminal
 alias ssh='TERM=xterm-256color ssh'
