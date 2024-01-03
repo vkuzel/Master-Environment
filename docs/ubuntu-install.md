@@ -46,6 +46,21 @@
 		brightnessctl
 	```
 	
+	Bluetooth:
+	```shell
+	sudo apt install \
+		bluetooth
+	
+	sudo systemctl enable --now bluetooth
+	```
+	Run `bluetoothctl`
+	```
+	scan on
+	pair <device id>
+	trust <device id>
+	connect <device id>
+	```
+
 	Audio:
 	```shell
 	sudo apt install \
@@ -58,22 +73,6 @@
 		pulseaudio-utils
 	```
 	The `pulseaudio-utils` package for the `pactl` control command. Pipewire seems to not have native equivalent at the moment.
-
-	Bluetooth:
-	```shell
-	sudo apt install \
-		bluez \
-		bluez-obexd
-	# Install bluez-cups for Bluetooth printers
-	sudo systemctl enable --now bluetooth
-	```
-	Run `bluetoothctl`
-	```
-	scan on
-	pair <device id>
-	trust <device id>
-	connect <device id>
-	```
 
 	Additional toos:
 	```shell
