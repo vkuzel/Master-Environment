@@ -131,3 +131,12 @@
 	apt install simple-scan
 	```
 
+10. Skype
+
+	```shell
+	curl --location https://go.skype.com/skypeforlinux-64.deb --output skypeforlinux-64.deb
+	sudo dpkg -i skypeforlinux-64.deb
+	```
+
+	When setting up Skype, switch it to floating window via _Mod+Shift+Space_ to be able to click on login button.
+
