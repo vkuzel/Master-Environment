@@ -32,6 +32,25 @@
 	ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
 	```
 
+4. Remove some Ubuntu-Server packages
+
+	```shell
+	sudo apt purge \
+		byobu \
+		tilix \
+		screen \
+		tmux \
+		cloud-guest-utils \
+		cloud-initramfs-copymods \
+		cloud-initramfs-dyn-netconf
+	```
+
+	Post-remove cleanup:
+	```shell
+	sudo apt autoremove --purge
+	```
+
+
 4. Install Sway & related packages
 
 	```shell
