@@ -61,6 +61,7 @@
 		swayidle \
 		waybar \
 		wofi \
+		mako \
 		mpd \
 		brightnessctl
 	```
