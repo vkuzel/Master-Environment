@@ -15,6 +15,7 @@ set $menu wofi --show drun | xargs sway:msg exec --
 #
 output * background #018281 solid_color
 
+# swaymsg -t get_outputs
 workspace 1 output DP-1 HDMI-A-1 HDMI-A-2
 workspace 2 output DP-1 HDMI-A-1 HDMI-A-2
 workspace 3 output DP-1 HDMI-A-1 HDMI-A-2
