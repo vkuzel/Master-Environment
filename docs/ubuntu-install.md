@@ -72,7 +72,7 @@
 		swayidle \
 		waybar \
 		wofi \
-		mako \
+		mako-notifier \
 		mpd \
 		brightnessctl
 	```
