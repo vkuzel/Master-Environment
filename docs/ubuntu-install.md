@@ -73,6 +73,7 @@
 		waybar \
 		wofi \
 		mako-notifier \
+		libnotify-bin \
 		mpd \
 		brightnessctl
 	```
