@@ -50,8 +50,19 @@
 	sudo apt autoremove --purge
 	```
 
+5. Replace Nvidia propiretary drivers w/ Nouveau (if present)
 
-4. Install Sway & related packages
+	At the moment Sway supports Nouveau only at the moment.
+	```shell
+	sudo apt purge 'nvidia*'
+	sudo apt autoremove --purge
+	```
+
+	```shell
+	sudo apt install nouveau-firmware
+	```
+
+6. Install Sway & related packages
 
 	```shell
 	sudo apt install \
@@ -118,25 +129,25 @@
 	sudo systemctl start mpd
 	```
 
-5. Install Firefox from APT
+7. Install Firefox from APT
 
 	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
 
-6. Install Thunderbird
+8. Install Thunderbird
 
 	`sudo apt install thunderbird`
 
-7. Install Geany GUI editor
+8. Install Geany GUI editor
 
 	`apt install geany`
 
 	Download and install "Solarized (dark)" theme: https://www.geany.org/download/themes/
 
-8. Install and setup Google Drive
+9. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
 
-9. Printer & scanner
+10. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -151,7 +162,7 @@
 	apt install simple-scan
 	```
 
-10. Skype
+11. Skype
 
 	```shell
 	curl --location https://go.skype.com/skypeforlinux-64.deb --output skypeforlinux-64.deb
@@ -160,7 +171,7 @@
 
 	When setting up Skype, switch it to floating window via _Mod+Shift+Space_ to be able to click on login button.
 
-11. Postgresql
+12. Postgresql
 
 	```shell
 	sudo apt install postgresql
