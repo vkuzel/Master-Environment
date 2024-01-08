@@ -16,15 +16,15 @@ set $menu wofi --show drun | xargs sway:msg exec --
 output * background #018281 solid_color
 
 # swaymsg -t get_outputs
-workspace 1 output DP-1 HDMI-A-1 HDMI-A-2
-workspace 2 output DP-1 HDMI-A-1 HDMI-A-2
-workspace 3 output DP-1 HDMI-A-1 HDMI-A-2
-workspace 4 output DP-1 HDMI-A-1 HDMI-A-2
-workspace 5 output DP-1 HDMI-A-1 HDMI-A-2
-workspace 6 output DP-1 HDMI-A-1 HDMI-A-2
-workspace 7 output DP-1 HDMI-A-1 HDMI-A-2
-workspace 8 output DP-1 HDMI-A-1 HDMI-A-2
-workspace 9 output DP-1 HDMI-A-1 HDMI-A-2
+workspace 1 output DP-1 DP-7 HDMI-A-1 HDMI-A-2
+workspace 2 output DP-1 DP-7 HDMI-A-1 HDMI-A-2
+workspace 3 output DP-1 DP-7 HDMI-A-1 HDMI-A-2
+workspace 4 output DP-1 DP-7 HDMI-A-1 HDMI-A-2
+workspace 5 output DP-1 DP-7 HDMI-A-1 HDMI-A-2
+workspace 6 output DP-1 DP-7 HDMI-A-1 HDMI-A-2
+workspace 7 output DP-1 DP-8 HDMI-A-1 HDMI-A-2
+workspace 8 output DP-1 DP-8 HDMI-A-1 HDMI-A-2
+workspace 9 output DP-1 DP-8 HDMI-A-1 HDMI-A-2
 workspace 10 output eDP-1 eDP-2
 
 exec swayidle -w
