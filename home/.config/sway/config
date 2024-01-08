@@ -38,6 +38,9 @@ input * {
     # Switching doesn't work on the current Sway version, see keyboard-layout-toggle.sh
     # xkb_switch_layout next
     # xkb_options "grp:alt_space_toggle"
+
+    repeat_delay 250
+    repeat_rate 40
 }
 
 # Toggle keyboard layout (hack)
