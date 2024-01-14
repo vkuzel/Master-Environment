@@ -184,3 +184,13 @@
 	local   all             all                                     trust
 	```
 
+13. Misc utils
+
+	```shell
+	apt install \
+		whois \
+		parallel
+	```
+
+
+
