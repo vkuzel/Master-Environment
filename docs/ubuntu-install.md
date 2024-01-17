@@ -189,7 +189,8 @@
 	```shell
 	apt install \
 		whois \
-		parallel
+		parallel \
+		jq
 	```
 
 
