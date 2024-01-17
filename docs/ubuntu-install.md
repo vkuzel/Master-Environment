@@ -134,6 +134,22 @@
 
 	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
 
+	Due to a bug, after installing and pinning the Mozilla's package, we have to decrease priority of Ubuntu's Firefox meta-package to prevent overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
+
+	Add following pin to the `/etc/apt/preferences.d/mozillateamppa` priority file:
+	```
+	Package: firefox*
+	Pin: release o=Ubuntu*
+	Pin-Priority: -1
+	```
+
+	Then check the package pinning via:
+	```shell
+	apt policy
+	```
+
+	You should see Mozilla's package pinned with priority 1001 and Ubuntu's meta-package with priority -1.
+
 8. Install Thunderbird
 
 	`sudo apt install thunderbird`
