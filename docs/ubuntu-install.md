@@ -62,7 +62,44 @@
 	sudo apt install nouveau-firmware
 	```
 
-6. Install Sway & related packages
+6. Replace `systemd-networkd` w/ NetworkManager
+
+	1. Install NetworkManager
+
+		```shell
+		sudo apt install network-manager
+		```
+
+	2. Ad Netplan configuration `/etc/netplan/01-network-manager-all.yaml`
+
+		```yaml
+		# Let NetworkManager manage all devices on this system
+		network:
+		version: 2
+		renderer: NetworkManager
+		```
+
+		```shell
+		sudo chmod 600 01-network-manager-all.yaml
+		```
+
+	3. Disable systemd-networkd
+
+		```shell
+		sudo systemctl disable systemd-networkd
+		```
+
+	4. Set NetworkManager to manage devices, by setting `managed=true`
+
+
+		```shell
+		sudo vi /etc/NetworkManager/NetworkManager.conf
+		# Set managed=true
+		# [ifupdown]
+		# managed=true
+		``` 
+
+7. Install Sway & related packages
 
 	```shell
 	sudo apt install \
@@ -130,7 +167,7 @@
 	sudo systemctl start mpd
 	```
 
-7. Install Firefox from APT
+8. Install Firefox from APT
 
 	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
 
@@ -150,21 +187,21 @@
 
 	You should see Mozilla's package pinned with priority 1001 and Ubuntu's meta-package with priority -1.
 
-8. Install Thunderbird
+9. Install Thunderbird
 
 	`sudo apt install thunderbird`
 
-8. Install Geany GUI editor
+10. Install Geany GUI editor
 
 	`apt install geany`
 
 	Download and install "Solarized (dark)" theme: https://www.geany.org/download/themes/
 
-9. Install and setup Google Drive
+11. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
 
-10. Printer & scanner
+12. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -179,7 +216,7 @@
 	apt install simple-scan
 	```
 
-11. Skype
+13. Skype
 
 	```shell
 	curl --location https://go.skype.com/skypeforlinux-64.deb --output skypeforlinux-64.deb
@@ -188,7 +225,7 @@
 
 	When setting up Skype, switch it to floating window via _Mod+Shift+Space_ to be able to click on login button.
 
-12. Postgresql
+14. Postgresql
 
 	```shell
 	sudo apt install postgresql
@@ -200,7 +237,7 @@
 	local   all             all                                     trust
 	```
 
-13. Misc utils
+15. Misc utils
 
 	```shell
 	apt install \
