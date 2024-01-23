@@ -46,11 +46,10 @@ for id in $deviceIndices; do
 
 	if [[ "$mountpoint" == "null" ]]; then
 		target="/media/usb$id"
+		echo -e "$id) $path[$fstype] $name-> $target"
 	else
-		target="$mountpoint *mounted*"
+		echo -e "$id) $path[$fstype] $name-> $mountpoint \e[1;31m*mounted*\e[0m"
 	fi
-
-	echo "$id) $path[$fstype] $name-> $target"
 done
 
 read -p "Select disk: " diskId
