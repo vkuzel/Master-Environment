@@ -6,20 +6,31 @@ gid=$(id -g)
 devices=$(lsblk --bytes --output PATH,FSTYPE,LABEL,MOUNTPOINT,TYPE,SIZE --json)
 deviceIndices=$(echo $devices | jq -r '.blockdevices | to_entries | .[].key')
 
-for id in $deviceIndices; do
-	typ=$(echo $devices | jq -r ".blockdevices[$id].type")
+isMountableDrive() {
+	local id=$1
+
+	local typ=$(echo $devices | jq -r ".blockdevices[$id].type")
 	if [[ "$typ" != "part" ]]; then
-		continue
+		echo "false"
 	fi
+
 
 	# Disks bigger than 100G are (probably) not USB flash drives.
-	size=$(echo $devices | jq -r ".blockdevices[$id].size")
+	local size=$(echo $devices | jq -r ".blockdevices[$id].size")
 	if [[ "$size" -gt "100000000000" ]]; then
-		continue
+		echo "false"
+	fi
+	
+	local mountpoint=$(echo $devices | jq -r ".blockdevices[$id].mountpoint")
+	if [[ "$mountpoint" != "null" && ! "$mountpoint" =~ "/media" ]]; then
+		echo "false"
 	fi
 
-	mountpoint=$(echo $devices | jq -r ".blockdevices[$id].mountpoint")
-	if [[ "$mountpoint" != "null" && ! "$mountpoint" =~ "/media" ]]; then
+	echo "true"
+}
+
+for id in $deviceIndices; do
+	if [[ "$(isMountableDrive $id)" != "true" ]]; then
 		continue
 	fi
 
@@ -46,19 +57,7 @@ read -p "Select disk: " diskId
 
 for id in $deviceIndices; do
 	if [[ "$id" == "$diskId" ]]; then
-		typ=$(echo $devices | jq -r ".blockdevices[$id].type")
-		if [[ "$typ" != "part" ]]; then
-			continue
-		fi
-
-		# Disks bigger than 100G are (probably) not USB flash drives.
-		size=$(echo $devices | jq -r ".blockdevices[$id].size")
-		if [[ "$size" -gt "100000000000" ]]; then
-			continue
-		fi
-
-		mountpoint=$(echo $devices | jq -r ".blockdevices[$id].mountpoint")
-		if [[ "$mountpoint" != "null" && ! "$mountpoint" =~ "/media" ]]; then
+		if [[ "$(isMountableDrive $id)" != "true" ]]; then
 			continue
 		fi
 
