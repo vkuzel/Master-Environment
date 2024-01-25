@@ -237,6 +237,12 @@
 	local   all             all                                     trust
 	```
 
+15. Docker
+
+	1. Install: https://docs.docker.com/engine/install/ubuntu/
+
+	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
+
 15. Misc utils
 
 	```shell
