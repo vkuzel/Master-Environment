@@ -29,6 +29,7 @@ isMountableDrive() {
 	echo "true"
 }
 
+echo
 for id in $deviceIndices; do
 	if [[ "$(isMountableDrive $id)" != "true" ]]; then
 		continue
@@ -52,6 +53,7 @@ for id in $deviceIndices; do
 	fi
 done
 
+echo
 read -p "Select disk: " diskId
 
 for id in $deviceIndices; do
