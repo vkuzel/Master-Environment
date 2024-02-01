@@ -191,17 +191,11 @@
 
 	`sudo apt install thunderbird`
 
-10. Install Geany GUI editor
-
-	`apt install geany`
-
-	Download and install "Solarized (dark)" theme: https://www.geany.org/download/themes/
-
-11. Install and setup Google Drive
+10. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
 
-12. Printer & scanner
+11. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -216,7 +210,7 @@
 	apt install simple-scan
 	```
 
-13. Skype
+12. Skype
 
 	```shell
 	curl --location https://go.skype.com/skypeforlinux-64.deb --output skypeforlinux-64.deb
@@ -225,7 +219,7 @@
 
 	When setting up Skype, switch it to floating window via _Mod+Shift+Space_ to be able to click on login button.
 
-14. Postgresql
+13. Postgresql
 
 	```shell
 	sudo apt install postgresql
@@ -237,7 +231,7 @@
 	local   all             all                                     trust
 	```
 
-15. Docker
+14. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 
