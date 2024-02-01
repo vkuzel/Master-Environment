@@ -47,6 +47,74 @@ install_apps() {
 	fi
 }
 
+install_lite_xl() {
+	local editorUrl="$1"
+	local installDir=/opt/lite-xl
+	local archiveFile=$(echo "$editorUrl" | grep -Eo "[^/]+$")
+
+	info "=== Install Lite XL $archiveFile ==="
+
+	if [[ ! -d "$installDir" ]]; then
+		pushd /tmp > /dev/null
+		curl --location "$editorUrl" --output "$archiveFile" || fail "Cannot download $editorUrl"
+		tar -xzf "$archiveFile" || fail "Cannot unpack $archiveFile"
+
+		sudo mv lite-xl "$installDir" || fail "Cannot install into $installDir"
+		sudo chown -R root:root "$installDir"
+
+		rm "$archiveFile"
+		popd > /dev/null
+	else
+		info "Already installed"
+	fi
+}
+
+install_lite_xl_plugin() {
+	local pluginUrl="$1"
+	local pluginsDir="$HOME/.config/lite-xl/plugins"
+	local pluginFile=$(echo "$pluginUrl" | grep -Eo "[^/]+$" | grep -Eo "^[^?]+")
+
+	info "=== Install Lite XL plugin: $pluginFile into $pluginsDir ==="
+
+	if [[ ! -f "$pluginsDir/$pluginFile" ]]; then
+		pushd /tmp > /dev/null
+		mkdir -p "$pluginsDir" || fail "Cannot create dir $pluginsDir"
+		curl --location "$pluginUrl" --output "$pluginFile" || fail "Cannot download $pluginUrl"
+		mv "$pluginFile" "$pluginsDir" || fail "Cannot install into $pluginsDir"
+		popd > /dev/null
+	else
+		info "Already installed"
+	fi
+}
+
+install_lite_xl_desktop_file() {
+	local desktopFile="lite-xl.desktop"
+
+	info "=== Install Lite XL desktop file: $desktopFile ==="
+
+	pushd /tmp > /dev/null
+	cat <<'DESKTOP_FILE' > "$desktopFile"
+	[Desktop Entry]
+	Type=Application
+	Name=Lite XL
+	Comment=Text Editor
+	Categories=Utility;Development;TextEditor;IDE
+	Keywords=Text;Editor;
+	MimeType=text/plain;text/x-chdr;text/x-csrc;text/x-c++hdr;text/x-c++src;text/x-java;text/x-dsrc;text/x-pascal;text/x-perl;text/x-python;application/x-php;application/x-httpd-php3;application/x-httpd-php4;application/x-httpd-php5;application/xml;text/html;text/css;text/x-sql;text/x-diff;
+	Exec="/opt/lite-xl/lite-xl Documents"
+	Icon=/opt/master-secret/master-secret.png
+	Terminal=false
+DESKTOP_FILE
+	if command -v desktop-file-install &> /dev/null; then
+		# Gnome desktop
+		sudo desktop-file-install --rebuild-mime-info-cache "$desktopFile"
+	else
+		sudo cp -f "$desktopFile" /usr/share/applications
+	fi
+	rm "$desktopFile"
+	popd > /dev/null
+}
+
 create_directory_structure() {
 	info "=== Create directory structure ==="
 	local src_dir=$1
@@ -76,7 +144,7 @@ clone_git_project() {
 	if [ -d "$repo_dir/.git" ]; then
 		pushd "$repo_dir" >> /dev/null
 		git pull || fail "Cannot pull Git repository $repo_url into $repo_dir"
-		popd
+		popd > /dev/null
 	else
 		git clone "$repo_url" "$repo_dir" || fail "Cannot clone Git repository $repo_url into $repo_dir"
 	fi
@@ -141,6 +209,11 @@ DST_DIR=$HOME
 
 install_nerd_fonts
 install_apps
+install_lite_xl "https://github.com/lite-xl/lite-xl/releases/download/v2.1.3/lite-xl-v2.1.3-addons-linux-x86_64-portable.tar.gz"
+install_lite_xl_plugin "https://raw.githubusercontent.com/lite-xl/lite-xl-plugins/master/plugins/autosave.lua"
+install_lite_xl_plugin "https://github.com/lite-xl/lite-xl-plugins/blob/master/plugins/gitstatus.lua?raw=1"
+install_lite_xl_plugin "https://github.com/lite-xl/lite-xl-plugins/blob/master/plugins/minimap.lua?raw=1"
+install_lite_xl_desktop_file
 create_directory_structure $SRC_DIR $DST_DIR
 clone_git_projects $DST_DIR
 create_links $SRC_DIR $DST_DIR
