@@ -93,16 +93,18 @@ install_lite_xl_desktop_file() {
 	info "=== Install Lite XL desktop file: $desktopFile ==="
 
 	pushd /tmp > /dev/null
-	cat <<'DESKTOP_FILE' > "$desktopFile"
+	cat <<- 'DESKTOP_FILE' > "$desktopFile"
 	[Desktop Entry]
 	Type=Application
 	Name=Lite XL
-	Comment=Text Editor
+	GenericName=Text Editor
+	Comment=Lite XL Text Editor
+
 	Categories=Utility;Development;TextEditor;IDE
 	Keywords=Text;Editor;
 	MimeType=text/plain;text/x-chdr;text/x-csrc;text/x-c++hdr;text/x-c++src;text/x-java;text/x-dsrc;text/x-pascal;text/x-perl;text/x-python;application/x-php;application/x-httpd-php3;application/x-httpd-php4;application/x-httpd-php5;application/xml;text/html;text/css;text/x-sql;text/x-diff;
-	Exec="/opt/lite-xl/lite-xl Documents"
-	Icon=/opt/master-secret/master-secret.png
+
+	Exec=/opt/lite-xl/lite-xl
 	Terminal=false
 DESKTOP_FILE
 	if command -v desktop-file-install &> /dev/null; then
