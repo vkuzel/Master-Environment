@@ -110,7 +110,7 @@ DESKTOP_FILE
 	if command -v desktop-file-install &> /dev/null; then
 		# Gnome desktop
 		sudo desktop-file-install --rebuild-mime-info-cache "$desktopFile"
-	else
+	elif [[ ! -f "/usr/share/applications/$desktopFile" ]]; then
 		sudo cp -f "$desktopFile" /usr/share/applications
 	fi
 	rm "$desktopFile"
