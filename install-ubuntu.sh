@@ -61,6 +61,26 @@ install_starship() {
 	fi
 }
 
+install_zsh_plugin() {
+	local pluginUrl=$1
+	local pluginsDir="$HOME/.config/zsh"
+	local pluginName=$(echo "$pluginUrl" | grep -Eo "[^/]+$" | grep -Eo "^[^.]+")
+	local pluginDir="$pluginsDir/$pluginName"
+
+	info "=== Install ZSH plugin $pluginName ==="
+	if [[ -z "$pluginName" ]]; then
+		fail "Plugin name cannot be resolved from $pluginUrl"
+	fi
+	
+	if [[ -d "$pluginDir/.git" ]]; then
+		pushd "$pluginDir" >> /dev/null
+		git pull || fail "Cannot pull $pluginName"
+		popd > /dev/null
+	else
+		git clone "$pluginUrl" "$pluginDir" || fail "Cannot clone Git repository $pluginUrl into $pluginDir"
+	fi
+}
+
 install_lite_xl() {
 	local editorUrl="$1"
 	local installDir=/opt/lite-xl
@@ -88,7 +108,7 @@ install_lite_xl_plugin() {
 	local pluginsDir="$HOME/.config/lite-xl/plugins"
 	local pluginFile=$(echo "$pluginUrl" | grep -Eo "[^/]+$" | grep -Eo "^[^?]+")
 
-	info "=== Install Lite XL plugin: $pluginFile into $pluginsDir ==="
+	info "=== Install Lite XL plugin: $pluginFile ==="
 
 	if [[ ! -f "$pluginsDir/$pluginFile" ]]; then
 		pushd /tmp > /dev/null
@@ -151,26 +171,6 @@ create_directory_structure() {
 	popd > /dev/null
 }
 
-install_zsh_plugin() {
-	local pluginUrl=$1
-	local pluginsDir="$HOME/.config/zsh"
-	local pluginName=$(echo "$pluginUrl" | grep -Eo "[^/]+$" | grep -Eo "^[^.]+")
-	local pluginDir="$pluginsDir/$pluginName"
-
-	info "Clone or update $pluginName"
-	if [[ -z "$pluginName" ]]; then
-		fail "Plugin name cannot be resolved from $pluginUrl"
-	fi
-	
-	if [[ -d "$pluginDir/.git" ]]; then
-		pushd "$pluginDir" >> /dev/null
-		git pull || fail "Cannot pull $pluginName"
-		popd > /dev/null
-	else
-		git clone "$pluginUrl" "$pluginDir" || fail "Cannot clone Git repository $pluginUrl into $pluginDir"
-	fi
-}
-
 normalpath() {
 	local path=$1
 	# Hacky path normalization
@@ -220,6 +220,11 @@ install_starship
 install_zsh_plugin "https://github.com/zsh-users/zsh-autosuggestions.git"
 install_zsh_plugin "https://github.com/zsh-users/zsh-history-substring-search.git"
 install_zsh_plugin "https://github.com/zsh-users/zsh-syntax-highlighting.git"
+chsh_zsh
+
+# Dotfiles
+create_directory_structure $SRC_DIR $DST_DIR
+create_links $SRC_DIR $DST_DIR
 
 # Utils
 install_lite_xl "https://github.com/lite-xl/lite-xl/releases/download/v2.1.3/lite-xl-v2.1.3-addons-linux-x86_64-portable.tar.gz"
@@ -227,9 +232,4 @@ install_lite_xl_plugin "https://raw.githubusercontent.com/lite-xl/lite-xl-plugin
 install_lite_xl_plugin "https://github.com/lite-xl/lite-xl-plugins/blob/master/plugins/gitstatus.lua?raw=1"
 install_lite_xl_plugin "https://github.com/lite-xl/lite-xl-plugins/blob/master/plugins/minimap.lua?raw=1"
 install_lite_xl_desktop_file
-
-# Dotfiles
-create_directory_structure $SRC_DIR $DST_DIR
-create_links $SRC_DIR $DST_DIR
-chsh_zsh
 
