@@ -137,34 +137,24 @@ create_directory_structure() {
 	popd > /dev/null
 }
 
-clone_git_project() {
-	local project_name=$1
-	local repo_dir=$2
-	local repo_url=$3
+install_zsh_plugin() {
+	local pluginUrl=$1
+	local pluginsDir="$HOME/.config/zsh"
+	local pluginName=$(echo "$pluginUrl" | grep -Eo "[^/]+$" | grep -Eo "^[^.]+")
+	local pluginDir="$pluginsDir/$pluginName"
 
-	info "Clone or update $project_name"
-	if [ -d "$repo_dir/.git" ]; then
-		pushd "$repo_dir" >> /dev/null
-		git pull || fail "Cannot pull Git repository $repo_url into $repo_dir"
+	info "Clone or update $pluginName"
+	if [[ -z "$pluginName" ]]; then
+		fail "Plugin name cannot be resolved from $pluginUrl"
+	fi
+	
+	if [[ -d "$pluginDir/.git" ]]; then
+		pushd "$pluginDir" >> /dev/null
+		git pull || fail "Cannot pull $pluginName"
 		popd > /dev/null
 	else
-		git clone "$repo_url" "$repo_dir" || fail "Cannot clone Git repository $repo_url into $repo_dir"
+		git clone "$pluginUrl" "$pluginDir" || fail "Cannot clone Git repository $pluginUrl into $pluginDir"
 	fi
-}
-
-clone_git_projects() {
-	info "=== Clone/update Git projects ==="
-	local dst_dir=$1
-
-	clone_git_project "zsh-autosuggestions" \
-		"$dst_dir/.config/zsh/zsh-autosuggestions" \
-		"https://github.com/zsh-users/zsh-autosuggestions.git"
-	clone_git_project "zsh-history-substring-search" \
-		"$dst_dir/.config/zsh/zsh-history-substring-search" \
-		"https://github.com/zsh-users/zsh-history-substring-search.git"
-	clone_git_project "zsh-syntax-highlighting" \
-		"$dst_dir/.config/zsh/zsh-syntax-highlighting" \
-		"https://github.com/zsh-users/zsh-syntax-highlighting.git"
 }
 
 normalpath() {
@@ -211,12 +201,14 @@ DST_DIR=$HOME
 
 install_nerd_fonts
 install_apps
+install_zsh_plugin "https://github.com/zsh-users/zsh-autosuggestions.git"
+install_zsh_plugin "https://github.com/zsh-users/zsh-history-substring-search.git"
+install_zsh_plugin "https://github.com/zsh-users/zsh-syntax-highlighting.git"
 install_lite_xl "https://github.com/lite-xl/lite-xl/releases/download/v2.1.3/lite-xl-v2.1.3-addons-linux-x86_64-portable.tar.gz"
 install_lite_xl_plugin "https://raw.githubusercontent.com/lite-xl/lite-xl-plugins/master/plugins/autosave.lua"
 install_lite_xl_plugin "https://github.com/lite-xl/lite-xl-plugins/blob/master/plugins/gitstatus.lua?raw=1"
 install_lite_xl_plugin "https://github.com/lite-xl/lite-xl-plugins/blob/master/plugins/minimap.lua?raw=1"
 install_lite_xl_desktop_file
 create_directory_structure $SRC_DIR $DST_DIR
-clone_git_projects $DST_DIR
 create_links $SRC_DIR $DST_DIR
 chsh_zsh
