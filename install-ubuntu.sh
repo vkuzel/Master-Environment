@@ -37,12 +37,26 @@ install_nerd_fonts() {
 	fi
 }
 
-install_apps() {
-	info "=== Install Apps ==="
-	if ! command -v zsh &> /dev/null; then
-		sudo apt install zsh
+install_apt_app() {
+	local appName=$1
+	local command=$2
+	if [[ -z "$command" ]]; then
+		command=$appName
 	fi
-	if ! command -v starship &> /dev/null; then
+
+	info "=== Install $appName ==="
+	if command -v "$command" &> /dev/null; then
+		info "Already installed"
+	else
+		sudo apt install "$appName"
+	fi
+}
+
+install_starship() {
+	info "=== Install Starship ==="
+	if command -v starship &> /dev/null; then
+		info "Already installed"
+	else
 		curl -sS https://starship.rs/install.sh | sh
 	fi
 }
@@ -199,16 +213,23 @@ check_working_dir
 SRC_DIR=home
 DST_DIR=$HOME
 
+# Shell
 install_nerd_fonts
-install_apps
+install_apt_app zsh
+install_starship
 install_zsh_plugin "https://github.com/zsh-users/zsh-autosuggestions.git"
 install_zsh_plugin "https://github.com/zsh-users/zsh-history-substring-search.git"
 install_zsh_plugin "https://github.com/zsh-users/zsh-syntax-highlighting.git"
+
+# Utils
 install_lite_xl "https://github.com/lite-xl/lite-xl/releases/download/v2.1.3/lite-xl-v2.1.3-addons-linux-x86_64-portable.tar.gz"
 install_lite_xl_plugin "https://raw.githubusercontent.com/lite-xl/lite-xl-plugins/master/plugins/autosave.lua"
 install_lite_xl_plugin "https://github.com/lite-xl/lite-xl-plugins/blob/master/plugins/gitstatus.lua?raw=1"
 install_lite_xl_plugin "https://github.com/lite-xl/lite-xl-plugins/blob/master/plugins/minimap.lua?raw=1"
 install_lite_xl_desktop_file
+
+# Dotfiles
 create_directory_structure $SRC_DIR $DST_DIR
 create_links $SRC_DIR $DST_DIR
 chsh_zsh
+
