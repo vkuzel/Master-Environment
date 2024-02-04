@@ -23,7 +23,9 @@ check_working_dir() {
 
 install_nerd_fonts() {
 	info "=== Install Nerd Fonts ==="
-	if [ ! -d "/usr/share/fonts/truetype/dejavu-nerd" ]; then
+	if [ -d "/usr/share/fonts/truetype/dejavu-nerd" ]; then
+		info "Already installed"
+	else
 		local fontFile="DejaVuSansMono.zip"
 		local fontUrl="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/$fontFile"
 		local targetDir="/usr/share/fonts/truetype/dejavu-nerd"
@@ -42,10 +44,10 @@ install_apt_package() {
 
 	info "=== Install $pkgName ==="
 	local status=$(dpkg --status "$pkgName" 2>/dev/null)
-	if [[ -z "$status" ]]; then
-		sudo apt install "$pkgName"
-	else
+	if [[ ! -z "$status" ]]; then
 		info "Already installed"
+	else
+		sudo apt install "$pkgName"
 	fi
 }
 
@@ -53,8 +55,10 @@ uninstall_apt_package() {
 	local pkgName=$1
 
 	info "=== Uninstall $pkgName ==="
-	local status=$(dpkg-cache --status "$pkgName" 2>/dev/null)
-	if [[ ! -z "$status" ]]; then
+	local status=$(dpkg --status "$pkgName" 2>/dev/null)
+	if [[ -z "$status" ]]; then
+		info "Already uninstalled"
+	else
 		sudo apt purge "$pkgName"
 	fi
 }
