@@ -20,25 +20,7 @@
 	ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
 	```
 
-3. Remove some Ubuntu-Server packages
-
-	```shell
-	sudo apt purge \
-		byobu \
-		tilix \
-		screen \
-		tmux \
-		cloud-guest-utils \
-		cloud-initramfs-copymods \
-		cloud-initramfs-dyn-netconf
-	```
-
-	Post-remove cleanup:
-	```shell
-	sudo apt autoremove --purge
-	```
-
-4. Replace Nvidia propiretary drivers w/ Nouveau (if present)
+3. Replace Nvidia propiretary drivers w/ Nouveau (if present)
 
 	At the moment Sway supports Nouveau only at the moment.
 	```shell
@@ -50,7 +32,7 @@
 	sudo apt install nouveau-firmware
 	```
 
-5. Replace `systemd-networkd` w/ NetworkManager
+4. Replace `systemd-networkd` w/ NetworkManager
 
 	1. Install NetworkManager
 
@@ -86,7 +68,7 @@
 		# managed=true
 		``` 
 
-6. Install Sway & related packages
+5. Install Sway & related packages
 
 	```shell
 	sudo apt install \
@@ -153,7 +135,7 @@
 	sudo systemctl start mpd
 	```
 
-7. Install Firefox from APT
+6. Install Firefox from APT
 
 	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
 
@@ -173,15 +155,15 @@
 
 	You should see Mozilla's package pinned with priority 1001 and Ubuntu's meta-package with priority -1.
 
-8. Install Thunderbird
+7. Install Thunderbird
 
 	`sudo apt install thunderbird`
 
-9. Install and setup Google Drive
+8. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
 
-10. Printer & scanner
+9. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -196,7 +178,7 @@
 	apt install simple-scan
 	```
 
-11. Skype
+10. Skype
 
 	```shell
 	curl --location https://go.skype.com/skypeforlinux-64.deb --output skypeforlinux-64.deb
@@ -205,7 +187,7 @@
 
 	When setting up Skype, switch it to floating window via _Mod+Shift+Space_ to be able to click on login button.
 
-12. Postgresql
+11. Postgresql
 
 	```shell
 	sudo apt install postgresql
@@ -217,13 +199,13 @@
 	local   all             all                                     trust
 	```
 
-13. Docker
+12. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 
 	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
 
-14. Misc utils
+13. Misc utils
 
 	```shell
 	apt install \

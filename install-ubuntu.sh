@@ -52,6 +52,16 @@ install_apt_app() {
 	fi
 }
 
+uninstall_apt_package() {
+	local pkgName=$1
+
+	info "=== Uninstall $pkgName ==="
+	local status=$(dpkg-cache --status "$pkgName" 2>/dev/null)
+	if [[ ! -z "$status" ]]; then
+		sudo apt purge "$pkgName"
+	fi
+}
+
 install_starship() {
 	info "=== Install Starship ==="
 	if command -v starship &> /dev/null; then
@@ -212,6 +222,15 @@ check_working_dir
 
 SRC_DIR=home
 DST_DIR=$HOME
+
+# Remove Ubuntu Server
+uninstall_apt_package byobu
+uninstall_apt_package tilix
+uninstall_apt_package screen
+uninstall_apt_package tmux
+uninstall_apt_package cloud-guest-utils
+uninstall_apt_package cloud-initramfs-copymods
+uninstall_apt_package cloud-initramfs-dyn-netconf
 
 # Shell
 install_nerd_fonts
