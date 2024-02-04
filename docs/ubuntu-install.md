@@ -199,14 +199,3 @@
 
 	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
 
-12. Misc utils
-
-	```shell
-	apt install \
-		whois \
-		parallel \
-		jq
-	```
-
-
-
