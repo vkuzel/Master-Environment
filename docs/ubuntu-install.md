@@ -26,37 +26,7 @@
 	sudo apt install nouveau-firmware
 	```
 
-3. Replace `systemd-networkd` w/ NetworkManager
-
-	1. Ad Netplan configuration `/etc/netplan/01-network-manager-all.yaml`
-
-		```yaml
-		# Let NetworkManager manage all devices on this system
-		network:
-		version: 2
-		renderer: NetworkManager
-		```
-
-		```shell
-		sudo chmod 600 01-network-manager-all.yaml
-		```
-
-	2. Disable systemd-networkd
-
-		```shell
-		sudo systemctl disable systemd-networkd
-		```
-
-	3. Set NetworkManager to manage devices, by setting `managed=true`
-
-		```shell
-		sudo vi /etc/NetworkManager/NetworkManager.conf
-		# Set managed=true
-		# [ifupdown]
-		# managed=true
-		``` 
-
-4. Install Sway & related packages
+3. Install Sway & related packages
 
 	```shell
 	sudo apt install \
@@ -123,7 +93,7 @@
 	sudo systemctl start mpd
 	```
 
-5. Install Firefox from APT
+4. Install Firefox from APT
 
 	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
 
@@ -143,15 +113,15 @@
 
 	You should see Mozilla's package pinned with priority 1001 and Ubuntu's meta-package with priority -1.
 
-6. Install Thunderbird
+5. Install Thunderbird
 
 	`sudo apt install thunderbird`
 
-7. Install and setup Google Drive
+6. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
 
-8. Printer & scanner
+7. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -166,7 +136,7 @@
 	apt install simple-scan
 	```
 
-9. Skype
+8. Skype
 
 	```shell
 	curl --location https://go.skype.com/skypeforlinux-64.deb --output skypeforlinux-64.deb
@@ -175,7 +145,7 @@
 
 	When setting up Skype, switch it to floating window via _Mod+Shift+Space_ to be able to click on login button.
 
-10. Postgresql
+9. Postgresql
 
 	```shell
 	sudo apt install postgresql
@@ -187,7 +157,7 @@
 	local   all             all                                     trust
 	```
 
-11. Docker
+10. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 

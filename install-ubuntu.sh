@@ -30,6 +30,34 @@ configure_timezone() {
 	fi
 }
 
+configure_network_manager() {
+	local netplanFile="/etc/netplan/01-network-manager-all.yaml"
+
+	info "=== Configure Network Manager ==="
+
+	if [[ -f "$netplanFile" ]]; then
+		info "Already configured"
+	else
+		sudo cat <<- 'NETPLAN_FILE' > "$netplanFile"
+		# Let NetworkManager manage all devices on this system
+		network:
+		version: 2
+		renderer: NetworkManager
+NETPLAN_FILE
+		sudo chmod 600 $netplanFile
+
+		info "Disable systemd-networkd"
+		sudo systemctl disable systemd-networkd
+
+		info "!!! Manual action required: Set Network Manager to manage devices by setting managed=true"
+		echo 'sudo vi /etc/NetworkManager/NetworkManager.conf'
+		echo '# Set managed=true'
+		echo '# [ifupdown]'
+		echo '# managed=true'
+		read -p "Press Enter to continue..."
+	fi
+}
+
 install_nerd_fonts() {
 	info "=== Install Nerd Fonts ==="
 	if [ -d "/usr/share/fonts/truetype/dejavu-nerd" ]; then
@@ -247,6 +275,7 @@ configure_timezone
 
 # Networking
 install_apt_package network-manager
+configure_network_manager
 
 # Shell
 install_nerd_fonts
