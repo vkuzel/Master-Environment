@@ -21,6 +21,15 @@ check_working_dir() {
 	fi
 }
 
+configure_timezone() {
+	info "=== Configure timezone ==="
+	if [[ -e "/etc/timezone" ]]; then
+		info "Already configured"
+	else
+		sudo ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
+	fi
+}
+
 install_nerd_fonts() {
 	info "=== Install Nerd Fonts ==="
 	if [ -d "/usr/share/fonts/truetype/dejavu-nerd" ]; then
@@ -232,6 +241,9 @@ uninstall_apt_package tmux
 uninstall_apt_package cloud-guest-utils
 uninstall_apt_package cloud-initramfs-copymods
 uninstall_apt_package cloud-initramfs-dyn-netconf
+
+# Basic setup
+configure_timezone
 
 # Shell
 install_nerd_fonts

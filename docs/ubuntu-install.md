@@ -14,13 +14,7 @@
 	
 	Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
 
-2. Set timezone if not set correctly
-
-	```shell
-	ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
-	```
-
-3. Replace Nvidia propiretary drivers w/ Nouveau (if present)
+2. Replace Nvidia propiretary drivers w/ Nouveau (if present)
 
 	At the moment Sway supports Nouveau only at the moment.
 	```shell
@@ -32,7 +26,7 @@
 	sudo apt install nouveau-firmware
 	```
 
-4. Replace `systemd-networkd` w/ NetworkManager
+3. Replace `systemd-networkd` w/ NetworkManager
 
 	1. Install NetworkManager
 
@@ -68,7 +62,7 @@
 		# managed=true
 		``` 
 
-5. Install Sway & related packages
+4. Install Sway & related packages
 
 	```shell
 	sudo apt install \
@@ -135,7 +129,7 @@
 	sudo systemctl start mpd
 	```
 
-6. Install Firefox from APT
+5. Install Firefox from APT
 
 	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
 
@@ -155,15 +149,15 @@
 
 	You should see Mozilla's package pinned with priority 1001 and Ubuntu's meta-package with priority -1.
 
-7. Install Thunderbird
+6. Install Thunderbird
 
 	`sudo apt install thunderbird`
 
-8. Install and setup Google Drive
+7. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
 
-9. Printer & scanner
+8. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -178,7 +172,7 @@
 	apt install simple-scan
 	```
 
-10. Skype
+9. Skype
 
 	```shell
 	curl --location https://go.skype.com/skypeforlinux-64.deb --output skypeforlinux-64.deb
@@ -187,7 +181,7 @@
 
 	When setting up Skype, switch it to floating window via _Mod+Shift+Space_ to be able to click on login button.
 
-11. Postgresql
+10. Postgresql
 
 	```shell
 	sudo apt install postgresql
@@ -199,13 +193,13 @@
 	local   all             all                                     trust
 	```
 
-12. Docker
+11. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 
 	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
 
-13. Misc utils
+12. Misc utils
 
 	```shell
 	apt install \
