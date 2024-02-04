@@ -37,18 +37,15 @@ install_nerd_fonts() {
 	fi
 }
 
-install_apt_app() {
-	local appName=$1
-	local command=$2
-	if [[ -z "$command" ]]; then
-		command=$appName
-	fi
+install_apt_package() {
+	local pkgName=$1
 
-	info "=== Install $appName ==="
-	if command -v "$command" &> /dev/null; then
-		info "Already installed"
+	info "=== Install $pkgName ==="
+	local status=$(dpkg --status "$pkgName" 2>/dev/null)
+	if [[ -z "$status" ]]; then
+		sudo apt install "$pkgName"
 	else
-		sudo apt install "$appName"
+		info "Already installed"
 	fi
 }
 
@@ -234,7 +231,7 @@ uninstall_apt_package cloud-initramfs-dyn-netconf
 
 # Shell
 install_nerd_fonts
-install_apt_app zsh
+install_apt_package zsh
 install_starship
 install_zsh_plugin "https://github.com/zsh-users/zsh-autosuggestions.git"
 install_zsh_plugin "https://github.com/zsh-users/zsh-history-substring-search.git"
