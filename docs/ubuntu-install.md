@@ -28,13 +28,7 @@
 
 3. Replace `systemd-networkd` w/ NetworkManager
 
-	1. Install NetworkManager
-
-		```shell
-		sudo apt install network-manager
-		```
-
-	2. Ad Netplan configuration `/etc/netplan/01-network-manager-all.yaml`
+	1. Ad Netplan configuration `/etc/netplan/01-network-manager-all.yaml`
 
 		```yaml
 		# Let NetworkManager manage all devices on this system
@@ -47,13 +41,13 @@
 		sudo chmod 600 01-network-manager-all.yaml
 		```
 
-	3. Disable systemd-networkd
+	2. Disable systemd-networkd
 
 		```shell
 		sudo systemctl disable systemd-networkd
 		```
 
-	4. Set NetworkManager to manage devices, by setting `managed=true`
+	3. Set NetworkManager to manage devices, by setting `managed=true`
 
 		```shell
 		sudo vi /etc/NetworkManager/NetworkManager.conf

@@ -245,6 +245,9 @@ uninstall_apt_package cloud-initramfs-dyn-netconf
 # Basic setup
 configure_timezone
 
+# Networking
+install_apt_package network-manager
+
 # Shell
 install_nerd_fonts
 install_apt_package zsh
