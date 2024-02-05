@@ -298,6 +298,6 @@ install_lite_xl_plugin "https://github.com/lite-xl/lite-xl-plugins/blob/master/p
 install_lite_xl_desktop_file
 
 # Utils
-instapp_apt_package whois
+install_apt_package whois
 install_apt_package jq
 
