@@ -262,6 +262,7 @@ SRC_DIR=home
 DST_DIR=$HOME
 
 # Remove Ubuntu Server
+uninstall_apt_package ubuntu-server
 uninstall_apt_package byobu
 uninstall_apt_package tilix
 uninstall_apt_package screen
