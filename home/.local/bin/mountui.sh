@@ -30,6 +30,7 @@ isMountableDrive() {
 }
 
 echo
+hasAnyDisk=false
 for id in $deviceIndices; do
 	if [[ "$(isMountableDrive $id)" != "true" ]]; then
 		continue
@@ -45,6 +46,7 @@ for id in $deviceIndices; do
 		name="($label) "
 	fi
 
+	hasAnyDisk=true
 	if [[ "$mountpoint" == "null" ]]; then
 		target="/media/usb$id"
 		echo -e "$id) $path[$fstype] $name-> $target"
@@ -54,7 +56,12 @@ for id in $deviceIndices; do
 done
 
 echo
-read -p "Select disk: " diskId
+if [[ "$hasAnyDisk" == true ]]; then
+	read -p "Select disk: " diskId
+else
+	echo "No (u)mountable disk found!"
+	exit
+fi
 
 for id in $deviceIndices; do
 	if [[ "$id" == "$diskId" ]]; then
