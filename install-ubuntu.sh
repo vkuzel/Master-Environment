@@ -287,6 +287,11 @@ install_zsh_plugin "https://github.com/zsh-users/zsh-history-substring-search.gi
 install_zsh_plugin "https://github.com/zsh-users/zsh-syntax-highlighting.git"
 chsh_zsh
 
+# Sway - screen sharing
+# Guidelines: https://wiki.archlinux.org/title/XDG_Desktop_Portal
+# Test: https://mozilla.github.io/webrtc-landing/gum_test.html
+install_apt_package xdg-desktop-portal-wlr
+
 # Dotfiles
 create_directory_structure $SRC_DIR $DST_DIR
 create_links $SRC_DIR $DST_DIR
