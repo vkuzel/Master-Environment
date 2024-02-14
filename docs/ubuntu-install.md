@@ -29,6 +29,7 @@
 3. Install Sway & related packages
 
 	```shell
+	# TODO In Ubuntu 24.04 - replace mako-notifier with Sway Notification Center
 	sudo apt install \
 		xwayland \
 		sway \
