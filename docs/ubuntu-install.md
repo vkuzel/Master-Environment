@@ -42,6 +42,11 @@
 		mpd \
 		brightnessctl
 	```
+
+	Mako notifications:
+	* In Ubuntu 24.04 replace Mako w/ Sway Notification Center
+	* Mako may fail reading symlinked config file. To solve it, copy the config file into `~/.config/mako/config`
+	* Under GDM Mako has issues w/ AppArmor. Disable its rules: https://github.com/emersion/mako/issues/257#issuecomment-1638776704
 	
 	Bluetooth:
 	```shell
