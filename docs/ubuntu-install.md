@@ -26,7 +26,13 @@
 	sudo apt install nouveau-firmware
 	```
 
-3. Install Sway & related packages
+3. Enable (Keychron) keyboard function keys.
+
+	```shell
+	echo 0 | sudo tee /sys/module/hid_apple/parameters/fnmode
+	```
+
+4. Install Sway & related packages
 
 	```shell
 	# TODO In Ubuntu 24.04 - replace mako-notifier with Sway Notification Center
@@ -94,7 +100,7 @@
 	sudo systemctl start mpd
 	```
 
-4. Install Firefox from APT
+5. Install Firefox from APT
 
 	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
 
@@ -114,15 +120,15 @@
 
 	You should see Mozilla's package pinned with priority 1001 and Ubuntu's meta-package with priority -1.
 
-5. Install Thunderbird
+6. Install Thunderbird
 
 	`sudo apt install thunderbird`
 
-6. Install and setup Google Drive
+7. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
 
-7. Printer & scanner
+8. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -137,7 +143,7 @@
 	apt install simple-scan
 	```
 
-8. Skype
+9. Skype
 
 	```shell
 	curl --location https://go.skype.com/skypeforlinux-64.deb --output skypeforlinux-64.deb
@@ -146,7 +152,7 @@
 
 	When setting up Skype, switch it to floating window via _Mod+Shift+Space_ to be able to click on login button.
 
-9. Postgresql
+10. Postgresql
 
 	```shell
 	sudo apt install postgresql
@@ -158,7 +164,7 @@
 	local   all             all                                     trust
 	```
 
-10. Docker
+11. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 
