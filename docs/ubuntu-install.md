@@ -120,6 +120,11 @@
 
 	You should see Mozilla's package pinned with priority 1001 and Ubuntu's meta-package with priority -1.
 
+	_Firefox 124 Wayland issue:_ To avoid consuming too much CPU, disable Wayland proxy by setting environment variable next to the `MOZ_ENABLE_WAYLAND` in launcher `/usr/lib/firefox/firefox.sh`. This should be fixed in Firefox 125
+	```shell
+	export MOZ_DISABLE_WAYLAND_PROXY=1
+	```
+
 6. Install Thunderbird
 
 	`sudo apt install thunderbird`
