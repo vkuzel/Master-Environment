@@ -49,6 +49,19 @@
 		brightnessctl
 	```
 
+	Audio:
+	```shell
+	sudo apt install \
+		pipewire \
+		pipewire-pulse \
+		pipewire-audio-client-libraries \
+		libspa-0.2-bluetooth \
+		libspa-0.2-jack \
+		wireplumber \
+		pulseaudio-utils
+	```
+	The `pulseaudio-utils` package for the `pactl` control command. Pipewire seems to not have native equivalent at the moment.
+
 	Bluetooth:
 	```shell
 	sudo apt install \
@@ -63,19 +76,6 @@
 	trust <device id>
 	connect <device id>
 	```
-
-	Audio:
-	```shell
-	sudo apt install \
-		pipewire \
-		pipewire-pulse \
-		pipewire-audio-client-libraries \
-		libspa-0.2-bluetooth \
-		libspa-0.2-jack \
-		wireplumber \
-		pulseaudio-utils
-	```
-	The `pulseaudio-utils` package for the `pactl` control command. Pipewire seems to not have native equivalent at the moment.
 
 	Additional toos:
 	```shell
