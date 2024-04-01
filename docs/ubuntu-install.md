@@ -157,19 +157,7 @@
 
 	When setting up Skype, switch it to floating window via _Mod+Shift+Space_ to be able to click on login button.
 
-10. Postgresql
-
-	```shell
-	sudo apt install postgresql
-	```
-
-	Allow password-less local socket connections in `/etc/postgresql/14/main/pg_hba.conf` set method to `trust`
-	```
-	# TYPE  DATABASE        USER            ADDRESS                 METHOD
-	local   all             all                                     trust
-	```
-
-11. Docker
+10. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 
