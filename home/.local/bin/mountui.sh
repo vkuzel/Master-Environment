@@ -76,7 +76,7 @@ for id in $deviceIndices; do
 			echo "Mounting $path -> $target"
 			sudo mkdir -p $target
 			sudo mount \
-				--options nosuid,nodev \
+				--options nosuid,nodev,uid=$uid,gid=$gid \
 				$path \
 				$target
 		else
