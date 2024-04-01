@@ -14,7 +14,7 @@
 	
 	Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
 
-2. Replace Nvidia propiretary drivers w/ Nouveau (if present)
+2. Replace Nvidia proprietary drivers w/ Nouveau (if present)
 
 	At the moment Sway supports Nouveau only at the moment.
 	```shell
