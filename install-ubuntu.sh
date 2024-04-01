@@ -52,8 +52,8 @@ NETPLAN_FILE
 		info "!!! Manual action required: Set Network Manager to manage devices by setting managed=true"
 		echo 'sudo vi /etc/NetworkManager/NetworkManager.conf'
 		echo '# Set managed=true'
-		echo '# [ifupdown]'
-		echo '# managed=true'
+		echo '[ifupdown]'
+		echo 'managed=true'
 		read -p "Press Enter to continue..."
 	fi
 }
