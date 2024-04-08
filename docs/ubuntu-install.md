@@ -139,9 +139,11 @@
 	```shell
 	sudo apt install cups
 	```
-	Install Brother DCP-L2532DW Linux drivers
+	Install Brother DCP-L2532DW Linux drivers (use Driver Install Tool)
 
 	https://support.brother.com/g/b/downloadtop.aspx?c=eu_ot&lang=en&prod=dcpl2532dw_eu
+
+	> Input model name: DCP-L2532DW
 
 	Install Simple scan (Document Scanner)
 	```shell
