@@ -41,8 +41,8 @@ configure_network_manager() {
 		sudo cat <<- 'NETPLAN_FILE' > "$netplanFile"
 		# Let NetworkManager manage all devices on this system
 		network:
-		version: 2
-		renderer: NetworkManager
+		  version: 2
+		  renderer: NetworkManager
 NETPLAN_FILE
 		sudo chmod 600 $netplanFile
 
