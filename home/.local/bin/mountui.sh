@@ -30,7 +30,6 @@ isMountableDrive() {
 }
 
 echo
-hasAnyDisk=false
 for id in $deviceIndices; do
 	if [[ "$(isMountableDrive $id)" != "true" ]]; then
 		continue
@@ -46,7 +45,6 @@ for id in $deviceIndices; do
 		name="($label) "
 	fi
 
-	hasAnyDisk=true
 	if [[ "$mountpoint" == "null" ]]; then
 		target="/media/usb$id"
 		echo -e "$id) $path[$fstype] $name-> $target"
@@ -54,14 +52,10 @@ for id in $deviceIndices; do
 		echo -e "$id) $path[$fstype] $name-> $mountpoint \e[1;31m*mounted*\e[0m"
 	fi
 done
+echo "r) Rescan PCI devices, e.g. for SD cards"
 
 echo
-if [[ "$hasAnyDisk" == true ]]; then
-	read -p "Select disk: " diskId
-else
-	echo "No (u)mountable disk found!"
-	exit
-fi
+read -p "Select disk: " diskId
 
 for id in $deviceIndices; do
 	if [[ "$id" == "$diskId" ]]; then
@@ -86,4 +80,8 @@ for id in $deviceIndices; do
 		fi
 	fi
 done
+if [[ "r" == "$diskId" ]]; then
+	echo "Rescanning PCI devices"
+	echo 1 | sudo tee /sys/bus/pci/rescan
+fi
 
