@@ -129,6 +129,19 @@ install_zsh_plugin() {
 	fi
 }
 
+install_gedit_overscroll_plugin() {
+  local pluginUrl=https://github.com/hardpixel/gedit-scroll-past.git
+  local pluginsDir="$HOME/.local/share/gedit/plugins"
+  local pluginDir="$pluginsDir/gedit-scroll-past"
+
+  info "=== Install gedit overscroll plugin ==="
+  if [[ ! -d "$pluginDir" ]]; then
+    git clone "$pluginUrl" "$pluginDir" || fail "Cannot clone Git repository $pluginUrl into $pluginDir"
+  else
+    info "Already installed"
+  fi
+}
+
 configure_mako() {
 	local srcDir="$1"
 	local configFile="$HOME/.config/mako/config"
@@ -258,6 +271,7 @@ configure_mako $SRC_DIR
 
 # Office utils
 install_apt_package gedit
+install_gedit_overscroll_plugin
 
 # Utils
 install_apt_package whois
