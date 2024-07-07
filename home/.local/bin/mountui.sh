@@ -64,6 +64,7 @@ for id in $deviceIndices; do
 		fi
 
 		path=$(echo $devices | jq -r ".blockdevices[$id].path")
+  	mountpoint=$(echo $devices | jq -r ".blockdevices[$id].mountpoint")
 		target="/media/usb$id"
 
 		if [[ "$mountpoint" == "null" ]]; then
