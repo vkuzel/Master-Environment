@@ -10,7 +10,7 @@ isMountableDrive() {
 	local id=$1
 
 	local typ=$(echo $devices | jq -r ".blockdevices[$id].type")
-	if [[ "$typ" != "part" ]]; then
+	if [[ "$typ" != "part" && "$typ" != "disk" ]]; then
 		echo "false"
 	fi
 
