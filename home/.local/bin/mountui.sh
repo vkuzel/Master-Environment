@@ -65,15 +65,21 @@ for id in $deviceIndices; do
 
 		path=$(echo $devices | jq -r ".blockdevices[$id].path")
   	mountpoint=$(echo $devices | jq -r ".blockdevices[$id].mountpoint")
+  	fstype=$(echo $devices | jq -r ".blockdevices[$id].fstype")
 		target="/media/usb$id"
 
 		if [[ "$mountpoint" == "null" ]]; then
 			echo "Mounting $path -> $target"
 			sudo mkdir -p $target
-			sudo mount \
-				--options nosuid,nodev,uid=$uid,gid=$gid \
-				$path \
-				$target
+
+      # ext4 does not support mounting w/ specific user
+      if [[ "$fstype" != "ext4" ]]; then
+        options=",uid=$uid,gid=$gid"
+      fi
+      sudo mount \
+        --options nosuid,nodev$options \
+        $path \
+        $target
 		else
 			echo "Umounting $target"
 			sudo umount $target
