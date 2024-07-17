@@ -31,7 +31,7 @@ configure_timezone() {
 }
 
 configure_network_manager() {
-	local netplanFile="/etc/netplan/01-network-manager-all.yaml"
+	local netplanFile="/etc/netplan/01-networkmanager-all.yaml"
 
 	info "=== Configure Network Manager ==="
 
