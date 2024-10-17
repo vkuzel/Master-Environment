@@ -14,17 +14,20 @@
 	
 	Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
 
-2. Replace Nvidia proprietary drivers w/ Nouveau (if present)
+2. Install correct Nvidia drivers
 
-	At the moment Sway supports Nouveau only at the moment.
+	There is a possibility to run Sway on Nouveau. Unfortunatelly, it wasn't case for the Ubuntu 24.04.
+	It's possible to run proprietary drivers, but only in **version 535**.
+
+	Check installed version:
 	```shell
-	sudo apt purge 'nvidia*'
-	sudo apt autoremove --purge
+	cat /proc/driver/nvidia/version
 	```
 
-	```shell
-	sudo apt install nouveau-firmware
-	```
+	Install correct version if needed: https://ubuntu.com/server/docs/nvidia-drivers-installation
+
+	_Sway has to be started with some undocumented features._ This is automated by the sway-nvidia project.
+	https://github.com/crispyricepc/sway-nvidia
 
 3. Enable (Keychron) keyboard function keys.
 
