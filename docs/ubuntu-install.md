@@ -126,6 +126,10 @@
 	export MOZ_DISABLE_WAYLAND_PROXY=1
 	```
 
+	Install ad-blocking addons:
+	* AdBlocker: https://addons.mozilla.org/en-US/firefox/addon/adblock-for-youtube/
+    * Unhook: https://addons.mozilla.org/en-US/firefox/addon/youtube-recommended-videos/
+
 6. Install Thunderbird
 
 	`sudo apt install thunderbird`
