@@ -103,7 +103,10 @@
 
 5. Install Firefox from APT
 
-	https://ubuntuhandbook.org/index.php/2022/04/install-firefox-deb-ubuntu-22-04/#google_vignette
+	Add Mozilla team's PPA:
+	```shell
+	sudo add-apt-repository ppa:mozillateam/ppa 
+	```
 
 	Due to a bug, after installing and pinning the Mozilla's package, we have to decrease priority of Ubuntu's Firefox meta-package to prevent overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
 
