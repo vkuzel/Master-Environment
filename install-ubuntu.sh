@@ -142,33 +142,6 @@ install_gedit_overscroll_plugin() {
   fi
 }
 
-configure_mako() {
-	local srcDir="$1"
-	local configFile="$HOME/.config/mako/config"
-	local sourceConfigFile="$srcDir/.config/mako/config"
-	local appArmorConfig="/etc/apparmor.d/fr.emersion.Mako"
-
-	info "=== Configure Mako ==="
-
-	# Prevent config parsing error by replacing symlink w/ config file
-	if [[ -h "$configFile" ]]; then
-		rm "$configFile"
-		cp "$sourceConfigFile" "$configFile"
-	elif [[ "$sourceConfigFile" -nt "$configFile" ]]; then
-		cp -r "$sourceConfigFile" "$configFile"
-	else
-		info "Already configured"
-	fi
-
-	# Disable AppArmor protection: https://github.com/emersion/mako/issues/257#issuecomment-1638776704
-	if [[ ! -h "/etc/apparmor.d/disable/fr.emersion.Mako" ]]; then
-		sudo apparmor_parser -R "$appArmorConfig"
-		sudo ln -s "$appArmorConfig" /etc/apparmor.d/disable/
-	else
-		info "Already allowed"
-	fi
-}
-
 create_directory_structure() {
 	info "=== Create directory structure ==="
 	local src_dir=$1
@@ -265,9 +238,6 @@ install_apt_package xdg-desktop-portal-wlr
 # Dotfiles
 create_directory_structure $SRC_DIR $DST_DIR
 create_links $SRC_DIR $DST_DIR
-
-# Mako notification center - use Sway Notification Center since Ubuntu 24.04
-configure_mako $SRC_DIR
 
 # Office utils
 install_apt_package gedit
