@@ -81,7 +81,7 @@
 	Additional toos:
 	```shell
 	sudo apt install \
-		libfuse2
+		libfuse2t64
 	```
 
 	Video player MPV - successor to mplayer
