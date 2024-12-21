@@ -131,7 +131,7 @@
 
 	Install ad-blocking addons:
 	* AdBlocker: https://addons.mozilla.org/en-US/firefox/addon/adblock-for-youtube/
-    * Unhook: https://addons.mozilla.org/en-US/firefox/addon/youtube-recommended-videos/
+	* Unhook: https://addons.mozilla.org/en-US/firefox/addon/youtube-recommended-videos/
 
 6. Install Thunderbird
 
