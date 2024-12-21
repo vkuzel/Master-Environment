@@ -109,8 +109,12 @@
 
 	Due to a bug, after installing and pinning the Mozilla's package, we have to decrease priority of Ubuntu's Firefox meta-package to prevent overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
 
-	Add following pin to the `/etc/apt/preferences.d/mozillateamppa` priority file:
+	The `/etc/apt/preferences.d/mozillateamppa` file should contain:
 	```
+	Package: firefox*
+	Pin: release o=LP-PPA-mozillateam
+	Pin-Priority: 1001
+	
 	Package: firefox*
 	Pin: release o=Ubuntu*
 	Pin-Priority: -1
@@ -132,8 +136,20 @@
 	* AdBlocker: https://addons.mozilla.org/en-US/firefox/addon/adblock-for-youtube/
 	* Unhook: https://addons.mozilla.org/en-US/firefox/addon/youtube-recommended-videos/
 
-6. Install Thunderbird
+6. Install Thunderbird from APT
 
+	Similar to the Firefox repository, the `/etc/apt/preferences.d/mozillateamppa` file should contain:
+	```
+	Package: thunderbird*
+	Pin: release o=LP-PPA-mozillateam
+	Pin-Priority: 1001
+	
+	Package: thunderbird*
+	Pin: release o=Ubuntu*
+	Pin-Priority: -1
+	```
+
+	Install Thunderbird:
 	`sudo apt install thunderbird`
 
 7. Install and setup Google Drive
