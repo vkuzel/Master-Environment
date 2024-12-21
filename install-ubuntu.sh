@@ -31,31 +31,13 @@ configure_timezone() {
 }
 
 configure_network_manager() {
-	local netplanFile="/etc/netplan/01-networkmanager-all.yaml"
-
-	info "=== Configure Network Manager ==="
-
-	if [[ -f "$netplanFile" ]]; then
-		info "Already configured"
-	else
-		sudo cat <<- 'NETPLAN_FILE' > "$netplanFile"
-		# Let NetworkManager manage all devices on this system
-		network:
-		  version: 2
-		  renderer: NetworkManager
-NETPLAN_FILE
-		sudo chmod 600 $netplanFile
-
-		info "Disable systemd-networkd"
-		sudo systemctl disable systemd-networkd
-
-		info "!!! Manual action required: Set Network Manager to manage devices by setting managed=true"
-		echo 'sudo vi /etc/NetworkManager/NetworkManager.conf'
-		echo '# Set managed=true'
-		echo '[ifupdown]'
-		echo 'managed=true'
-		read -p "Press Enter to continue..."
-	fi
+  info "=== Configure Network Manager ==="
+  if [[ ! -e "/etc/systemd/system/dbus-org.freedesktop.network1.service" ]]; then
+    info "Already configured"
+  else
+    info "Disable systemd-networkd"
+    sudo systemctl disable systemd-networkd systemd-networkd.socket
+  fi
 }
 
 install_nerd_fonts() {
