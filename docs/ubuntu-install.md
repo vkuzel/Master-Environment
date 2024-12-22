@@ -182,7 +182,7 @@
 
 	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
 
-11. OpenVPN3 - allows SAML authentication
+11. Twingate VPN
 
-	1. Find distribution packages on https://github.com/OpenVPN/openvpn3-linux/
+	1. Install: https://www.twingate.com/docs/linux
 
