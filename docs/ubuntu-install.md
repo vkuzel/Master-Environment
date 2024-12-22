@@ -47,7 +47,6 @@
 		wofi \
 		sway-notification-center \
 		libnotify-bin \
-		mpd \
 		brightnessctl
 	```
 
