@@ -169,12 +169,15 @@
 
 9. Skype
 
+	Install from Snap:
 	```shell
-	curl --location https://go.skype.com/skypeforlinux-64.deb --output skypeforlinux-64.deb
-	sudo dpkg -i skypeforlinux-64.deb
+	snap install skype
 	```
 
-	When setting up Skype, switch it to floating window via _Mod+Shift+Space_ to be able to click on login button.
+	Install keyring to store the credentials:
+	```shell
+	sudo apt install gnome-keyring
+	```
 
 10. Docker
 
