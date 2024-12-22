@@ -226,7 +226,7 @@ install_apt_package gedit
 install_gedit_overscroll_plugin
 
 # Utils
-install_apt_package unzip zip
+install_apt_package unzip
 install_apt_package whois
 install_apt_package jq
 
