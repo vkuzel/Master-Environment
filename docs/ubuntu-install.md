@@ -144,7 +144,9 @@
 	```
 
 	Install Thunderbird:
-	`sudo apt install thunderbird`
+	```shell
+	sudo apt install thunderbird
+ 	```
 
 7. Install and setup Google Drive
 
