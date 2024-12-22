@@ -77,7 +77,7 @@ button:hover {
 #mode,
 #idle_inhibitor,
 #scratchpad,
-#mpd {
+#custom-player {
     padding: 0 10px;
     color: #ffffff;
 }
@@ -220,20 +220,12 @@ label:focus {
     color: #2d3436;
 }
 
-#mpd {
+#custom-player {
     background-color: #66cc99;
     color: #2a5c45;
 }
 
-#mpd.disconnected {
-    background-color: #f53c3c;
-}
-
-#mpd.stopped {
-    background-color: #90b1b1;
-}
-
-#mpd.paused {
+#custom-player.Paused {
     background-color: #51a37a;
 }
 

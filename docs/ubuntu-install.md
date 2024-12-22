@@ -47,7 +47,8 @@
 		wofi \
 		sway-notification-center \
 		libnotify-bin \
-		brightnessctl
+		brightnessctl \
+ 		playerctl
 	```
 
 	Audio:
@@ -82,10 +83,11 @@
 		libfuse2t64
 	```
 
-	Video player MPV - successor to mplayer
+	Video player MPV - successor to mplayer (mpv-mpris so that mpv can be controlled by playerctl)
 	```shell
 	sudo apt install \
-		mpv
+		mpv \
+ 		mpv-mpris
 	```
 	Current version (Ubuntu 22.04) of MPV does not support PipeWire (`--ao=pipewire`), set it as a default ao as soon as it will.
 

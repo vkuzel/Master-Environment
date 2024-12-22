@@ -6,7 +6,7 @@
 
     "modules-left": ["sway/workspaces"],
     "modules-center": ["sway/window"],
-    "modules-right": ["idle_inhibitor", "pulseaudio", "network", "cpu", "memory", "temperature", "backlight", "sway/language", "battery", "clock", "tray"],
+    "modules-right": ["custom/player", "pulseaudio", "idle_inhibitor", "network", "cpu", "memory", "temperature", "backlight", "sway/language", "battery", "clock", "tray"],
 
     "sway/workspaces": {
         "disable-scroll": true,
@@ -24,13 +24,21 @@
             "default": ""
         }
     },
-    "sway/mode": {
-        "format": "<span style=\"italic\">{}</span>"
-    },
     "sway/window": {
         "max-length": 200,
         "separate-outputs": true
     },
+	"custom/player": {
+		"format": "{icon} {}",
+		"format-icons": {
+			"Playing": "󰎈 ",
+			"Paused": "󰏤 "
+		},
+		"return-type": "json",
+		"exec": "playerctl -a metadata --format '{\"text\": \"{{playerName}}: {{artist}} - {{markup_escape(title)}}\", \"tooltip\": \"{{markup_escape(title)}} - {{markup_escape(album)}}\", \"class\": \"{{status}}\", \"alt\": \"{{status}}\" }' -F",
+		"max-length": 30,
+		"on-click": "playerctl play-pause"
+	},
     "idle_inhibitor": {
         "format": "{icon}",
         "format-icons": {
