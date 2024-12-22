@@ -126,6 +126,11 @@
 	```
 	You should see Mozilla's package pinned with priority 1001 and Ubuntu's meta-package with priority -1.
 
+	Install Firefox:
+	```shell
+	sudo apt install firefox
+	```
+
 	Install ad-blocking addons:
 	* AdBlocker: https://addons.mozilla.org/en-US/firefox/addon/adblock-for-youtube/
 	* Unhook: https://addons.mozilla.org/en-US/firefox/addon/youtube-recommended-videos/
