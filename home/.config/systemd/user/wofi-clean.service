@@ -5,7 +5,7 @@ Wants=myMonitor.timer
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/pkill --uid %u --older 300 --full wofi
+ExecStart=/bin/sh -c '/usr/bin/pkill --uid vkuzel --older 300 --full "wofi .*drun" || /bin/true'
 
 [Install]
 WantedBy=multi-user.target
