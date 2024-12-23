@@ -8,4 +8,4 @@ Type=oneshot
 ExecStart=/bin/sh -c '/usr/bin/pkill --uid vkuzel --older 300 --full "wofi .*drun" || /bin/true'
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
