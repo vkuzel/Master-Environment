@@ -1,0 +1,10 @@
+[Unit]
+Description=Triggers dangling wofi instances cleanup
+Requires=wofi-clean.service
+
+[Timer]
+Unit=wofi-clean.service
+OnCalendar=*-*-* *:*:00
+
+[Install]
+WantedBy=timers.target

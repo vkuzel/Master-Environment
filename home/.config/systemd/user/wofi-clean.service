@@ -1,0 +1,11 @@
+# Hack to cleanup dangling wofi instances older than 5 minutes (300 seconds)
+[Unit]
+Description=Cleans dangling wofi instances
+Wants=myMonitor.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pkill --uid %u --older 300 --full wofi
+
+[Install]
+WantedBy=multi-user.target
