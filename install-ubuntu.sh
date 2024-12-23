@@ -152,32 +152,32 @@ normalpath() {
 
 create_links() {
 	info "=== Create links ==="
-        local src_dir=$1
-        local dst_dir=$2
+  local src_dir=$1
+  local dst_dir=$2
 
-        pushd "$src_dir" > /dev/null
+  pushd "$src_dir" > /dev/null
 
-        for file_path in $(find . -mindepth 1 -type f); do
+  for file_path in $(find . -mindepth 1 -type f); do
 		local src_path=$(realpath "$file_path")
                 local dst_path=$(normalpath "$dst_dir/$file_path")
 		if [ -h "$dst_path" ]; then
 			continue
-                elif [ -e "$dst_path" ]; then
-                        info "Cannot symlink into existing regular file $dst_path"
+    elif [ -e "$dst_path" ]; then
+      info "Cannot symlink into existing regular file $dst_path"
 		else
-                	info "Create $dst_path"
+      info "Create $dst_path"
 			ln -s "$src_path" "$dst_path" || fail "Cannot create symlink $dst_path"
-                fi
-        done
+    fi
+  done
 
-        popd > /dev/null
+  popd > /dev/null
 }
 
 chsh_zsh() {
-        info "=== ChSh to ZSH ==="
-        if [ "$SHELL" != "/bin/zsh" ]; then
-                chsh $USER -s /bin/zsh
-        fi
+  info "=== ChSh to ZSH ==="
+  if [ "$SHELL" != "/bin/zsh" ]; then
+    chsh $USER -s /bin/zsh
+  fi
 }
 
 enable_user_service() {
