@@ -4,7 +4,7 @@ Requires=wofi-clean.service
 
 [Timer]
 Unit=wofi-clean.service
-OnCalendar=*-*-* *:*:00
+OnCalendar=*:0/15
 
 [Install]
 WantedBy=timers.target
