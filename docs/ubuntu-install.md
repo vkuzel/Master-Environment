@@ -48,7 +48,9 @@
 		sway-notification-center \
 		libnotify-bin \
 		brightnessctl \
- 		playerctl
+ 		playerctl \
+ 		desktop-file-utils \
+ 		grim
 	```
 
 	Audio:
@@ -197,3 +199,20 @@
 
 	1. Install: https://www.twingate.com/docs/linux
 
+12. WireShark
+	
+	```shell
+	sudo apt install wireshark
+	```
+
+13. Office suite 
+
+	```shell
+	sudo apt install gimp libreoffice
+	```
+
+14. BitTorrent client
+
+	```shell
+	sudo apt install transmission
+	```
