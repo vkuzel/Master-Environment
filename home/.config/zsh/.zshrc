@@ -20,7 +20,7 @@ alias vi='vim'
 alias ssh='TERM=xterm-256color ssh'
 alias uuidgen-lower="uuidgen | tr '[:upper:]' '[:lower:]'"
 alias cdd="cd $HOME/Downloads"
-alias cdD="cd $HOME/Google Drive/Documents"
+alias cdD="cd $HOME/Documents"
 alias cdp="cd $HOME/projects"
 # get keys by running `showkey -a`
 bindkey -e
