@@ -44,7 +44,7 @@
 		swaylock \
 		swayidle \
 		waybar \
-		wofi \
+		fuzzel \
 		sway-notification-center \
 		libnotify-bin \
 		brightnessctl \

@@ -180,22 +180,6 @@ chsh_zsh() {
   fi
 }
 
-enable_user_service() {
-  local serviceName="$1"
-  local status=$(systemctl --user is-enabled "serviceName")
-  if [[ "$status" != 'enabled' ]]; then
-    info "Enabling $serviceName"
-    systemctl --user enable "$serviceName"
-    systemctl --user start "$serviceName"
-  fi
-}
-
-enable_user_services() {
-  info "=== Enable user services ==="
-  enable_user_service wofi-clean.service
-  enable_user_service wofi-clean.timer
-}
-
 check_os
 check_working_dir
 
@@ -214,7 +198,6 @@ uninstall_apt_package cloud-initramfs-dyn-netconf
 
 # Basic setup
 configure_timezone
-enable_user_services
 
 # Networking
 install_apt_package network-manager
