@@ -4,10 +4,9 @@ set $mod Mod4
 set $alt Mod1
 
 set $term foot
-# Your preferred application launcher
 # Note: pass the final command to swaymsg so that the resulting window can be opened
 # on the original workspace that the command was run on.
-set $menu fuzzel --background=000022ff --selection-color=eee8d5ff | xargs sway:msg exec --
+set $menu fuzzel --background=000f27ff --selection-color=eee8d5ff | xargs sway:msg exec --
 
 #
 # Output config:
