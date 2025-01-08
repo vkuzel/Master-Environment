@@ -214,5 +214,5 @@
 14. BitTorrent client
 
 	```shell
-	sudo apt install transmission
+	sudo apt install transmission-cli
 	```
