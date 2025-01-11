@@ -14,6 +14,21 @@ print_usage_and_exit() {
 	exit 1
 }
 
+find_java() {
+  local version=$1
+  local javaDir="$2"
+
+  local javaDirPattern="(java|corretto)-$version"
+  for file in $javaDir/*
+  do
+    local foundJava=$(echo "$file" | grep -Eo "$javaDirPattern")
+    if [[ ! -z "$foundJava" ]]; then
+      echo $file
+      exit
+    fi
+  done
+}
+
 if [[ -z "$version" ]]; then
 	if [[ -z "$JAVA_HOME" ]]; then
 		echo "JAVA_HOME environment variable is not set!"
@@ -24,25 +39,8 @@ if [[ -z "$version" ]]; then
 	fi
 fi
 
-
-javaDirPattern="(java|corretto)-$version"
-for file in $globalJavaDir/*
-do
-	foundJava=$(echo "$file" | grep -Eo "$javaDirPattern")
-	if [[ ! -z "$foundJava" ]]; then
-		echo $file
-		exit
-	fi
-done
-
-for file in $userJavaDir/*
-do
-	foundJava=$(echo "$file" | grep -Eo "$javaDirPattern")
-	if [[ ! -z "$foundJava" ]]; then
-		echo $file
-		exit
-	fi
-done
+find_java "$version" "$globalJavaDir"
+find_java "$version" "$userJavaDir"
 
 echo "Cannot find Java $version in $globalJavaDir or $userJavaDir!"
 print_usage_and_exit
