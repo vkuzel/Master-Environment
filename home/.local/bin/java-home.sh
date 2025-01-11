@@ -1,13 +1,14 @@
 #!/bin/bash
 
 version=$1
-libDir=/usr/lib/jvm
+globalJavaDir=/usr/lib/jvm
+userJavaDir=$HOME/.jdks
 
 print_usage_and_exit() {
 	echo
 	echo "Usage: java-home.sh [VERSION]"
 	echo
-	echo "When VERSION is set, it tries to find Java home directory for the specified version in the $libDir"
+	echo "When VERSION is set, it tries to find Java home directory for the specified version in $globalJavaDir or $userJavaDir"
 	echo "Otherwise prints the JAVA_HOME environment variable"
 	echo "Prints error with this message if above options fails"
 	exit 1
@@ -24,16 +25,25 @@ if [[ -z "$version" ]]; then
 fi
 
 
-requestedJava="java-$version"
-for file in $libDir/*
+javaDirPattern="(java|corretto)-$version"
+for file in $globalJavaDir/*
 do
-	foundJava=$(echo "$file" | grep -Eo "java-[0-9]{2}")
-	if [[ "$requestedJava" == "$foundJava" ]]; then
+	foundJava=$(echo "$file" | grep -Eo "$javaDirPattern")
+	if [[ ! -z "$foundJava" ]]; then
 		echo $file
 		exit
 	fi
 done
 
-echo "Cannot find Java $version in $libDir!"
+for file in $userJavaDir/*
+do
+	foundJava=$(echo "$file" | grep -Eo "$javaDirPattern")
+	if [[ ! -z "$foundJava" ]]; then
+		echo $file
+		exit
+	fi
+done
+
+echo "Cannot find Java $version in $globalJavaDir or $userJavaDir!"
 print_usage_and_exit
 
