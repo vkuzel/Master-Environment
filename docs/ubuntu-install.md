@@ -20,6 +20,8 @@
 
 	1. Sway 1.10 is not yet available through APT packages, so a custom build has to be made.
 
+		Details: https://github.com/vkuzel/Sway-Ubuntu-Nvidia
+
     2. nvidia 560 is tested driver version.
 
         Check installed version:
