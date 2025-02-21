@@ -16,18 +16,18 @@
 
 2. Install correct Nvidia drivers
 
-	There is a possibility to run Sway on Nouveau. Unfortunatelly, it wasn't case for the Ubuntu 24.04.
-	It's possible to run proprietary drivers, but only in **version 535**.
+	There are various issues with running Sway on nvidia GPU. So far the best combinations is custom Sway build with proprietary nvidia drivers. Nouveau drivers demonstrate various issues and crashes.
 
-	Check installed version:
-	```shell
-	cat /proc/driver/nvidia/version
-	```
+	1. Sway 1.10 is not yet available through APT packages, so a custom build has to be made.
 
-	Install correct version if needed: https://ubuntu.com/server/docs/nvidia-drivers-installation
+    2. nvidia 560 is tested driver version.
 
-	_Sway has to be started with some undocumented features._ This is automated by the sway-nvidia project.
-	https://github.com/crispyricepc/sway-nvidia
+        Check installed version:
+        ```shell
+        cat /proc/driver/nvidia/version
+        ```
+
+        Install correct version if needed: https://ubuntu.com/server/docs/nvidia-drivers-installation
 
 3. Enable (Keychron) keyboard function keys.
 
@@ -35,7 +35,7 @@
 	echo 0 | sudo tee /sys/module/hid_apple/parameters/fnmode
 	```
 
-4. Install Sway & related packages
+4. Install Sway & related packages (for non-nvidia GPUs)
 
 	```shell
 	sudo apt install \
