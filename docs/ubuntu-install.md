@@ -179,41 +179,29 @@
 	apt install simple-scan
 	```
 
-9. Skype
-
-	Install from Snap:
-	```shell
-	snap install skype
-	```
-
-	Install keyring to store the credentials:
-	```shell
-	sudo apt install gnome-keyring
-	```
-
-10. Docker
+9. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 
 	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
 
-11. Twingate VPN
+10. Twingate VPN
 
 	1. Install: https://www.twingate.com/docs/linux
 
-12. WireShark
+11. WireShark
 	
 	```shell
 	sudo apt install wireshark
 	```
 
-13. Office suite 
+12. Office suite 
 
 	```shell
 	sudo apt install gimp libreoffice
 	```
 
-14. BitTorrent client
+13. BitTorrent client
 
 	```shell
 	sudo apt install transmission-cli
