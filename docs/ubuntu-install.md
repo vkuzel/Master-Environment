@@ -206,3 +206,7 @@
 	```shell
 	sudo apt install transmission-cli
 	```
+
+14. Signal
+
+   Install: https://signal.org/download/linux/
