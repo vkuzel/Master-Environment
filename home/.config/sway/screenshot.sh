@@ -11,5 +11,8 @@ else
 	region="$(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | "\(.rect.x),\(.rect.y) \(.rect.width)x\(.rect.height)"')"
 fi
 
-grim -g "$region" "$HOME/Downloads/$fileName"
+filePath="$HOME/Downloads/$fileName"
+
+grim -g "$region" "$filePath"
+notify-send --urgency=low "Screenshot" "$filePath"
 
