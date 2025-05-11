@@ -209,4 +209,10 @@
 
 14. Signal
 
-   Install: https://signal.org/download/linux/
+	Install: https://signal.org/download/linux/
+
+	To prevent app window turning blank, add `--disable-gpu` into `/usr/share/applications/signal-desktop.desktop`. I.e.,
+	```
+	Exec=/opt/Signal/signal-desktop %U --disable-gpu
+	```
+
