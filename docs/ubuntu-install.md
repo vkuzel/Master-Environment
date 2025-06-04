@@ -216,3 +216,10 @@
 	Exec=/opt/Signal/signal-desktop %U --disable-gpu
 	```
 
+15. Rhythmbox
+
+	For connecting iPod shuffle
+	```shell
+	sudo apt install rhythmbox 
+	```
+
