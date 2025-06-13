@@ -11,7 +11,8 @@ else
 	region="$(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | "\(.rect.x),\(.rect.y) \(.rect.width)x\(.rect.height)"')"
 fi
 
-filePath="$HOME/Downloads/$fileName"
+escapedFileName=$(echo "$fileName" | sed 's/\//-/g')
+filePath="$HOME/Downloads/$escapedFileName"
 
 grim -g "$region" "$filePath"
 notify-send --urgency=low "Screenshot" "$filePath"
