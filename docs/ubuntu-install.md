@@ -114,7 +114,7 @@
 
 	Due to a bug, after installing and pinning the Mozilla's package, we have to decrease priority of Ubuntu's Firefox meta-package to prevent overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
 
-	The `/etc/apt/preferences.d/mozillateamppa` file should contain:
+	Add the following content into `/etc/apt/preferences.d/mozillateamppa`:
 	```
 	Package: firefox*
 	Pin: release o=LP-PPA-mozillateam
