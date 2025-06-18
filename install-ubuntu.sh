@@ -226,6 +226,7 @@ install_apt_package gedit
 install_gedit_overscroll_plugin
 
 # Utils
+install_apt_package htop
 install_apt_package unzip
 install_apt_package 7zip
 install_apt_package uuid
