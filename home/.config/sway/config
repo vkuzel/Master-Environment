@@ -14,15 +14,15 @@ set $menu fuzzel --background=000f27ff --selection-color=eee8d5ff | xargs sway:m
 output * background #018281 solid_color
 
 # swaymsg -t get_outputs
-workspace 1 output DP-1 DP-3 DP-5 DP-7 DP-9 HDMI-A-1 HDMI-A-2
-workspace 2 output DP-1 DP-3 DP-5 DP-7 DP-9 HDMI-A-1 HDMI-A-2
-workspace 3 output DP-1 DP-3 DP-5 DP-7 DP-9 HDMI-A-1 HDMI-A-2
-workspace 4 output DP-1 DP-3 DP-5 DP-7 DP-9 HDMI-A-1 HDMI-A-2
-workspace 5 output DP-1 DP-3 DP-5 DP-7 DP-9 HDMI-A-1 HDMI-A-2
-workspace 6 output DP-1 DP-3 DP-5 DP-7 DP-9 HDMI-A-1 HDMI-A-2
-workspace 7 output DP-1 DP-4 DP-6 DP-8 DP-10 HDMI-A-1 HDMI-A-2
-workspace 8 output DP-1 DP-4 DP-6 DP-8 DP-10 HDMI-A-1 HDMI-A-2
-workspace 9 output DP-1 DP-4 DP-6 DP-8 DP-10 HDMI-A-1 HDMI-A-2
+workspace 1 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
+workspace 2 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
+workspace 3 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
+workspace 4 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
+workspace 5 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
+workspace 6 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
+workspace 7 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
+workspace 8 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
+workspace 9 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
 workspace 10 output eDP-1 eDP-2
 
 exec swayidle -w
