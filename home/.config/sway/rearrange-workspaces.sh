@@ -14,7 +14,7 @@ resolve_output_no() {
 		| awk "NR==$number{print; found=1} END{if (!found) print \"$default_output\"}"
 }
 
-move_workspaces() {
+rearrange_workspaces() {
 	local output1=$1
 	local output2=$2
 
@@ -39,10 +39,10 @@ output2=$(resolve_output_no 2 "$output1")
 
 toggle_file=/tmp/should-flip-sway-outputs
 if [[ -f "$toggle_file" ]]; then
-	move_workspaces "$output1" "$output2"
+	rearrange_workspaces "$output1" "$output2"
 	rm "$toggle_file"
 else
-	move_workspaces "$output2" "$output1"
+	rearrange_workspaces "$output2" "$output1"
 	touch "$toggle_file"
 fi
 
