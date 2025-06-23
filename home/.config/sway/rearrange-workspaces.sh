@@ -21,16 +21,19 @@ rearrange_workspaces() {
 	visible1=$(swaymsg -t get_workspaces | jq -r '.[] | select(.visible).name' | grep -E '^[1-6]$')
 	visible2=$(swaymsg -t get_workspaces | jq -r '.[] | select(.visible).name' | grep -E '^[7-9]$')
 
-	for i in {1..6}; do \
-		swaymsg "workspace $i; move workspace to output $output1"
-	done
-	for i in {7..9}; do \
-		swaymsg "workspace $i; move workspace to output $output2"
-	done
-
-	# Focus on last opened workspaces
-	swaymsg "workspace $visible2"
-	swaymsg "workspace $visible1"
+	swaymsg "
+	  workspace 1; move workspace to output $output1;
+	  workspace 2; move workspace to output $output1;
+	  workspace 3; move workspace to output $output1;
+	  workspace 4; move workspace to output $output1;
+	  workspace 5; move workspace to output $output1;
+	  workspace 6; move workspace to output $output1;
+	  workspace 7; move workspace to output $output2;
+	  workspace 8; move workspace to output $output2;
+	  workspace 9; move workspace to output $output2;
+	  workspace $visible2;
+	  workspace $visible1
+	"
 }
 
 default_output=$(resolve_default_output)
