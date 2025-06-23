@@ -17,15 +17,20 @@ resolve_output_no() {
 move_workspaces() {
 	local output1=$1
 	local output2=$2
-	swaymsg "workspace 1; move workspace to output $output1"
-	swaymsg "workspace 2; move workspace to output $output1"
-	swaymsg "workspace 3; move workspace to output $output1"
-	swaymsg "workspace 4; move workspace to output $output1"
-	swaymsg "workspace 5; move workspace to output $output1"
-	swaymsg "workspace 6; move workspace to output $output1"
-	swaymsg "workspace 7; move workspace to output $output2"
-	swaymsg "workspace 8; move workspace to output $output2"
-	swaymsg "workspace 9; move workspace to output $output2"
+
+	visible1=$(swaymsg -t get_workspaces | jq -r '.[] | select(.visible).name' | grep -E '^[1-6]$')
+	visible2=$(swaymsg -t get_workspaces | jq -r '.[] | select(.visible).name' | grep -E '^[7-9]$')
+
+	for i in {1..6}; do \
+		swaymsg "workspace $i; move workspace to output $output1"
+	done
+	for i in {7..9}; do \
+		swaymsg "workspace $i; move workspace to output $output2"
+	done
+
+	# Focus on last opened workspaces
+	swaymsg "workspace $visible2"
+	swaymsg "workspace $visible1"
 }
 
 default_output=$(resolve_default_output)
