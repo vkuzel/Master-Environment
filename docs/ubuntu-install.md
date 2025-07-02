@@ -14,30 +14,13 @@
 	
 	Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
 
-2. Install correct Nvidia drivers
-
-	There are various issues with running Sway on nvidia GPU. So far the best combinations is custom Sway build with proprietary nvidia drivers. Nouveau drivers demonstrate various issues and crashes.
-
-	1. Sway 1.10 is not yet available through APT packages, so a custom build has to be made.
-
-		Details: https://github.com/vkuzel/Sway-Ubuntu-Nvidia
-
-    2. nvidia 560 is tested driver version.
-
-        Check installed version:
-        ```shell
-        cat /proc/driver/nvidia/version
-        ```
-
-        Install correct version if needed: https://ubuntu.com/server/docs/nvidia-drivers-installation
-
-3. Enable (Keychron) keyboard function keys.
+2. Enable (Keychron) keyboard function keys.
 
 	```shell
 	echo 0 | sudo tee /sys/module/hid_apple/parameters/fnmode
 	```
 
-4. Install Sway & related packages (for non-nvidia GPUs)
+3. Install Sway & related packages
 
 	```shell
 	sudo apt install \
@@ -105,7 +88,7 @@
 	sudo systemctl start mpd
 	```
 
-5. Install Firefox from APT
+4. Install Firefox from APT
 
 	Add Mozilla team's PPA:
 	```shell
@@ -140,7 +123,7 @@
 	* AdBlocker: https://addons.mozilla.org/en-US/firefox/addon/adblock-for-youtube/
 	* Unhook: https://addons.mozilla.org/en-US/firefox/addon/youtube-recommended-videos/
 
-6. Install Thunderbird from APT
+5. Install Thunderbird from APT
 
 	Similar to the Firefox repository, the `/etc/apt/preferences.d/mozillateamppa` file should contain:
 	```
@@ -158,11 +141,11 @@
 	sudo apt install thunderbird
  	```
 
-7. Install and setup Google Drive
+6. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
 
-8. Printer & scanner
+7. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -179,35 +162,35 @@
 	apt install simple-scan
 	```
 
-9. Docker
+8. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 
 	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
 
-10. Twingate VPN
+9. Twingate VPN
 
 	1. Install: https://www.twingate.com/docs/linux
 
-11. WireShark
+10. WireShark
 	
 	```shell
 	sudo apt install wireshark
 	```
 
-12. Office suite 
+11. Office suite 
 
 	```shell
 	sudo apt install gimp libreoffice
 	```
 
-13. BitTorrent client
+12. BitTorrent client
 
 	```shell
 	sudo apt install transmission-cli
 	```
 
-14. Signal
+13. Signal
 
 	Install: https://signal.org/download/linux/
 
@@ -216,7 +199,7 @@
 	Exec=/opt/Signal/signal-desktop %U --disable-gpu
 	```
 
-15. Rhythmbox
+14. Rhythmbox
 
 	For connecting iPod shuffle
 	```shell
