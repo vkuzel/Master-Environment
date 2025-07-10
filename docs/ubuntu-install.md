@@ -35,7 +35,8 @@
 		brightnessctl \
  		playerctl \
  		desktop-file-utils \
- 		grim
+ 		grim \
+                slurp
 	```
 
 	Audio:
