@@ -18,7 +18,7 @@ find_java() {
   local version=$1
   local javaDir="$2"
 
-  local javaDirPattern="(java|corretto)-$version"
+  local javaDirPattern="(java|corretto|jdk)-$version"
   for file in $javaDir/*
   do
     local foundJava=$(echo "$file" | grep -Eo "$javaDirPattern")
