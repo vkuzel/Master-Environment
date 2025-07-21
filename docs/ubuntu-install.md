@@ -36,7 +36,8 @@
  		playerctl \
  		desktop-file-utils \
  		grim \
-                slurp
+ 		slurp \
+		chafa
 	```
 
 	Audio:
