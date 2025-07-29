@@ -214,6 +214,7 @@ chsh_zsh
 
 # Sway - screen sharing
 # Guidelines: https://wiki.archlinux.org/title/XDG_Desktop_Portal
+# Run sway in D-Bus session to allow screensharing, i.e., `dbus-run-session sway`
 # Test: https://mozilla.github.io/webrtc-landing/gum_test.html
 install_apt_package xdg-desktop-portal-wlr
 
