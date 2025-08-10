@@ -7,5 +7,5 @@ while IFS= read -r -d '' file; do
 		rm "$file"
 	fi
 	echo
-done < <(find . \( -iname "*.jpeg" -o -iname "*.jpg" -o -iname "*.gif" -o -iname "*.bmp" \) -print0)
+done < <(find . \( -iname "*.jpeg" -o -iname "*.jpg" -o -iname "*.gif" -o -iname "*.bmp" \) | sort | tr '\n' '\0')
 
