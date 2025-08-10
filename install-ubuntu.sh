@@ -226,6 +226,12 @@ create_links $SRC_DIR $DST_DIR
 install_apt_package gedit
 install_gedit_overscroll_plugin
 
+# Android file mount
+install_apt_package gvfs-backends
+install_apt_package gvfs-fuse
+install_apt_package mtp-tools
+install_apt_package jmtpfs
+
 # Utils
 install_apt_package htop
 install_apt_package unzip

@@ -5,6 +5,7 @@ gid=$(id -g)
 
 devices=$(lsblk --bytes --output PATH,FSTYPE,LABEL,MOUNTPOINT,TYPE,SIZE --json)
 deviceIndices=$(echo $devices | jq -r '.blockdevices | to_entries | .[].key')
+androidDevice=$(lsusb | grep 'MTP mode' | awk -F'ID [^ ]+ ' '{print $2}')
 
 isMountableDrive() {
 	local id=$1
@@ -52,6 +53,16 @@ for id in $deviceIndices; do
 		echo -e "$id) $path[$fstype] $name-> $mountpoint \e[1;31m*mounted*\e[0m"
 	fi
 done
+if [[ -n "$androidDevice" ]]; then
+  target="/media/android"
+  mountDetails=$(mount | grep $target)
+
+  if [[ -z "$mountDetails" ]]; then
+    echo "a) $androidDevice -> $target"
+  else
+    echo -e "a) $androidDevice -> $target \e[1;31m*mounted*\e[0m"
+  fi
+fi
 echo "r) Rescan PCI devices, e.g. for SD cards"
 
 echo
@@ -87,8 +98,22 @@ for id in $deviceIndices; do
 		fi
 	fi
 done
+if [[ "a" == "$diskId" ]]; then
+  target="/media/android"
+  mountDetails=$(mount | grep $target)
+
+  if [[ -z "$mountDetails" ]]; then
+    sudo mkdir -p $target
+    sudo chown $UID $target
+    jmtpfs $target
+    echo
+    echo "If you get IO error, enable MTP on you phone and try again"
+  else
+    fusermount -u $target
+    sudo rm -d $target
+  fi
+fi
 if [[ "r" == "$diskId" ]]; then
 	echo "Rescanning PCI devices"
 	echo 1 | sudo tee /sys/bus/pci/rescan
 fi
-
