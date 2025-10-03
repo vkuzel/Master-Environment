@@ -111,6 +111,28 @@ EOF
   fi
 }
 
+add_current_user_into_group() {
+  local group=$1
+
+  info "=== Add user $USER into group $group ==="
+  if id -nG "$USER" | grep -qw "$group"; then
+      info "$USER is already in $group"
+  else
+      sudo usermod -aG "$group" "$USER" || fail "Cannot add user into group!"
+  fi
+}
+
+enable_systemctl_service() {
+  local service=$1
+
+  info "=== Enable $service service ==="
+  if systemctl is-enabled --quiet "$service"; then
+      info "Service is already enabled"
+  else
+      sudo enable --now "$service" || fail "Cannot enable and start service!"
+  fi
+}
+
 install_apt_package() {
 	local pkgName=$1
 
@@ -266,11 +288,41 @@ install_zsh_plugin "https://github.com/zsh-users/zsh-history-substring-search.gi
 install_zsh_plugin "https://github.com/zsh-users/zsh-syntax-highlighting.git"
 chsh_zsh
 
-# Sway - screen sharing
+# Sway
+install_apt_package xwayland
+install_apt_package sway
+install_apt_package swaylock
+install_apt_package swayidle
+install_apt_package waybar
+install_apt_package fuzzel
+install_apt_package sway-notification-center
+install_apt_package libnotify-bin
+install_apt_package brightnessctl
+# Add the user into the video group to use brightnessctl
+add_current_user_into_group video
+install_apt_package playerctl
+install_apt_package desktop-file-utils
+install_apt_package grim
+install_apt_package slurp
+install_apt_package chafa
+
+# screen sharing
 # Guidelines: https://wiki.archlinux.org/title/XDG_Desktop_Portal
 # Run sway in D-Bus session to allow screensharing, i.e., `dbus-run-session sway`
 # Test: https://mozilla.github.io/webrtc-landing/gum_test.html
 install_apt_package xdg-desktop-portal-wlr
+
+# Audio
+install_apt_package pipewire
+install_apt_package pipewire-pulse
+install_apt_package pipewire-audio-client-libraries
+install_apt_package libspa-0.2-bluetooth
+install_apt_package libspa-0.2-jack
+install_apt_package wireplumber
+
+# Bluetooth
+install_apt_package bluetooth
+enable_systemctl_service bluetooth
 
 # Dotfiles
 create_directory_structure $SRC_DIR $DST_DIR
@@ -280,6 +332,12 @@ create_links $SRC_DIR $DST_DIR
 configure_mozilla_apt_repository
 install_apt_package firefox-esr
 install_apt_package thunderbird
+
+# Video
+# Current version (Ubuntu 22.04) of MPV does not support PipeWire
+# (`--ao=pipewire`), set it as a default ao as soon as it will.
+install_apt_package mpv
+install_apt_package mpv-mpris
 
 # Office utils
 install_apt_package gedit
@@ -292,6 +350,7 @@ install_apt_package mtp-tools
 install_apt_package jmtpfs
 
 # Utils
+install_apt_package libfuse2t64
 install_apt_package htop
 install_apt_package unzip
 install_apt_package 7zip
