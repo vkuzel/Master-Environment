@@ -30,6 +30,16 @@ configure_timezone() {
 	fi
 }
 
+configure_keychron_keyboard_func_keys() {
+  info "=== Configure Keychron funcion keys ==="
+  if [[ -e "/sys/module/hid_apple/parameters/fnmode" ]]; then
+    info "Already configured"
+  else
+    sudo mkdir -p /sys/module/hid_apple/parameters/ || fail "Cannot created config dir!"
+    echo 0 | sudo tee /sys/module/hid_apple/parameters/fnmode || fail "Cannot configure function keys!"
+  fi
+}
+
 uninstall_cloud_init() {
   info "=== Uninstall Cloud Init ==="
   # Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
@@ -241,6 +251,7 @@ uninstall_apt_package cloud-initramfs-dyn-netconf
 
 # Basic setup
 configure_timezone
+configure_keychron_keyboard_func_keys
 
 # Networking
 install_apt_package network-manager

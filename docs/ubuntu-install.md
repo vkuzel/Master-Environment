@@ -1,11 +1,5 @@
 # Ubuntu server post-install steps
 
-2. Enable (Keychron) keyboard function keys.
-
-	```shell
-	echo 0 | sudo tee /sys/module/hid_apple/parameters/fnmode
-	```
-
 3. Install Sway & related packages
 
 	```shell
