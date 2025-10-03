@@ -38,9 +38,9 @@ uninstall_cloud_init() {
   else
     info 'Disable all services except "none" and then press Enter'
     read
-    	sudo dpkg-reconfigure cloud-init
-    	sudo apt purge cloud-init
-    	sudo rm -rf /etc/cloud/ /var/lib/cloud/ /etc/netplan/*cloud-init.yaml
+    	sudo dpkg-reconfigure cloud-init || fail "Cannot reconfigure cloud-init!"
+    	sudo apt purge cloud-init || fail "Cannot purge cloud-init!"
+    	sudo rm -r /etc/cloud/ /var/lib/cloud/ /etc/netplan/*cloud-init.yaml
   fi
 }
 
