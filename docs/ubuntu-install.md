@@ -1,6 +1,6 @@
 # Ubuntu server post-install steps
 
-5. Printer & scanner
+1. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -17,17 +17,17 @@
 	apt install simple-scan
 	```
 
-6. Docker
+2. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 
 	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
 
-7. Twingate VPN
+3. Twingate VPN
 
 	1. Install: https://www.twingate.com/docs/linux
 
-11. Signal
+4. Signal
 
 	Install: https://signal.org/download/linux/
 
@@ -36,7 +36,13 @@
 	Exec=/opt/Signal/signal-desktop %U --disable-gpu
 	```
 
-12. Rhythmbox
+5. LibreOffice
+
+    ```shell
+    sudo apt install libreoffice
+    ```
+
+6. Rhythmbox
 
 	For connecting iPod shuffle
 	```shell

@@ -342,7 +342,6 @@ install_apt_package mpv-mpris
 # Office utils
 install_apt_package gedit
 install_gedit_overscroll_plugin
-install_apt_package libreoffice
 install_apt_package gimp
 
 # Android file mount
@@ -362,5 +361,3 @@ install_apt_package ack
 install_apt_package jq
 install_apt_package mc
 install_apt_package transmission-cli
-install_apt_package wireshark
-
