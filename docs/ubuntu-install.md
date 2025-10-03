@@ -27,12 +27,6 @@
 
 	1. Install: https://www.twingate.com/docs/linux
 
-10. BitTorrent client
-
-	```shell
-	sudo apt install transmission-cli
-	```
-
 11. Signal
 
 	Install: https://signal.org/download/linux/

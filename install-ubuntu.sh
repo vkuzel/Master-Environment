@@ -361,5 +361,6 @@ install_apt_package whois
 install_apt_package ack
 install_apt_package jq
 install_apt_package mc
+install_apt_package transmission-cli
 install_apt_package wireshark
 
