@@ -90,64 +90,11 @@
 	sudo systemctl start mpd
 	```
 
-4. Install Firefox from APT
-
-	Add Mozilla team's PPA:
-	```shell
-	sudo add-apt-repository ppa:mozillateam/ppa 
-	```
-
-	Due to a bug, after installing and pinning the Mozilla's package, we have to decrease priority of Ubuntu's Firefox meta-package to prevent overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
-
-	Add the following content into `/etc/apt/preferences.d/mozillateamppa`:
-	```
-	Package: firefox*
-	Pin: release o=LP-PPA-mozillateam
-	Pin-Priority: 1001
-	
-	Package: firefox*
-	Pin: release o=Ubuntu*
-	Pin-Priority: -1
-	```
-
-	Then check the package pinning via:
-	```shell
-	apt policy
-	```
-	You should see Mozilla's package pinned with priority 1001 and Ubuntu's meta-package with priority -1.
-
-	Install Firefox:
-	```shell
-	sudo apt install firefox
-	```
-
-	Install ad-blocking addons:
-	* AdBlocker: https://addons.mozilla.org/en-US/firefox/addon/adblock-for-youtube/
-	* Unhook: https://addons.mozilla.org/en-US/firefox/addon/youtube-recommended-videos/
-
-5. Install Thunderbird from APT
-
-	Similar to the Firefox repository, the `/etc/apt/preferences.d/mozillateamppa` file should contain:
-	```
-	Package: thunderbird*
-	Pin: release o=LP-PPA-mozillateam
-	Pin-Priority: 1001
-	
-	Package: thunderbird*
-	Pin: release o=Ubuntu*
-	Pin-Priority: -1
-	```
-
-	Install Thunderbird:
-	```shell
-	sudo apt install thunderbird
- 	```
-
-6. Install and setup Google Drive
+4. Install and setup Google Drive
 
 	https://github.com/astrada/google-drive-ocamlfuse#getting-started
 
-7. Printer & scanner
+5. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -164,35 +111,33 @@
 	apt install simple-scan
 	```
 
-8. Docker
+6. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 
 	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
 
-9. Twingate VPN
+7. Twingate VPN
 
 	1. Install: https://www.twingate.com/docs/linux
-
-10. WireShark
+8. WireShark
 	
 	```shell
 	sudo apt install wireshark
 	```
-
-11. Office suite 
+9. Office suite 
 
 	```shell
 	sudo apt install gimp libreoffice
 	```
 
-12. BitTorrent client
+10. BitTorrent client
 
 	```shell
 	sudo apt install transmission-cli
 	```
 
-13. Signal
+11. Signal
 
 	Install: https://signal.org/download/linux/
 
@@ -201,7 +146,7 @@
 	Exec=/opt/Signal/signal-desktop %U --disable-gpu
 	```
 
-14. Rhythmbox
+12. Rhythmbox
 
 	For connecting iPod shuffle
 	```shell

@@ -58,6 +58,35 @@ install_nerd_fonts() {
 	fi
 }
 
+configure_mozilla_apt_repository() {
+  info "=== Configure Mozilla APT repository ==="
+  if [[ -e "/etc/apt/preferences.d/mozillateamppa" ]]; then
+    info "Already configured"
+  else
+    # Due to a bug, after installing and pinning the Mozilla's package, we have
+    # to decrease priority of Ubuntu's Firefox meta-package to prevent
+    # overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
+    cat <<EOF | sudo tee /etc/apt/preferences.d/mozillateamppa > /dev/null || fail "Cannot set Mozilla PPA!"
+Package: firefox*
+Pin: release o=LP-PPA-mozillateam
+Pin-Priority: 1001
+
+Package: firefox*
+Pin: release o=Ubuntu*
+Pin-Priority: -1
+
+Package: thunderbird*
+Pin: release o=LP-PPA-mozillateam
+Pin-Priority: 1001
+
+Package: thunderbird*
+Pin: release o=Ubuntu*
+Pin-Priority: -1
+EOF
+    sudo apt update || fail "Cannot APT update!"
+  fi
+}
+
 install_apt_package() {
 	local pkgName=$1
 
@@ -221,6 +250,11 @@ install_apt_package xdg-desktop-portal-wlr
 # Dotfiles
 create_directory_structure $SRC_DIR $DST_DIR
 create_links $SRC_DIR $DST_DIR
+
+# Mozilla Thunderbird and Firefox
+configure_mozilla_apt_repository
+install_apt_package firefox-esr
+install_apt_package thunderbird
 
 # Office utils
 install_apt_package gedit
