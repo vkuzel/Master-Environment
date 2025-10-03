@@ -27,12 +27,6 @@
 
 	1. Install: https://www.twingate.com/docs/linux
 
-10. Office suite 
-
-	```shell
-	sudo apt install gimp libreoffice
-	```
-
 10. BitTorrent client
 
 	```shell

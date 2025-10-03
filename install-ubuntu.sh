@@ -342,6 +342,8 @@ install_apt_package mpv-mpris
 # Office utils
 install_apt_package gedit
 install_gedit_overscroll_plugin
+install_apt_package libreoffice
+install_apt_package gimp
 
 # Android file mount
 install_apt_package gvfs-backends
