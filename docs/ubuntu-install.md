@@ -1,9 +1,5 @@
 # Ubuntu server post-install steps
 
-4. Install and setup Google Drive
-
-	https://github.com/astrada/google-drive-ocamlfuse#getting-started
-
 5. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
