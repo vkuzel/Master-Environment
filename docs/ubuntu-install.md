@@ -26,12 +26,8 @@
 7. Twingate VPN
 
 	1. Install: https://www.twingate.com/docs/linux
-8. WireShark
-	
-	```shell
-	sudo apt install wireshark
-	```
-9. Office suite 
+
+10. Office suite 
 
 	```shell
 	sudo apt install gimp libreoffice
