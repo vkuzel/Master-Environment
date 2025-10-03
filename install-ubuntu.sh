@@ -30,6 +30,20 @@ configure_timezone() {
 	fi
 }
 
+uninstall_cloud_init() {
+  info "=== Uninstall Cloud Init ==="
+  # Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
+  if [[ ! -e "/etc/cloud/" ]]; then
+    info "Already uninstalled"
+  else
+    info 'Disable all services except "none" and then press Enter'
+    read
+    	sudo dpkg-reconfigure cloud-init
+    	sudo apt purge cloud-init
+    	sudo rm -rf /etc/cloud/ /var/lib/cloud/ /etc/netplan/*cloud-init.yaml
+  fi
+}
+
 configure_network_manager() {
   info "=== Configure Network Manager ==="
   if [[ ! -e "/etc/systemd/system/dbus-org.freedesktop.network1.service" ]]; then

@@ -1,19 +1,5 @@
 # Ubuntu server post-install steps
 
-1. Disable _cloud-init_
-
-	Uninstall and delete folders:
-
-	```shell
-	# Disable all services except "none"
-	sudo dpkg-reconfigure cloud-init
-	sudo apt purge cloud-init
-	sudo apt autoremove --purge
-	sudo rm -rf /etc/cloud/ /var/lib/cloud/ /etc/netplan/*cloud-init.yaml
-	```
-	
-	Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
-
 2. Enable (Keychron) keyboard function keys.
 
 	```shell
