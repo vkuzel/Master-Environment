@@ -319,7 +319,8 @@ create_links $SRC_DIR $DST_DIR
 
 # Mozilla Thunderbird and Firefox
 configure_mozilla_apt_repository
-install_apt_package firefox-esr
+# TODO On some machines latest firefox should be installed on other firefox-esr
+# install_apt_package firefox-esr
 install_apt_package thunderbird
 
 # Video
