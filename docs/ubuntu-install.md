@@ -1,6 +1,32 @@
 # Ubuntu server post-install steps
 
-1. Printer & scanner
+1. Suspend on lid close
+
+	1. Configure `/etc/systemd/logind.conf`
+		```
+		HandleLidSwitch=suspend
+		HandleLidSwitchDocked=ignore
+		HandleLidSwitchExternalPower=suspend
+		```
+
+		And reload logind
+		```shell
+		sudo systemctl restart systemd-logind
+		```
+
+		Verify logind registers lid-close event
+		```shell
+		sudo journalctl -u systemd-logind -f
+		``` 
+
+	2. Automated power optimizer TLP
+
+		```shell
+		apt install tlp
+		systemctl enable tlp --now
+		```
+
+2. Printer & scanner
 
 	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
 	```shell
@@ -17,17 +43,17 @@
 	apt install simple-scan
 	```
 
-2. Docker
+3. Docker
 
 	1. Install: https://docs.docker.com/engine/install/ubuntu/
 
 	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
 
-3. Twingate VPN
+4. Twingate VPN
 
 	1. Install: https://www.twingate.com/docs/linux
 
-4. Signal
+5. Signal
 
 	Install: https://signal.org/download/linux/
 
@@ -36,13 +62,13 @@
 	Exec=/opt/Signal/signal-desktop %U --disable-gpu
 	```
 
-5. LibreOffice
+6. LibreOffice
 
     ```shell
     sudo apt install libreoffice
     ```
 
-6. Rhythmbox
+7. Rhythmbox
 
 	For connecting iPod shuffle
 	```shell
