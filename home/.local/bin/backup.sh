@@ -11,7 +11,7 @@ backupDevice="/media/veracrypt1"
 [[ -d "$backupDevice" ]] || error "Backup device $backupDevice does not exist!"
 
 hostname=$(hostname)
-currentMonth=$(date "+%Y-%m")
+currentMonth=$(date "+%Y-Q$(( ( $(date +%-m) - 1 ) / 3 + 1 ))")
 backupDir="$backupDevice/$hostname/$currentMonth"
 
 echo "Backup into $backupDir"
