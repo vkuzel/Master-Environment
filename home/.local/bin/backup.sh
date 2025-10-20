@@ -28,4 +28,5 @@ rsync \
 	"$HOME/projects" \
 	"$HOME/Music" \
 	"$HOME/Videos" \
+	"$HOME/Pictures" \
 	"$backupDir"
