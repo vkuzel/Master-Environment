@@ -18,6 +18,7 @@ echo "Backup into $backupDir"
 rsync \
 	--archive \
 	--delete \
+	--progress \
 	--ignore-missing-args \
 	--mkpath \
 	--exclude="node_modules/" \
