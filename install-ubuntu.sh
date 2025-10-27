@@ -189,6 +189,22 @@ install_gedit_overscroll_plugin() {
   fi
 }
 
+install_gedit_control_your_tabs_plugin() {
+	local pluginVersion="0.5.1"
+	local pluginUrl="https://codeload.github.com/jefferyto/gedit-control-your-tabs/zip/refs/tags/v$pluginVersion"
+	local pluginsDir="$HOME/.local/share/gedit/plugins"
+	local pluginDir="$pluginsDir/gedit-control-your-tabs"
+	local tmpPath="/tmp/v$pluginVersion"
+
+	info "=== Install gedit control your tabs plugin ==="
+	if [[ ! -d "$pluginsDir/gedit-control-your-tabs-$pluginVersion" ]]; then
+		curl --location --output "$tmpPath" --remote-name "$pluginUrl" || fail "Cannot download plugin!"
+		unzip "$tmpPath" -d "$pluginsDir" || fail "Cannot unzip plugin $tmpPath"
+	else  
+		info "Already installed"
+	fi
+}
+
 create_directory_structure() {
 	info "=== Create directory structure ==="
 	local src_dir=$1
@@ -332,6 +348,7 @@ install_apt_package mpv-mpris
 # Office utils
 install_apt_package gedit
 install_gedit_overscroll_plugin
+install_gedit_control_your_tabs_plugin
 install_apt_package gimp
 
 # Android file mount
