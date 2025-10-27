@@ -34,23 +34,23 @@ uninstall_cloud_init() {
   info "=== Uninstall Cloud Init ==="
   # Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
   if [[ ! -e "/etc/cloud/" ]]; then
-    info "Already uninstalled"
+		info "Already uninstalled"
   else
-    info 'Disable all services except "none" and then press Enter'
-    read -r
-    sudo dpkg-reconfigure cloud-init || fail "Cannot reconfigure cloud-init!"
-    sudo apt purge cloud-init || fail "Cannot purge cloud-init!"
-    sudo rm -r /etc/cloud/ /var/lib/cloud/ /etc/netplan/*cloud-init.yaml
+		info 'Disable all services except "none" and then press Enter'
+		read -r
+		sudo dpkg-reconfigure cloud-init || fail "Cannot reconfigure cloud-init!"
+		sudo apt purge cloud-init || fail "Cannot purge cloud-init!"
+		sudo rm -r /etc/cloud/ /var/lib/cloud/ /etc/netplan/*cloud-init.yaml
   fi
 }
 
 configure_network_manager() {
   info "=== Configure Network Manager ==="
   if [[ ! -e "/etc/systemd/system/dbus-org.freedesktop.network1.service" ]]; then
-    info "Already configured"
+		info "Already configured"
   else
-    info "Disable systemd-networkd"
-    sudo systemctl disable systemd-networkd systemd-networkd.socket
+		info "Disable systemd-networkd"
+		sudo systemctl disable systemd-networkd systemd-networkd.socket
   fi
 }
 
@@ -75,12 +75,12 @@ install_nerd_fonts() {
 configure_mozilla_apt_repository() {
   info "=== Configure Mozilla APT repository ==="
   if [[ -e "/etc/apt/preferences.d/mozillateamppa" ]]; then
-    info "Already configured"
+		info "Already configured"
   else
-    # Due to a bug, after installing and pinning the Mozilla's package, we have
-    # to decrease priority of Ubuntu's Firefox meta-package to prevent
-    # overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
-    cat <<EOF | sudo tee /etc/apt/preferences.d/mozillateamppa > /dev/null || fail "Cannot set Mozilla PPA!"
+		# Due to a bug, after installing and pinning the Mozilla's package, we have
+		# to decrease priority of Ubuntu's Firefox meta-package to prevent
+		# overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
+		cat <<EOF | sudo tee /etc/apt/preferences.d/mozillateamppa > /dev/null || fail "Cannot set Mozilla PPA!"
 Package: firefox*
 Pin: release o=LP-PPA-mozillateam
 Pin-Priority: 1001
@@ -97,7 +97,7 @@ Package: thunderbird*
 Pin: release o=Ubuntu*
 Pin-Priority: -1
 EOF
-    sudo apt update || fail "Cannot APT update!"
+		sudo apt update || fail "Cannot APT update!"
   fi
 }
 
@@ -106,9 +106,9 @@ add_current_user_into_group() {
 
   info "=== Add user $USER into group $group ==="
   if id -nG "$USER" | grep -qw "$group"; then
-      info "$USER is already in $group"
+	  info "$USER is already in $group"
   else
-      sudo usermod -aG "$group" "$USER" || fail "Cannot add user into group!"
+	  sudo usermod -aG "$group" "$USER" || fail "Cannot add user into group!"
   fi
 }
 
@@ -117,9 +117,9 @@ enable_systemctl_service() {
 
   info "=== Enable $service service ==="
   if systemctl is-enabled --quiet "$service"; then
-      info "Service is already enabled"
+	  info "Service is already enabled"
   else
-      sudo enable --now "$service" || fail "Cannot enable and start service!"
+	  sudo enable --now "$service" || fail "Cannot enable and start service!"
   fi
 }
 
@@ -183,9 +183,9 @@ install_gedit_overscroll_plugin() {
 
   info "=== Install gedit overscroll plugin ==="
   if [[ ! -d "$pluginDir" ]]; then
-    git clone "$pluginUrl" "$pluginDir" || fail "Cannot clone Git repository $pluginUrl into $pluginDir"
+		git clone "$pluginUrl" "$pluginDir" || fail "Cannot clone Git repository $pluginUrl into $pluginDir"
   else
-    info "Already installed"
+		info "Already installed"
   fi
 }
 
@@ -240,15 +240,15 @@ create_links() {
 
   for file_path in $(find . -mindepth 1 -type f); do
 		local src_path=$(realpath "$file_path")
-                local dst_path=$(normalpath "$dst_dir/$file_path")
+		local dst_path=$(normalpath "$dst_dir/$file_path")
 		if [ -h "$dst_path" ]; then
 			continue
-    elif [ -e "$dst_path" ]; then
-      info "Cannot symlink into existing regular file $dst_path"
+		elif [ -e "$dst_path" ]; then
+		  info "Cannot symlink into existing regular file $dst_path"
 		else
-      info "Create $dst_path"
+		  info "Create $dst_path"
 			ln -s "$src_path" "$dst_path" || fail "Cannot create symlink $dst_path"
-    fi
+		fi
   done
 
   popd > /dev/null
@@ -257,7 +257,7 @@ create_links() {
 chsh_zsh() {
   info "=== ChSh to ZSH ==="
   if [ "$SHELL" != "/bin/zsh" ]; then
-    chsh $USER -s /bin/zsh
+	chsh $USER -s /bin/zsh
   fi
 }
 

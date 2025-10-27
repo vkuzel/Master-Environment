@@ -64,9 +64,9 @@
 
 6. LibreOffice
 
-    ```shell
-    sudo apt install libreoffice
-    ```
+	```shell
+	sudo apt install libreoffice
+	```
 
 7. Rhythmbox
 
