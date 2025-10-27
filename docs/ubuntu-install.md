@@ -75,3 +75,8 @@
 	sudo apt install rhythmbox 
 	```
 
+8. IntelliJ IDEA shortcuts:
+
+   * Select Next Tab: Ctrl + Page Down
+   * Select Previous Tab: Ctrl + Page Up
+   * Close Tab: Ctrl + W
