@@ -16,8 +16,13 @@ isMountableDrive() {
 	fi
 
 
-	# Disks bigger than 100G are (probably) not USB flash drives.
 	local size=$(echo $devices | jq -r ".blockdevices[$id].size")
+  # Zero size disks are (probably) card readers w/o a card attached to them
+  if [[ "$size" -eq "0" ]]; then
+    echo "false"
+  fi
+
+	# Disks bigger than 100G are (probably) not USB flash drives.
 	if [[ "$size" -gt "100000000000" ]]; then
 		echo "false"
 	fi
