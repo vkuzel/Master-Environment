@@ -12,13 +12,13 @@ isMountableDrive() {
 
   # USB drives only
   local tran=$(echo $devices | jq -r ".blockdevices[$id].tran")
-  if [[ "$tran" != "usb" ]]; then
+  if [[ "$tran" != "usb" && "$tran" != "null" ]]; then
     echo "false"
     return 0
   fi
 
 	local typ=$(echo $devices | jq -r ".blockdevices[$id].type")
-	if [[ "$typ" != "part" && "$typ" != "disk" ]]; then
+	if [[ "$typ" != "part" && "$typ" != "disk" && "$typ" != "dm" ]]; then
 		echo "false"
     return 0
 	fi
@@ -114,18 +114,26 @@ for id in $deviceIndices; do
         sudo mount \
         --options nosuid,nodev$options \
         $path \
-        $target
+        $target || exit 1
       else
-        echo "Mount $target"
+        sudo veracrypt \
+        --text \
+        --pim 0 \
+        --keyfiles "" \
+        --protect-hidden no \
+        --mount "$path" \
+        "$target" || exit 1
       fi
 		else
-			echo "Dismounting $target"
+			echo "Dismounting $mountpoint"
 			if [[ $(isVeraCryptDrive "$fstype") != "true" ]]; then
-			  sudo umount $target
+			  sudo umount $mountpoint || exit 1
 			else
-			  echo "Dismount $target"
+			  sudo veracrypt \
+        --text \
+        --unmount "$mountpoint" || exit 1
 			fi
-			sudo rm -d $target
+			sudo rm -d $mountpoint
 		fi
 	fi
 done
