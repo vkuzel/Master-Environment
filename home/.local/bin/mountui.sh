@@ -39,6 +39,17 @@ isMountableDrive() {
 	echo "true"
 }
 
+isVeraCryptDrive() {
+  local fstype=$1
+
+  # No filesystem detected => probably encrypted drive
+  if [[ "$fstype" == "null" ]]; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
 echo
 for id in $deviceIndices; do
 	if [[ "$(isMountableDrive $id)" != "true" ]]; then
@@ -49,6 +60,9 @@ for id in $deviceIndices; do
 	fstype=$(echo $devices | jq -r ".blockdevices[$id].fstype")
 	label=$(echo $devices | jq -r ".blockdevices[$id].label")
 	mountpoint=$(echo $devices | jq -r ".blockdevices[$id].mountpoint")
+	if [[ $(isVeraCryptDrive "$fstype") == "true" ]]; then
+	  fstype='encrypted?'
+	fi
 
 	name=""
 	if [[ "$label" != "null" ]]; then
@@ -92,17 +106,25 @@ for id in $deviceIndices; do
 			echo "Mounting $path -> $target"
 			sudo mkdir -p $target
 
-			# ext4 does not support mounting w/ specific user
-			if [[ "$fstype" != "ext4" ]]; then
-				options=",uid=$uid,gid=$gid"
-			fi
-			sudo mount \
-			--options nosuid,nodev$options \
-			$path \
-			$target
+      if [[ $(isVeraCryptDrive "$fstype") != "true" ]]; then
+        # ext4 does not support mounting w/ specific user
+        if [[ "$fstype" != "ext4" ]]; then
+          options=",uid=$uid,gid=$gid"
+        fi
+        sudo mount \
+        --options nosuid,nodev$options \
+        $path \
+        $target
+      else
+        echo "Mount $target"
+      fi
 		else
-			echo "Umounting $target"
-			sudo umount $target
+			echo "Dismounting $target"
+			if [[ $(isVeraCryptDrive "$fstype") != "true" ]]; then
+			  sudo umount $target
+			else
+			  echo "Dismount $target"
+			fi
 			sudo rm -d $target
 		fi
 	fi
