@@ -3,12 +3,18 @@
 uid=$(id -u)
 gid=$(id -g)
 
-devices=$(lsblk --bytes --output PATH,FSTYPE,LABEL,MOUNTPOINT,TYPE,SIZE --json)
+devices=$(lsblk --bytes --output PATH,FSTYPE,LABEL,MOUNTPOINT,TRAN,TYPE,SIZE --json)
 deviceIndices=$(echo $devices | jq -r '.blockdevices | to_entries | .[].key')
 androidDevice=$(lsusb | grep 'MTP mode' | awk -F'ID [^ ]+ ' '{print $2}')
 
 isMountableDrive() {
 	local id=$1
+
+  # USB drives only
+  local tran=$(echo $devices | jq -r ".blockdevices[$id].tran")
+  if [[ "$tran" != "usb" ]]; then
+    echo "false"
+  fi
 
 	local typ=$(echo $devices | jq -r ".blockdevices[$id].type")
 	if [[ "$typ" != "part" && "$typ" != "disk" ]]; then
