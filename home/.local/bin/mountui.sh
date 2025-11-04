@@ -14,22 +14,26 @@ isMountableDrive() {
   local tran=$(echo $devices | jq -r ".blockdevices[$id].tran")
   if [[ "$tran" != "usb" ]]; then
     echo "false"
+    return 0
   fi
 
 	local typ=$(echo $devices | jq -r ".blockdevices[$id].type")
 	if [[ "$typ" != "part" && "$typ" != "disk" ]]; then
 		echo "false"
+    return 0
 	fi
 
   # Zero size disks are (probably) card readers w/o a card attached to them
 	local size=$(echo $devices | jq -r ".blockdevices[$id].size")
   if [[ "$size" -eq "0" ]]; then
     echo "false"
+    return 0
   fi
 
 	local mountpoint=$(echo $devices | jq -r ".blockdevices[$id].mountpoint")
 	if [[ "$mountpoint" != "null" && ! "$mountpoint" =~ "/media" ]]; then
 		echo "false"
+    return 0
 	fi
 
 	echo "true"
