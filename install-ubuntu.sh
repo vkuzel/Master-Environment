@@ -317,6 +317,7 @@ install_apt_package mpv
 install_apt_package mpv-mpris
 
 # Office utils
+install_apt_package neovim-qt
 install_apt_package gimp
 
 # Android file mount
