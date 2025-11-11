@@ -4,6 +4,9 @@ require("config.keymaps")
 -- show line numbers
 vim.opt.number = true
 
+-- Copy/Cut/Paste into system clipboard
+vim.opt.clipboard = "unnamedplus"
+
 -- Softwrap and visual guide for markdown files
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "markdown",
