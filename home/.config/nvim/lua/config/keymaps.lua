@@ -9,8 +9,11 @@ vim.keymap.set({'n', 'v'}, '<C-S-v>', '"+p', {desc = 'Paste from system clipboar
 vim.keymap.set('i', '<C-S-v>', '<C-R>+', {desc = 'Paste from clipboard in insert mode'})
 vim.keymap.set('c', '<C-S-v>', '<C-R>+', {desc = 'Paste from clipboard in command mode'})
 
+-- Tab controls
 vim.keymap.set({'n', 'v', 'i'}, '<C-t>', ':tabnew<CR>', { noremap = true, silent = true })
 vim.keymap.set({'n', 'v', 'i'}, '<C-w>', ':close<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<C-S-PageUp>', ':-tabmove<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<C-S-PageDown>', ':+tabmove<CR>', { noremap = true, silent = true })
 
 -- Toggle vim tree
 vim.keymap.set('n', '<A-1>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
