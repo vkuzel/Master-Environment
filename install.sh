@@ -1,11 +1,11 @@
 #!/bin/bash
 
 info() {
-	printf "  [ \033[00;34m..\033[0m ] $1\n"
+	printf '  [ \033[00;34m..\033[0m ] %s\n' "$1"
 }
 
 fail() {
-	printf "\033[2K  [\033[0;31mFAIL\033[0m] $1\n" >> /dev/stderr
+	printf '\033[2K  [\033[0;31mFAIL\033[0m] %s\n' "$1" >> /dev/stderr
 	exit 1
 }
 
