@@ -1,11 +1,37 @@
+# The Master Environment Setup
 
-# Environment setup (applications, dotfiles, etc.)
+Desktop environment setup for Java / Kotlin developer based on [Ubuntu Server](https://ubuntu.com/download/server) and the tilling window manager [sway](https://swaywm.org/).
 
-* Installs listed applications
-* Creates directories listed in the `home` directory in $HOME
-* Symlinks all files from the `home` directory into $HOME
+Motivation is to create a minimal environment focused on productivity without unnecessary distraction, like fancy visuals. Workflow is optimized for a laptop running additional one or two external 27-inch displays. Usually, selected set of applications are assigned to specific workspaces to avoid brain fatigue caused by searching for applications. 
+
+Laptop display on the left:
+* Workspace #0: Social apps (mail, ...)
+
+Center display:
+* Workspace #1: Terminals (Foot)
+* Workspace #2: Browser (Firefox)
+* Workspace #3: IDE (IntelliJ IDEA)
+* Workspace #4:
+* Workspace #5:
+* Workspace #6:
+
+Right display:
+* Workspace #7: Notes (NeoVim-QT)
+* Workspace #8:
+* Workspace #9:
+
+The environment is usually installed on an Intel-based ThinkPads. Sway has issues with Nvidia drivers (both open source and proprietary), so it is recommended to use Intel or AMD based GPUs. Ubuntu Server is used as a basis for the environment because it doesn't contain desktop-related clutter.  
 
 ## Installation
 
-Run `install*.sh` script. You can re-run the script to update the environment with recent versions.
+1. Prerequisites:
+   * Computer w/ Intel or AMD GPU.
+   * Ubuntu Server 24.04 installed on the machine.
 
+2. Clone the project into a directory.
+
+3. Run `install.sh` script. You can re-run the script to update the environment.
+
+    The script installs APT packages, create symlinks into your home directory and download/copy relevant files.
+
+    After application is removed from this project, cleanup may be performed by the `./cleanup.sh` script. Take note, this is just an experiment functionality and the proper cleanup is not guaranteed.
