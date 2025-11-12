@@ -10,8 +10,9 @@ fail() {
 }
 
 check_os() {
-	if [ "$(uname)" != "Linux" ]; then
-		fail "Run this script on Linux!"
+  local distroName="Ubuntu 24.04"
+	if ! grep -q "$distroName" /etc/os-release; then
+		fail "Run this script on $distroName!"
 	fi
 }
 
