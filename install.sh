@@ -169,9 +169,9 @@ install_zsh_plugin() {
 	fi
 	
 	if [[ -d "$pluginDir/.git" ]]; then
-		pushd "$pluginDir" >> /dev/null
+		pushd "$pluginDir" >> /dev/null || fail "Cannot enter $pluginDir!"
 		git pull || fail "Cannot pull $pluginName"
-		popd > /dev/null
+		popd > /dev/null || fail "Cannot exit $pluginDir!"
 	else
 		git clone "$pluginUrl" "$pluginDir" || fail "Cannot clone Git repository $pluginUrl into $pluginDir"
 	fi
@@ -182,7 +182,7 @@ create_directory_structure() {
 	local src_dir=$1
 	local dst_dir=$2
 
-	pushd "$src_dir" > /dev/null
+	pushd "$src_dir" > /dev/null || fail "Cannot enter $src_dir!"
 
 	for dir_path in $(find . -mindepth 1 -type d); do
 		local dst_path="$dst_dir/$dir_path"
@@ -194,7 +194,7 @@ create_directory_structure() {
 		mkdir -p "$dst_path" || fail "Cannot create $dst_path"
 	done
 
-	popd > /dev/null
+	popd > /dev/null || fail "Cannot exit $src_dir!"
 }
 
 normalpath() {
@@ -208,7 +208,7 @@ create_links() {
   local src_dir=$1
   local dst_dir=$2
 
-  pushd "$src_dir" > /dev/null
+  pushd "$src_dir" > /dev/null || fail "Cannot enter $src_dir!"
 
   for file_path in $(find . -mindepth 1 -type f); do
 		local src_path=$(realpath "$file_path")
@@ -223,13 +223,13 @@ create_links() {
 		fi
   done
 
-  popd > /dev/null
+  popd > /dev/null || fail "Cannot exit $src_dir"
 }
 
 chsh_zsh() {
   info "=== ChSh to ZSH ==="
   if [ "$SHELL" != "/bin/zsh" ]; then
-	chsh $USER -s /bin/zsh
+	chsh "$USER" -s /bin/zsh
   fi
 }
 
