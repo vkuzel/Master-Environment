@@ -179,22 +179,22 @@ install_zsh_plugin() {
 
 create_directory_structure() {
 	info "=== Create directory structure ==="
-	local src_dir=$1
-	local dst_dir=$2
+	local srcDir=$1
+	local dstDir=$2
 
-	pushd "$src_dir" > /dev/null || fail "Cannot enter $src_dir!"
+	pushd "$srcDir" > /dev/null || fail "Cannot enter $srcDir!"
 
-	for dir_path in $(find . -mindepth 1 -type d); do
-		local dst_path="$dst_dir/$dir_path"
-		if [ -d "$dst_path" ]; then
+	for dirPath in $(find . -mindepth 1 -type d); do
+		local dstPath="$dstDir/$dirPath"
+		if [ -d "$dstPath" ]; then
 			continue
 		fi
 		
-		info "Create $dst_path"
-		mkdir -p "$dst_path" || fail "Cannot create $dst_path"
+		info "Create $dstPath"
+		mkdir -p "$dstPath" || fail "Cannot create $dstPath"
 	done
 
-	popd > /dev/null || fail "Cannot exit $src_dir!"
+	popd > /dev/null || fail "Cannot exit $srcDir!"
 }
 
 normalpath() {
@@ -205,25 +205,25 @@ normalpath() {
 
 create_links() {
 	info "=== Create links ==="
-  local src_dir=$1
-  local dst_dir=$2
+  local srcDir=$1
+  local dstDir=$2
 
-  pushd "$src_dir" > /dev/null || fail "Cannot enter $src_dir!"
+  pushd "$srcDir" > /dev/null || fail "Cannot enter $srcDir!"
 
-  for file_path in $(find . -mindepth 1 -type f); do
-		local src_path=$(realpath "$file_path")
-		local dst_path=$(normalpath "$dst_dir/$file_path")
-		if [ -h "$dst_path" ]; then
+  for filePath in $(find . -mindepth 1 -type f); do
+		local srcPath=$(realpath "$filePath")
+		local dstPath=$(normalpath "$dstDir/$filePath")
+		if [ -h "$dstPath" ]; then
 			continue
-		elif [ -e "$dst_path" ]; then
-		  info "Cannot symlink into existing regular file $dst_path"
+		elif [ -e "$dstPath" ]; then
+		  info "Cannot symlink into existing regular file $dstPath"
 		else
-		  info "Create $dst_path"
-			ln -s "$src_path" "$dst_path" || fail "Cannot create symlink $dst_path"
+		  info "Create $dstPath"
+			ln -s "$srcPath" "$dstPath" || fail "Cannot create symlink $dstPath"
 		fi
   done
 
-  popd > /dev/null || fail "Cannot exit $src_dir"
+  popd > /dev/null || fail "Cannot exit $srcDir"
 }
 
 chsh_zsh() {
