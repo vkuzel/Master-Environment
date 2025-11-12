@@ -10,10 +10,10 @@ vim.keymap.set('i', '<C-S-v>', '<C-R>+', {desc = 'Paste from clipboard in insert
 vim.keymap.set('c', '<C-S-v>', '<C-R>+', {desc = 'Paste from clipboard in command mode'})
 
 -- Tab controls
-vim.keymap.set({'n', 'v', 'i'}, '<C-t>', ':tabnew<CR>', { noremap = true, silent = true })
-vim.keymap.set({'n', 'v', 'i'}, '<C-w>', ':close<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<C-S-PageUp>', ':-tabmove<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<C-S-PageDown>', ':+tabmove<CR>', { noremap = true, silent = true })
+vim.keymap.set({'n', 'v', 'i'}, '<C-t>', '<Esc>:tabnew<CR>', { noremap = true, silent = true })
+vim.keymap.set({'n', 'v', 'i'}, '<C-w>', '<Esc>:close<CR>', { noremap = true, silent = true })
+vim.keymap.set({'n', 'v', 'i'}, '<C-S-PageUp>', '<Esc>:-tabmove<CR>', { noremap = true, silent = true })
+vim.keymap.set({'n', 'v', 'i'}, '<C-S-PageDown>', '<Esc>:+tabmove<CR>', { noremap = true, silent = true })
 
 -- Toggle vim tree
 vim.keymap.set('n', '<A-1>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
