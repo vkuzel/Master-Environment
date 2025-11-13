@@ -57,12 +57,12 @@ configure_network_manager() {
 
 install_nerd_fonts() {
 	info "=== Install Nerd Fonts ==="
-	if [ -d "/usr/share/fonts/truetype/dejavu-nerd" ]; then
+	local targetDir="/usr/share/fonts/truetype/dejavu-nerd"
+	if [ -d "$targetDir" ]; then
 		info "Already installed"
 	else
 		local fontFile="DejaVuSansMono.zip"
-		local fontUrl="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/$fontFile"
-		local targetDir="/usr/share/fonts/truetype/dejavu-nerd"
+		local fontUrl="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/$fontFile"
 
 		curl --location --output-dir "/tmp/" --remote-name "$fontUrl" || fail "Cannot download font!"
 		sudo mkdir -p "$targetDir"
