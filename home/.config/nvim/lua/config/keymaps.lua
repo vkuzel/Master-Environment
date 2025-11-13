@@ -1,3 +1,6 @@
+-- Alt + Space - swallow shortcut used for changing keyboard layout in sway
+vim.keymap.set({"n", "i", "v"}, "<A-Space>", "<Nop>", { noremap = true, silent = true })
+
 -- Ctrl - delete word
 vim.keymap.set("i", "<C-Backspace>", "<C-w>", { noremap = true, silent = true })
 vim.keymap.set("i", "<C-Del>", "X<Esc>lbce", { noremap = true, silent = true })

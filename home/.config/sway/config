@@ -41,12 +41,8 @@ input * {
     repeat_rate 40
 }
 
-# Toggle keyboard layout (hack)
-# On-release: layouyt is toggled and the actions is swallowed to prevent Firefox from opening menu via Alt key.
-# On-press: event is swalloved to prevent neovim from changing the mode
+# Toggle keyboard layout (hack) on-release: layouyt is toggled and the actions is swallowed to prevent Firefox from opening menu via Alt key.
 bindsym --release --locked --no-repeat $alt+Space exec $HOME/.config/sway/keyboard-layout-toggle.sh
-bindsym --locked --no-repeat $alt+Space nop
-
 
 bindsym Print exec $HOME/.config/sway/screenshot.sh
 bindsym $alt+Print exec $HOME/.config/sway/screenshot.sh --focused-window
