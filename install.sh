@@ -258,6 +258,7 @@ configure_network_manager
 
 # Shell
 install_nerd_fonts
+install_apt_package fonts-noto-color-emoji
 install_apt_package zsh
 install_starship
 install_zsh_plugin "https://github.com/zsh-users/zsh-autosuggestions.git"
