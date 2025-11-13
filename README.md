@@ -35,3 +35,5 @@ The environment is usually installed on an Intel-based ThinkPads. Sway has issue
     The script installs APT packages, create symlinks into your home directory and download/copy relevant files.
 
     After application is removed from this project, cleanup may be performed by the `./cleanup.sh` script. Take note, this is just an experiment functionality and the proper cleanup is not guaranteed.
+
+4. After first installation go through the [MANUAL-POST-INSTALL.md](MANUAL-POST-INSTALL.md) and complete manual steps.
