@@ -53,12 +53,12 @@ def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[Mountabl
 
         id = id + 1
         label = f"({block_device.label}) " if block_device.label is not None else ""
-        target = f"/media/usb{id}"
+        mountpoint = block_device.mountpoint if block_device.mountpoint is not None else f"/media/usb{id}"
 
         mountable_devices.append(MountableDevice(
-            name=f"{block_device.path}[{block_device.fstype}] {label}-> {target}",
+            name=f"{block_device.path}[{block_device.fstype}] {label}",
             path=block_device.path,
-            mountpoint=block_device.mountpoint,
+            mountpoint=mountpoint,
         ))
     return mountable_devices
 
