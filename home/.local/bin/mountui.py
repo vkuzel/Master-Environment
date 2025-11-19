@@ -28,7 +28,7 @@ class MountableDevice():
 
 
 def is_mountable(block_device: BlockDevice) -> bool:
-    if block_device.tran is not None or block_device.tran is "usb":
+    if block_device.tran is not None or block_device.tran == "usb":
         return False
 
     if block_device.type not in ['part', 'disk', 'dm']:
