@@ -24,7 +24,8 @@ class MountableDevice():
     id: int
     name: str
     path: str
-    mountpoint: Optional[str]
+    target: str
+    is_mounted: bool
 
 
 def is_mountable(block_device: BlockDevice) -> bool:
@@ -54,13 +55,13 @@ def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[Mountabl
 
         id = id + 1
         label = f"({block_device.label}) " if block_device.label is not None else ""
-        mountpoint = block_device.mountpoint if block_device.mountpoint is not None else f"/media/usb{id}"
 
         mountable_devices.append(MountableDevice(
             id=id,
             name=f"{block_device.path}[{block_device.fstype}] {label}",
             path=block_device.path,
-            mountpoint=mountpoint,
+            target=block_device.mountpoint if block_device.mountpoint is not None else f"/media/usb{id}",
+            is_mounted=block_device.mountpoint is not None,
         ))
     return mountable_devices
 
@@ -105,5 +106,6 @@ if __name__ == "__main__":
 
     print()
     for mountable_device in mountable_devices:
-        print(f"{mountable_device.id}) {mountable_device.name} -> {mountable_device.mountpoint}")
+        mounted = f" \033[31m*mounted*\033[0m" if mountable_device.is_mounted else ""
+        print(f"{mountable_device.id}) {mountable_device.name} -> {mountable_device.target}{mounted}")
     print()
