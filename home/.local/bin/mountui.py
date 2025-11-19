@@ -21,6 +21,7 @@ class BlockDevice():
 
 @dataclass
 class MountableDevice():
+    id: int
     name: str
     path: str
     mountpoint: Optional[str]
@@ -56,6 +57,7 @@ def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[Mountabl
         mountpoint = block_device.mountpoint if block_device.mountpoint is not None else f"/media/usb{id}"
 
         mountable_devices.append(MountableDevice(
+            id=id,
             name=f"{block_device.path}[{block_device.fstype}] {label}",
             path=block_device.path,
             mountpoint=mountpoint,
@@ -99,6 +101,9 @@ def get_block_devices() -> List[BlockDevice]:
 
 if __name__ == "__main__":
     block_devices = get_block_devices()
-    pprint(block_devices)
     mountable_devices = resolve_mountable_devices(block_devices)
-    pprint(mountable_devices, width=120)
+
+    print()
+    for mountable_device in mountable_devices:
+        print(f"{mountable_device.id}) {mountable_device.name} -> {mountable_device.mountpoint}")
+    print()
