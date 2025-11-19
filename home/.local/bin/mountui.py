@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 import subprocess
 import json
+import re
 from pprint import pprint
 from typing import Any, TypedDict, List, Optional, Dict
 
@@ -25,14 +26,37 @@ class MountableDevice():
     mountpoint: Optional[str]
 
 
+def is_mountable(block_device: BlockDevice) -> bool:
+    if block_device.tran is not None or block_device.tran is "usb":
+        return False
+
+    if block_device.type not in ['part', 'disk', 'dm']:
+        return False
+
+    """Zero size disks are (probably) card readers w/o a card inserted in them"""
+    if block_device.size == 0:
+        return False
+
+    media_mountpoint_pattern = re.compile("^/media")
+    if block_device.mountpoint is not None and not media_mountpoint_pattern.match(block_device.mountpoint):
+        return False
+
+    return True
+
+
 def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[MountableDevice]:
     mountable_devices: List[MountableDevice] = []
+    id = 0
     for block_device in block_devices:
-        if block_device.tran is not None or block_device.tran is "usb":
+        if not is_mountable(block_device):
             continue
 
+        id = id + 1
+        label = f"({block_device.label}) " if block_device.label is not None else ""
+        target = f"/media/usb{id}"
+
         mountable_devices.append(MountableDevice(
-            name="whatever",
+            name=f"{block_device.path}[{block_device.fstype}] {label}-> {target}",
             path=block_device.path,
             mountpoint=block_device.mountpoint,
         ))
