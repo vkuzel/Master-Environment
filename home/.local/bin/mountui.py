@@ -83,6 +83,7 @@ class SudoRunner:
         )
         return result.returncode != 0
 
+
 @dataclass
 class MountableDevice:
     id: str
@@ -91,6 +92,15 @@ class MountableDevice:
     mount_point: str
     is_mounted: bool
 
+    def mount(self, sudo_runner: SudoRunner):
+        pass
+
+    def unmount(self, sudo_runner: SudoRunner):
+        pass
+
+
+@dataclass
+class MountableBlockDevice(MountableDevice):
     def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.path, "->", self.mount_point)
 
@@ -152,7 +162,7 @@ def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[Mountabl
             device_id = device_id + 1
             label = f" ({device.label}) " if device.label is not None else ""
 
-            mountable_devices.append(MountableDevice(
+            mountable_devices.append(MountableBlockDevice(
                 id=str(device_id),
                 name=f"{device.path}[{device.fstype}]{label}",
                 path=device.path,
@@ -218,7 +228,7 @@ def main():
     mountable_devices = resolve_mountable_devices(block_devices)
 
     # TODO Test device
-    mountable_devices.append(MountableDevice(
+    mountable_devices.append(MountableBlockDevice(
         id="d",
         name="/dev/null[dummy]",
         path="/dev/null",
