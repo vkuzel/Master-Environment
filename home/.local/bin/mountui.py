@@ -2,6 +2,9 @@
 import json
 import re
 import subprocess
+import sys
+import termios
+import tty
 from dataclasses import dataclass
 from typing import Any, List, Optional, Dict
 
@@ -102,6 +105,19 @@ def get_block_devices() -> List[BlockDevice]:
     return [parse_device(d) for d in data.get("blockdevices", [])]
 
 
+def read_key() -> str:
+    if not sys.stdin.isatty():
+        return input()
+
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        return sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+
 if __name__ == "__main__":
     block_devices = get_block_devices()
     mountable_devices = resolve_mountable_devices(block_devices)
@@ -111,3 +127,7 @@ if __name__ == "__main__":
         mounted = f" \033[31m*mounted*\033[0m" if mountable_device.is_mounted else ""
         print(f"{mountable_device.id}) {mountable_device.name} -> {mountable_device.target}{mounted}")
     print()
+
+    print("Select disk: ")
+    device_id=read_key()
+    print(device_id)
