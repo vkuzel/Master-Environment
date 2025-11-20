@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 import json
-import os
 import re
 import subprocess
 import sys
 import termios
 import tty
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, List, Optional, Dict
-from pathlib import Path
-from pathlib import Path
 
 
 @dataclass
