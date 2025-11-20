@@ -76,6 +76,7 @@ class SudoRunner:
 
     @staticmethod
     def _is_password_needed() -> bool:
+        """Check whether sudo holds password in memory"""
         result = subprocess.run(
             args=["sudo", "-n", "true"],
             capture_output=True,
