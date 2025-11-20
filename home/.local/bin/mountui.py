@@ -144,7 +144,7 @@ def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
     if device.type not in ['part', 'dm']:
         return False
 
-    """Zero size disks are (probably) card readers w/o a card inserted in them"""
+    # Zero size disks are (probably) card readers w/o a card inserted in them
     if device.size == 0:
         return False
 
