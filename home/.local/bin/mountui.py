@@ -134,8 +134,8 @@ def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
     if device.size == 0:
         return False
 
-    media_mountpoint_pattern = re.compile("^/media")
-    if device.mount_point is not None and not media_mountpoint_pattern.match(device.mount_point):
+    media_mount_point_pattern = re.compile("^/media")
+    if device.mount_point is not None and not media_mount_point_pattern.match(device.mount_point):
         return False
 
     return True
