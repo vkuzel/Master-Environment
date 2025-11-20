@@ -165,9 +165,8 @@ def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[Mountabl
 
 def get_block_devices() -> List[BlockDevice]:
     cmd: list[str] = [
-        "lsblk", "--bytes",
+        "lsblk", "--bytes", "--tree", "--json",
         "--output", "PATH,FSTYPE,LABEL,MOUNTPOINT,TRAN,TYPE,SIZE",
-        "--tree", "--json"
     ]
 
     result: subprocess.CompletedProcess[str] = subprocess.run(
