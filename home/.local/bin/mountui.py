@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import re
 import subprocess
 import sys
@@ -7,6 +8,8 @@ import termios
 import tty
 from dataclasses import dataclass
 from typing import Any, List, Optional, Dict
+from pathlib import Path
+from pathlib import Path
 
 
 @dataclass
@@ -63,10 +66,55 @@ class MountableDevice:
     is_mounted: bool
 
     def mount(self, password_manager: PasswordManager):
-        print("TODO mount:", self.name, "with password:", password_manager.get_password())
+        print("Mounting", self.path, "->", self.target)
+
+        target_path = Path(self.target)
+        if target_path.exists():
+            print("Directory", self.target, "already exists!")
+            return
+
+        result = subprocess.run(
+            ["sudo", "-S", "mkdir", self.target],
+            capture_output=True,
+            text=True,
+            input=password_manager.get_password(),
+        )
+        if result.returncode != 0:
+            print("Cannot create directory:", result.stderr)
+            return
+
+        result = subprocess.run(
+            ["sudo", "-S", "mount", self.path, self.target],
+            capture_output=True,
+            text=True,
+            input=password_manager.get_password(),
+        )
+        if result.returncode != 0:
+            print("Cannot mount:", result.stderr)
+            return
 
     def unmount(self, password_manager: PasswordManager):
-        print("TODO unmount", self.name, "with password:", password_manager.get_password())
+        print("Dismounting", self.path, "->", self.target)
+
+        result = subprocess.run(
+            ["sudo", "-S", "umount", self.target],
+            capture_output=True,
+            text=True,
+            input=password_manager.get_password(),
+        )
+        if result.returncode != 0:
+            print("Cannot dismount:", result.stderr)
+            return
+
+        result = subprocess.run(
+            ["sudo", "-S", "rmdir", self.target],
+            capture_output=True,
+            text=True,
+            input=password_manager.get_password(),
+        )
+        if result.returncode != 0:
+            print("Cannot remove directory:", result.stderr)
+            return
 
 
 def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
@@ -168,7 +216,7 @@ def main():
         id="d",
         name="/dev/null[dummy]",
         path="/dev/null",
-        target="/dev/null",
+        target="/media/usbD",
         is_mounted=False,
     ))
 
