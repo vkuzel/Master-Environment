@@ -10,7 +10,7 @@ from typing import Any, List, Optional, Dict
 
 
 @dataclass
-class BlockDevice():
+class BlockDevice:
     path: Optional[str]
     fstype: Optional[str]
     label: Optional[str]
@@ -22,7 +22,7 @@ class BlockDevice():
 
 
 @dataclass
-class MountableDevice():
+class MountableDevice:
     id: str
     name: str
     path: str
@@ -83,7 +83,6 @@ def get_block_devices() -> List[BlockDevice]:
         "--tree", "--json"
     ]
 
-    # Run lsblk
     result: subprocess.CompletedProcess[str] = subprocess.run(
         cmd, capture_output=True, text=True, check=True
     )
