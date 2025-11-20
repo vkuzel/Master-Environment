@@ -106,17 +106,17 @@ class MountableBlockDevice(MountableDevice):
 
         target_path = Path(self.mount_point)
         if target_path.exists():
-            print("Directory", self.mount_point, "already exists!")
+            error("Directory", self.mount_point, "already exists!")
             return
 
         result = sudo_runner.run(["mkdir", self.mount_point])
         if result.returncode != 0:
-            print("Cannot create directory:", result.stderr)
+            error("Cannot create directory:", result.stderr)
             return
 
         result = sudo_runner.run(["mount", self.path, self.mount_point])
         if result.returncode != 0:
-            print("Cannot mount:", result.stderr)
+            error("Cannot mount:", result.stderr)
             return
 
     def unmount(self, sudo_runner: SudoRunner):
@@ -124,13 +124,17 @@ class MountableBlockDevice(MountableDevice):
 
         result = sudo_runner.run(["umount", self.mount_point])
         if result.returncode != 0:
-            print("Cannot dismount:", result.stderr)
+            error("Cannot dismount:", result.stderr)
             return
 
         result = sudo_runner.run(["rmdir", self.mount_point])
         if result.returncode != 0:
-            print("Cannot remove directory:", result.stderr)
+            error("Cannot remove directory:", result.stderr)
             return
+
+
+def error(*args):
+    print("\033[31m", *args, "\033[0m", file=sys.stderr)
 
 
 def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
