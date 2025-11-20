@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-from dataclasses import dataclass
-import subprocess
 import json
 import re
-from pprint import pprint
-from typing import Any, TypedDict, List, Optional, Dict
+import subprocess
+from dataclasses import dataclass
+from typing import Any, List, Optional, Dict
 
 
 @dataclass
