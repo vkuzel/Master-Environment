@@ -28,19 +28,19 @@ class MountableDevice():
     is_mounted: bool
 
 
-def is_mountable(block_device: BlockDevice) -> bool:
-    if block_device.tran is not None or block_device.tran == "usb":
+def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
+    if not (parent_device.type == "disk" and parent_device.tran == "usb"):
         return False
 
-    if block_device.type not in ['part', 'disk', 'dm']:
+    if device.type not in ['part', 'dm']:
         return False
 
     """Zero size disks are (probably) card readers w/o a card inserted in them"""
-    if block_device.size == 0:
+    if device.size == 0:
         return False
 
     media_mountpoint_pattern = re.compile("^/media")
-    if block_device.mountpoint is not None and not media_mountpoint_pattern.match(block_device.mountpoint):
+    if device.mountpoint is not None and not media_mountpoint_pattern.match(device.mountpoint):
         return False
 
     return True
@@ -49,20 +49,22 @@ def is_mountable(block_device: BlockDevice) -> bool:
 def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[MountableDevice]:
     mountable_devices: List[MountableDevice] = []
     id = 0
-    for block_device in block_devices:
-        if not is_mountable(block_device):
-            continue
+    for parent_device in block_devices:
+        for device in parent_device.children:
+            if not is_mountable(parent_device, device):
+                continue
 
-        id = id + 1
-        label = f" ({block_device.label}) " if block_device.label is not None else ""
+            id = id + 1
+            label = f" ({device.label}) " if device.label is not None else ""
 
-        mountable_devices.append(MountableDevice(
-            id=id,
-            name=f"{block_device.path}[{block_device.fstype}]{label}",
-            path=block_device.path,
-            target=block_device.mountpoint if block_device.mountpoint is not None else f"/media/usb{id}",
-            is_mounted=block_device.mountpoint is not None,
-        ))
+            mountable_devices.append(MountableDevice(
+                id=id,
+                name=f"{device.path}[{device.fstype}]{label}",
+                path=device.path,
+                target=device.mountpoint if device.mountpoint is not None else f"/media/usb{id}",
+                is_mounted=device.mountpoint is not None,
+            ))
+
     return mountable_devices
 
 
@@ -70,7 +72,7 @@ def get_block_devices() -> List[BlockDevice]:
     cmd: list[str] = [
         "lsblk", "--bytes",
         "--output", "PATH,FSTYPE,LABEL,MOUNTPOINT,TRAN,TYPE,SIZE",
-        "--json"
+        "--tree", "--json"
     ]
 
     # Run lsblk
@@ -93,7 +95,8 @@ def get_block_devices() -> List[BlockDevice]:
         )
 
         if "children" in dev and isinstance(dev["children"], list):
-            device["children"] = [parse_device(child) for child in dev["children"]]
+            for child in dev["children"]:
+                device.children.append(parse_device(child))
 
         return device
 
