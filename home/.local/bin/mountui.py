@@ -257,6 +257,9 @@ def main():
                 mountable_device.unmount(sudo_runner)
             else:
                 mountable_device.mount(sudo_runner)
+            break
+    else:
+        print("exit")
 
 
 if __name__ == "__main__":
