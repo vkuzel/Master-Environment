@@ -34,18 +34,19 @@ class PasswordManager:
         if not sys.stdin.isatty():
             return input("Enter password:")
 
-        print("Enter password: ", end="", flush=True)
+        print("Enter password: |", end="", flush=True)
         fd = sys.stdin.fileno()
         old = termios.tcgetattr(fd)
         try:
             tty.setraw(fd)
             password = ""
-            while True:
+            for i in range(0, 1000):
                 ch = sys.stdin.read(1)
                 if ch in ("\n", "\r"):
                     break
                 else:
-                    print(".", end="", flush=True)
+                    spin=('/', '-', '\\', '|')[i % 4]
+                    print(f"\b{spin}", end="", flush=True)
                     password = password + ch
             return password
         finally:
