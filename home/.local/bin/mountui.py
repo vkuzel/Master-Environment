@@ -184,9 +184,9 @@ def main():
         if mountable_device.id == device_id:
             password_manager = PasswordManager()
             if mountable_device.is_mounted:
-                mountable_device.mount(password_manager)
-            else:
                 mountable_device.unmount(password_manager)
+            else:
+                mountable_device.mount(password_manager)
 
 
 if __name__ == "__main__":
