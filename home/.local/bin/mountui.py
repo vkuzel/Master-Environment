@@ -18,7 +18,7 @@ class BlockDevice:
     fstype: Optional[str]
     label: Optional[str]
     tran: Optional[str]
-    mountpoint: Optional[str]
+    mount_point: Optional[str]
     type: Optional[str]
     size: Optional[int]
     children: Optional[List["BlockDevice"]]  # recursive definition
@@ -62,19 +62,19 @@ class MountableDevice:
     id: str
     name: str
     path: str
-    target: str
+    mount_point: str
     is_mounted: bool
 
     def mount(self, password_manager: PasswordManager):
-        print("Mounting", self.path, "->", self.target)
+        print("Mounting", self.path, "->", self.mount_point)
 
-        target_path = Path(self.target)
+        target_path = Path(self.mount_point)
         if target_path.exists():
-            print("Directory", self.target, "already exists!")
+            print("Directory", self.mount_point, "already exists!")
             return
 
         result = subprocess.run(
-            ["sudo", "-S", "mkdir", self.target],
+            ["sudo", "-S", "mkdir", self.mount_point],
             capture_output=True,
             text=True,
             input=password_manager.get_password(),
@@ -84,7 +84,7 @@ class MountableDevice:
             return
 
         result = subprocess.run(
-            ["sudo", "-S", "mount", self.path, self.target],
+            ["sudo", "-S", "mount", self.path, self.mount_point],
             capture_output=True,
             text=True,
             input=password_manager.get_password(),
@@ -94,10 +94,10 @@ class MountableDevice:
             return
 
     def unmount(self, password_manager: PasswordManager):
-        print("Dismounting", self.path, "->", self.target)
+        print("Dismounting", self.path, "->", self.mount_point)
 
         result = subprocess.run(
-            ["sudo", "-S", "umount", self.target],
+            ["sudo", "-S", "umount", self.mount_point],
             capture_output=True,
             text=True,
             input=password_manager.get_password(),
@@ -107,7 +107,7 @@ class MountableDevice:
             return
 
         result = subprocess.run(
-            ["sudo", "-S", "rmdir", self.target],
+            ["sudo", "-S", "rmdir", self.mount_point],
             capture_output=True,
             text=True,
             input=password_manager.get_password(),
@@ -129,7 +129,7 @@ def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
         return False
 
     media_mountpoint_pattern = re.compile("^/media")
-    if device.mountpoint is not None and not media_mountpoint_pattern.match(device.mountpoint):
+    if device.mount_point is not None and not media_mountpoint_pattern.match(device.mount_point):
         return False
 
     return True
@@ -150,8 +150,8 @@ def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[Mountabl
                 id=str(device_id),
                 name=f"{device.path}[{device.fstype}]{label}",
                 path=device.path,
-                target=device.mountpoint if device.mountpoint is not None else f"/media/usb{device_id}",
-                is_mounted=bool(device.mountpoint),
+                mount_point=device.mount_point if device.mount_point is not None else f"/media/usb{device_id}",
+                is_mounted=bool(device.mount_point),
             ))
 
     return mountable_devices
@@ -176,7 +176,7 @@ def get_block_devices() -> List[BlockDevice]:
             fstype=dev.get("fstype"),
             label=dev.get("label"),
             tran=dev.get("tran"),
-            mountpoint=dev.get("mountpoint"),
+            mount_point=dev.get("mountpoint"),
             type=dev.get("type"),
             size=int(dev["size"]) if dev.get("size") is not None else None,
             children=[],
@@ -216,14 +216,14 @@ def main():
         id="d",
         name="/dev/null[dummy]",
         path="/dev/null",
-        target="/media/usbD",
+        mount_point="/media/usbD",
         is_mounted=False,
     ))
 
     print()
     for mountable_device in mountable_devices:
         mounted = f" \033[31m*mounted*\033[0m" if mountable_device.is_mounted else ""
-        print(f"{mountable_device.id}) {mountable_device.name} -> {mountable_device.target}{mounted}")
+        print(f"{mountable_device.id}) {mountable_device.name} -> {mountable_device.mount_point}{mounted}")
     print()
 
     device_id=read_char("Select disk:")
