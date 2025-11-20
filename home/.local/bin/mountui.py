@@ -56,20 +56,20 @@ def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
 
 def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[MountableDevice]:
     mountable_devices: List[MountableDevice] = []
-    id = 0
+    device_id = 0
     for parent_device in block_devices:
         for device in parent_device.children:
             if not is_mountable(parent_device, device):
                 continue
 
-            id = id + 1
+            device_id = device_id + 1
             label = f" ({device.label}) " if device.label is not None else ""
 
             mountable_devices.append(MountableDevice(
-                id=str(id),
+                id=str(device_id),
                 name=f"{device.path}[{device.fstype}]{label}",
                 path=device.path,
-                target=device.mountpoint if device.mountpoint is not None else f"/media/usb{id}",
+                target=device.mountpoint if device.mountpoint is not None else f"/media/usb{device_id}",
                 is_mounted=bool(device.mountpoint),
             ))
 
