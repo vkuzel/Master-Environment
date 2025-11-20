@@ -60,12 +60,28 @@ class SudoRunner:
     password_manager: PasswordManager
 
     def run(self, cmd: List[str]) -> subprocess.CompletedProcess[str]:
-        return subprocess.run(
-            args=["sudo", "-S"] + cmd,
+        if self._is_password_needed():
+            return subprocess.run(
+                args=["sudo", "-S"] + cmd,
+                capture_output=True,
+                text=True,
+                input=self.password_manager.get_password()
+            )
+        else:
+            return subprocess.run(
+                args=["sudo", "-n"] + cmd,
+                capture_output=True,
+                text=True,
+            )
+
+    @staticmethod
+    def _is_password_needed() -> bool:
+        result = subprocess.run(
+            args=["sudo", "-n", "true"],
             capture_output=True,
             text=True,
-            input=self.password_manager.get_password()
         )
+        return result.returncode != 0
 
 @dataclass
 class MountableDevice:
