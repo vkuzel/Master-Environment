@@ -142,15 +142,18 @@ def get_block_devices() -> List[BlockDevice]:
     return [parse_device(d) for d in data.get("blockdevices", [])]
 
 
-def read_key() -> str:
+def read_char(prompt: str) -> str:
     if not sys.stdin.isatty():
-        return input()
+        return input(prompt)
 
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
     try:
         tty.setraw(fd)
-        return sys.stdin.read(1)
+        print(prompt, end=" ", flush=True)
+        ch = sys.stdin.read(1)
+        print(ch)
+        return ch
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
@@ -173,9 +176,7 @@ def main():
         print(f"{mountable_device.id}) {mountable_device.name} -> {mountable_device.target}{mounted}")
     print()
 
-    print("Select disk: ")
-    device_id=read_key()
-    print(device_id)
+    device_id=read_char("Select disk:")
 
     for mountable_device in mountable_devices:
         if mountable_device.id == device_id:
