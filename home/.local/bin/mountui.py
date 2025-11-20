@@ -56,6 +56,18 @@ class PasswordManager:
 
 
 @dataclass
+class SudoRunner:
+    password_manager: PasswordManager
+
+    def run(self, cmd: List[str]) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            args=["sudo", "-S"] + cmd,
+            capture_output=True,
+            text=True,
+            input=self.password_manager.get_password()
+        )
+
+@dataclass
 class MountableDevice:
     id: str
     name: str
@@ -63,7 +75,7 @@ class MountableDevice:
     mount_point: str
     is_mounted: bool
 
-    def mount(self, password_manager: PasswordManager):
+    def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.path, "->", self.mount_point)
 
         target_path = Path(self.mount_point)
@@ -71,45 +83,25 @@ class MountableDevice:
             print("Directory", self.mount_point, "already exists!")
             return
 
-        result = subprocess.run(
-            ["sudo", "-S", "mkdir", self.mount_point],
-            capture_output=True,
-            text=True,
-            input=password_manager.get_password(),
-        )
+        result = sudo_runner.run(["mkdir", self.mount_point])
         if result.returncode != 0:
             print("Cannot create directory:", result.stderr)
             return
 
-        result = subprocess.run(
-            ["sudo", "-S", "mount", self.path, self.mount_point],
-            capture_output=True,
-            text=True,
-            input=password_manager.get_password(),
-        )
+        result = sudo_runner.run(["mount", self.path, self.mount_point])
         if result.returncode != 0:
             print("Cannot mount:", result.stderr)
             return
 
-    def unmount(self, password_manager: PasswordManager):
+    def unmount(self, sudo_runner: SudoRunner):
         print("Dismounting", self.path, "->", self.mount_point)
 
-        result = subprocess.run(
-            ["sudo", "-S", "umount", self.mount_point],
-            capture_output=True,
-            text=True,
-            input=password_manager.get_password(),
-        )
+        result = sudo_runner.run(["umount", self.mount_point])
         if result.returncode != 0:
             print("Cannot dismount:", result.stderr)
             return
 
-        result = subprocess.run(
-            ["sudo", "-S", "rmdir", self.mount_point],
-            capture_output=True,
-            text=True,
-            input=password_manager.get_password(),
-        )
+        result = sudo_runner.run(["rmdir", self.mount_point])
         if result.returncode != 0:
             print("Cannot remove directory:", result.stderr)
             return
@@ -229,10 +221,11 @@ def main():
     for mountable_device in mountable_devices:
         if mountable_device.id == device_id:
             password_manager = PasswordManager()
+            sudo_runner = SudoRunner(password_manager)
             if mountable_device.is_mounted:
-                mountable_device.unmount(password_manager)
+                mountable_device.unmount(sudo_runner)
             else:
-                mountable_device.mount(password_manager)
+                mountable_device.mount(sudo_runner)
 
 
 if __name__ == "__main__":
