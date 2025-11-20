@@ -21,6 +21,11 @@ class BlockDevice:
     children: Optional[List["BlockDevice"]]  # recursive definition
 
 
+class PasswordManager:
+    def get_password(self) -> str:
+        return "password"
+
+
 @dataclass
 class MountableDevice:
     id: str
@@ -29,11 +34,11 @@ class MountableDevice:
     target: str
     is_mounted: bool
 
-    def mount(self):
-        print("TODO mount ", self.name)
+    def mount(self, password_manager: PasswordManager):
+        print("TODO mount:", self.name, "with password:", password_manager.get_password())
 
-    def unmount(self):
-        print("TODO unmount ", self.name)
+    def unmount(self, password_manager: PasswordManager):
+        print("TODO unmount", self.name, "with password:", password_manager.get_password())
 
 
 def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
@@ -139,10 +144,11 @@ def main():
 
     for mountable_device in mountable_devices:
         if mountable_device.id == device_id:
+            password_manager = PasswordManager()
             if mountable_device.is_mounted:
-                mountable_device.mount()
+                mountable_device.mount(password_manager)
             else:
-                mountable_device.unmount()
+                mountable_device.unmount(password_manager)
 
 
 if __name__ == "__main__":
