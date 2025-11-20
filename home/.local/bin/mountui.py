@@ -132,6 +132,14 @@ def main():
     block_devices = get_block_devices()
     mountable_devices = resolve_mountable_devices(block_devices)
 
+    mountable_devices.append(MountableDevice(
+        id="d",
+        name="/dev/null[dummy]",
+        path="/dev/null",
+        target="/dev/null",
+        is_mounted=False,
+    ))
+
     print()
     for mountable_device in mountable_devices:
         mounted = f" \033[31m*mounted*\033[0m" if mountable_device.is_mounted else ""
