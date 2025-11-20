@@ -23,11 +23,17 @@ class BlockDevice():
 
 @dataclass
 class MountableDevice():
-    id: int
+    id: str
     name: str
     path: str
     target: str
     is_mounted: bool
+
+    def mount(self):
+        print("TODO mount ", self.name)
+
+    def unmount(self):
+        print("TODO unmount ", self.name)
 
 
 def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
@@ -60,7 +66,7 @@ def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[Mountabl
             label = f" ({device.label}) " if device.label is not None else ""
 
             mountable_devices.append(MountableDevice(
-                id=id,
+                id=str(id),
                 name=f"{device.path}[{device.fstype}]{label}",
                 path=device.path,
                 target=device.mountpoint if device.mountpoint is not None else f"/media/usb{id}",
@@ -131,3 +137,10 @@ if __name__ == "__main__":
     print("Select disk: ")
     device_id=read_key()
     print(device_id)
+
+    for mountable_device in mountable_devices:
+        if mountable_device.id == device_id:
+            if mountable_device.is_mounted:
+                mountable_device.mount()
+            else:
+                mountable_device.unmount()
