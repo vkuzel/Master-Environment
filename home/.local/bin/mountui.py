@@ -217,6 +217,7 @@ def main():
     block_devices = get_block_devices()
     mountable_devices = resolve_mountable_devices(block_devices)
 
+    # TODO Test device
     mountable_devices.append(MountableDevice(
         id="d",
         name="/dev/null[dummy]",
