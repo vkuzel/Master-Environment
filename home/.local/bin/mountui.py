@@ -123,7 +123,7 @@ def read_key() -> str:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 
-if __name__ == "__main__":
+def main():
     block_devices = get_block_devices()
     mountable_devices = resolve_mountable_devices(block_devices)
 
@@ -143,3 +143,7 @@ if __name__ == "__main__":
                 mountable_device.mount()
             else:
                 mountable_device.unmount()
+
+
+if __name__ == "__main__":
+    main()
