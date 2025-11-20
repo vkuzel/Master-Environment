@@ -47,10 +47,10 @@ class PasswordManager:
                 else:
                     print(".", end="", flush=True)
                     password = password + ch
-            print()
             return password
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
+            print()
 
 
 @dataclass
@@ -146,16 +146,17 @@ def read_char(prompt: str) -> str:
     if not sys.stdin.isatty():
         return input(prompt)
 
+    print(prompt, end=" ", flush=True)
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
+    ch = ""
     try:
         tty.setraw(fd)
-        print(prompt, end=" ", flush=True)
         ch = sys.stdin.read(1)
-        print(ch)
         return ch
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        print(ch)
 
 
 def main():
