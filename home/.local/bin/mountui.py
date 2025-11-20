@@ -22,8 +22,35 @@ class BlockDevice:
 
 
 class PasswordManager:
+    def __init__(self):
+        self._password: Optional[str] = None
+
     def get_password(self) -> str:
-        return "password"
+        if not self._password:
+            self._password = self._read_password()
+        return self._password
+
+    def _read_password(self):
+        if not sys.stdin.isatty():
+            return input("Enter password:")
+
+        print("Enter password: ", end="", flush=True)
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            password = ""
+            while True:
+                ch = sys.stdin.read(1)
+                if ch in ("\n", "\r"):
+                    break
+                else:
+                    print(".", end="", flush=True)
+                    password = password + ch
+            print()
+            return password
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 
 @dataclass
