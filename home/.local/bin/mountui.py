@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import re
 import subprocess
 import sys
@@ -153,7 +154,43 @@ class MountableBlockDevice(MountableDevice):
 
 @dataclass
 class MountableMtpDevice(MountableDevice):
-    pass
+    def is_mounted(self) -> bool:
+        # Fast but fuzzy solution. Better approach would be to call `mount`
+        path = Path(self.mount_point)
+        return path.exists()
+
+    def mount(self, sudo_runner: SudoRunner):
+        print("Mounting", self.name, "->", self.mount_point)
+
+        path = Path(self.mount_point)
+        if path.exists():
+            error("Directory", self.mount_point, "already exists!")
+            return
+
+        result = sudo_runner.run(["mkdir", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot create directory:", result.stderr)
+            return
+
+        uid = os.getuid()
+        result = sudo_runner.run(["jmtpfs", "-o", f"uid={uid}", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot mount:", result.stderr)
+            return
+
+    def unmount(self, sudo_runner: SudoRunner):
+        print("Dismounting", self.name, "->", self.mount_point)
+
+        result = sudo_runner.run(["fusermount", "-u", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot dismount:", result.stderr)
+            return
+
+        result = sudo_runner.run(["rmdir", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot remove directory:", result.stderr)
+            return
+
 
 class BlockDevicesFactory:
     def resolve(self) -> List[BlockDevice]:
