@@ -27,10 +27,8 @@ class BlockDevice:
 class MtpDevice:
     busLocation: int
     devNum: int
-    productId: str
-    vendorId: str
-    product: str
-    vendor: str
+    id: str
+    name: str
 
 
 class PasswordManager:
@@ -154,6 +152,9 @@ class MountableBlockDevice(MountableDevice):
 
 @dataclass
 class MountableMtpDevice(MountableDevice):
+    busLocation: int
+    devNum: int
+
     def is_mounted(self) -> bool:
         # Fast but fuzzy solution. Better approach would be to call `mount`
         path = Path(self.mount_point)
@@ -173,7 +174,9 @@ class MountableMtpDevice(MountableDevice):
             return
 
         uid = os.getuid()
-        result = sudo_runner.run(["jmtpfs", "-o", f"uid={uid}", self.mount_point])
+        result = sudo_runner.run(
+            ["jmtpfs", f"-device={self.busLocation},{self.devNum}", "-o", f"uid={uid}", self.mount_point],
+        )
         if result.returncode != 0:
             error("Cannot mount:", result.stderr)
             return
@@ -227,19 +230,19 @@ class BlockDevicesFactory:
 
 class MtpDevicesFactory:
     def resolve(self) -> List[MtpDevice]:
-        result = self._run_jmtpfs()
+        result = self._run_lsusb()
         if result.returncode != 0:
             error("Cannot get MTP devices:", result.stderr)
             return []
 
-        raw_device_pattern = r'^(\d+),\s*(\d+),\s*(0x[0-9a-fA-F]+),\s*(0x[0-9a-fA-F]+),\s*(.*?),\s*([^,]+)$'
+        raw_device_pattern = r'^Bus (\d+) Device (\d+): ID ([0-9a-fA-F]+:[0-9a-fA-F]+) (.+MTP mode.*)$'
         raw_devices = [match.groups() for match in re.finditer(raw_device_pattern, result.stdout, re.MULTILINE)]
         return [self._parse_device(raw_device) for raw_device in raw_devices]
 
     @staticmethod
-    def _run_jmtpfs() -> subprocess.CompletedProcess[str]:
+    def _run_lsusb() -> subprocess.CompletedProcess[str]:
         return subprocess.run(
-            args=["jmtpfs", "-l"],
+            args=["lsusb"],
             capture_output=True,
             text=True,
         )
@@ -249,10 +252,8 @@ class MtpDevicesFactory:
         return MtpDevice(
             busLocation=int(raw_device[0]),
             devNum=int(raw_device[1]),
-            productId=raw_device[2].strip(),
-            vendorId=raw_device[3].strip(),
-            product=raw_device[4].strip(),
-            vendor=raw_device[5].strip(),
+            id=raw_device[2],
+            name=raw_device[3],
         )
 
 
@@ -281,8 +282,10 @@ class MountableDevicesFactory:
 
             mountable_devices.append(MountableMtpDevice(
                 id=str(device_id),
-                name=f"{device.vendor} {device.product}",
+                name=device.name,
                 mount_point=f"/media/android",
+                busLocation=device.busLocation,
+                devNum=device.devNum,
             ))
 
         return mountable_devices
