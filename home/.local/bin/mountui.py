@@ -99,7 +99,6 @@ class SudoRunner:
 class MountableDevice:
     id: str
     name: str
-    path: str
     mount_point: str
     is_mounted: bool
 
@@ -112,6 +111,8 @@ class MountableDevice:
 
 @dataclass
 class MountableBlockDevice(MountableDevice):
+    path: str
+
     def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.path, "->", self.mount_point)
 
@@ -238,7 +239,6 @@ class MountableDevicesFactory:
             mountable_devices.append(MountableMtpDevice(
                 id=str(device_id),
                 name=f"{device.vendor} {device.product}",
-                path="unknown",
                 mount_point=f"/media/android",
                 is_mounted=False,
             ))
