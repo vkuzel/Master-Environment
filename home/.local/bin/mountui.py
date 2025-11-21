@@ -144,6 +144,10 @@ class MountableBlockDevice(MountableDevice):
             return
 
 
+@dataclass
+class MountableMtpDevice(MountableDevice):
+    pass
+
 class BlockDevicesFactory:
     def resolve(self) -> List[BlockDevice]:
         result = self._run_lsblk()
@@ -201,15 +205,15 @@ class MtpDevicesFactory:
         return MtpDevice(
             busLocation=int(raw_device[0]),
             devNum=int(raw_device[1]),
-            productId=raw_device[2],
-            vendorId=raw_device[3],
-            product=raw_device[4],
-            vendor=raw_device[5],
+            productId=raw_device[2].strip(),
+            vendorId=raw_device[3].strip(),
+            product=raw_device[4].strip(),
+            vendor=raw_device[5].strip(),
         )
 
 
 class MountableDevicesFactory:
-    def resolve(self, block_devices: List[BlockDevice]) -> List[MountableDevice]:
+    def resolve(self, block_devices: List[BlockDevice], mtp_devices: List[MtpDevice]) -> List[MountableDevice]:
         mountable_devices: List[MountableDevice] = []
         device_id = 0
         for parent_device in block_devices:
@@ -227,6 +231,17 @@ class MountableDevicesFactory:
                     mount_point=device.mount_point if device.mount_point is not None else f"/media/usb{device_id}",
                     is_mounted=bool(device.mount_point),
                 ))
+
+        for device in mtp_devices:
+            device_id = device_id + 1
+
+            mountable_devices.append(MountableMtpDevice(
+                id=str(device_id),
+                name=f"{device.vendor} {device.product}",
+                path="unknown",
+                mount_point=f"/media/android",
+                is_mounted=False,
+            ))
 
         return mountable_devices
 
@@ -273,7 +288,7 @@ def read_char(prompt: str) -> str:
 def main():
     block_devices = BlockDevicesFactory().resolve()
     mtp_devices = MtpDevicesFactory().resolve()
-    mountable_devices = MountableDevicesFactory().resolve(block_devices)
+    mountable_devices = MountableDevicesFactory().resolve(block_devices, mtp_devices)
 
     # TODO Test device
     mountable_devices.append(MountableBlockDevice(
