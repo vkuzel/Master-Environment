@@ -189,17 +189,23 @@ class MountableMtpDevice(MountableDevice):
             path.stat()
         except OSError:
             error("Mounted device not accessible, enable MTP on your phone and try it again!")
-            # Prevent busy device error
-            time.sleep(1)
             self.unmount(sudo_runner)
 
     def unmount(self, sudo_runner: SudoRunner):
         print("Dismounting", self.name, "->", self.mount_point)
 
-        result = sudo_runner.run(["fusermount", "-u", self.mount_point])
-        if result.returncode != 0:
-            error("Cannot dismount:", result.stderr)
-            return
+        while True:
+            result = sudo_runner.run(["fusermount", "-u", self.mount_point])
+            if result.returncode == 1 and "busy" in result.stderr:
+                print(".", end="", flush=True)
+                time.sleep(1)
+                continue
+            elif result.returncode != 0:
+                error("Cannot dismount:", result.stderr)
+                return
+            else:
+                print()
+                break
 
         result = sudo_runner.run(["rmdir", self.mount_point])
         if result.returncode != 0:
