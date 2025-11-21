@@ -174,8 +174,15 @@ class MountableMtpDevice(MountableDevice):
             return
 
         uid = os.getuid()
-        result = sudo_runner.run(
-            ["jmtpfs", f"-device={self.busLocation},{self.devNum}", "-o", f"uid={uid}", self.mount_point],
+        result = sudo_runner.run(["chown", f"{uid}", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot mount:", result.stderr)
+            return
+
+        result = subprocess.run(
+            args=["jmtpfs", f"-device={self.busLocation},{self.devNum}", self.mount_point],
+            capture_output=True,
+            text=True,
         )
         if result.returncode != 0:
             error("Cannot mount:", result.stderr)
