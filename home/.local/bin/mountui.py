@@ -134,48 +134,49 @@ class MountableBlockDevice(MountableDevice):
             return
 
 
+class MountableDevicesFactory:
+    def resolve(self, block_devices: List[BlockDevice]) -> List[MountableDevice]:
+        mountable_devices: List[MountableDevice] = []
+        device_id = 0
+        for parent_device in block_devices:
+            for device in parent_device.children:
+                if not self.is_mountable(parent_device, device):
+                    continue
+
+                device_id = device_id + 1
+                label = f" ({device.label}) " if device.label is not None else ""
+
+                mountable_devices.append(MountableBlockDevice(
+                    id=str(device_id),
+                    name=f"{device.path}[{device.fstype}]{label}",
+                    path=device.path,
+                    mount_point=device.mount_point if device.mount_point is not None else f"/media/usb{device_id}",
+                    is_mounted=bool(device.mount_point),
+                ))
+
+        return mountable_devices
+
+    @staticmethod
+    def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
+        if not (parent_device.type == "disk" and parent_device.tran == "usb"):
+            return False
+
+        if device.type not in ['part', 'dm']:
+            return False
+
+        # Zero size disks are (probably) card readers w/o a card inserted in them
+        if device.size == 0:
+            return False
+
+        media_mount_point_pattern = re.compile("^/media")
+        if device.mount_point is not None and not media_mount_point_pattern.match(device.mount_point):
+            return False
+
+        return True
+
+
 def error(*args):
     print("\033[31m", *args, "\033[0m", file=sys.stderr)
-
-
-def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
-    if not (parent_device.type == "disk" and parent_device.tran == "usb"):
-        return False
-
-    if device.type not in ['part', 'dm']:
-        return False
-
-    # Zero size disks are (probably) card readers w/o a card inserted in them
-    if device.size == 0:
-        return False
-
-    media_mount_point_pattern = re.compile("^/media")
-    if device.mount_point is not None and not media_mount_point_pattern.match(device.mount_point):
-        return False
-
-    return True
-
-
-def resolve_mountable_devices(block_devices: List[BlockDevice]) -> List[MountableDevice]:
-    mountable_devices: List[MountableDevice] = []
-    device_id = 0
-    for parent_device in block_devices:
-        for device in parent_device.children:
-            if not is_mountable(parent_device, device):
-                continue
-
-            device_id = device_id + 1
-            label = f" ({device.label}) " if device.label is not None else ""
-
-            mountable_devices.append(MountableBlockDevice(
-                id=str(device_id),
-                name=f"{device.path}[{device.fstype}]{label}",
-                path=device.path,
-                mount_point=device.mount_point if device.mount_point is not None else f"/media/usb{device_id}",
-                is_mounted=bool(device.mount_point),
-            ))
-
-    return mountable_devices
 
 
 def get_block_devices() -> List[BlockDevice]:
@@ -230,7 +231,7 @@ def read_char(prompt: str) -> str:
 
 def main():
     block_devices = get_block_devices()
-    mountable_devices = resolve_mountable_devices(block_devices)
+    mountable_devices = MountableDevicesFactory().resolve(block_devices)
 
     # TODO Test device
     mountable_devices.append(MountableBlockDevice(
