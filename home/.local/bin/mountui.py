@@ -100,7 +100,9 @@ class MountableDevice:
     id: str
     name: str
     mount_point: str
-    is_mounted: bool
+
+    def is_mounted(self) -> bool:
+        pass
 
     def mount(self, sudo_runner: SudoRunner):
         pass
@@ -112,6 +114,10 @@ class MountableDevice:
 @dataclass
 class MountableBlockDevice(MountableDevice):
     path: str
+    _is_mounted: bool
+
+    def is_mounted(self) -> bool:
+        return self._is_mounted
 
     def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.path, "->", self.mount_point)
@@ -230,7 +236,7 @@ class MountableDevicesFactory:
                     name=f"{device.path}[{device.fstype}]{label}",
                     path=device.path,
                     mount_point=device.mount_point if device.mount_point is not None else f"/media/usb{device_id}",
-                    is_mounted=bool(device.mount_point),
+                    _is_mounted=bool(device.mount_point),
                 ))
 
         for device in mtp_devices:
@@ -240,7 +246,6 @@ class MountableDevicesFactory:
                 id=str(device_id),
                 name=f"{device.vendor} {device.product}",
                 mount_point=f"/media/android",
-                is_mounted=False,
             ))
 
         return mountable_devices
@@ -296,12 +301,12 @@ def main():
         name="/dev/null[dummy]",
         path="/dev/null",
         mount_point="/media/usbD",
-        is_mounted=False,
+        _is_mounted=False,
     ))
 
     print()
     for mountable_device in mountable_devices:
-        mounted = f" \033[31m*mounted*\033[0m" if mountable_device.is_mounted else ""
+        mounted = f" \033[31m*mounted*\033[0m" if mountable_device.is_mounted() else ""
         print(f"{mountable_device.id}) {mountable_device.name} -> {mountable_device.mount_point}{mounted}")
     print()
 
@@ -311,7 +316,7 @@ def main():
         if mountable_device.id == device_id:
             password_manager = PasswordManager()
             sudo_runner = SudoRunner(password_manager)
-            if mountable_device.is_mounted:
+            if mountable_device.is_mounted():
                 mountable_device.unmount(sudo_runner)
             else:
                 mountable_device.mount(sudo_runner)
