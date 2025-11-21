@@ -56,8 +56,7 @@ class PasswordManager:
                 if ch in ("\n", "\r"):
                     break
                 else:
-                    spin=('/', '-', '\\', '|')[i % 4]
-                    print(f"\b{spin}", end="", flush=True)
+                    spin(i)
                     password = password + ch
             return password
         finally:
@@ -194,10 +193,13 @@ class MountableMtpDevice(MountableDevice):
     def unmount(self, sudo_runner: SudoRunner):
         print("Dismounting", self.name, "->", self.mount_point)
 
-        while True:
+        for i in range(0, 1000):
             result = sudo_runner.run(["fusermount", "-u", self.mount_point])
             if result.returncode == 1 and "busy" in result.stderr:
-                print(".", end="", flush=True)
+                if i == 0:
+                    print("Device is busy |", end="", flush=True)
+                else:
+                    spin(i)
                 time.sleep(1)
                 continue
             elif result.returncode != 0:
@@ -325,6 +327,11 @@ class MountableDevicesFactory:
             return False
 
         return True
+
+
+def spin(i: int):
+    symbol = ('/', '-', '\\', '|')[i % 4]
+    print(f"\b{symbol}", end="", flush=True)
 
 
 def error(*args):
