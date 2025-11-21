@@ -134,6 +134,39 @@ class MountableBlockDevice(MountableDevice):
             return
 
 
+class BlockDevicesFactory:
+    def resolve(self) -> List[BlockDevice]:
+        result = self._run_lsblk()
+        if result.returncode != 0:
+            error("Cannot get devices:", result.stderr)
+            return []
+
+        json_devices: Dict[str, Any] = json.loads(result.stdout)
+        raw_devices = json_devices.get("blockdevices", [])
+        return [self._parse_device(raw_device) for raw_device in raw_devices]
+
+    @staticmethod
+    def _run_lsblk() -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            args=["lsblk", "--bytes", "--tree", "--json", "--output", "PATH,FSTYPE,LABEL,MOUNTPOINT,TRAN,TYPE,SIZE"],
+            capture_output=True,
+            text=True,
+        )
+
+    def _parse_device(self, raw_device: Dict[str, Any]) -> BlockDevice:
+        raw_children = raw_device.get("children", [])
+        return BlockDevice(
+            path=raw_device.get("path"),
+            fstype=raw_device.get("fstype"),
+            label=raw_device.get("label"),
+            tran=raw_device.get("tran"),
+            mount_point=raw_device.get("mountpoint"),
+            type=raw_device.get("type"),
+            size=int(raw_device["size"]) if raw_device.get("size") is not None else None,
+            children=[self._parse_device(raw_device) for raw_device in raw_children],
+        )
+
+
 class MountableDevicesFactory:
     def resolve(self, block_devices: List[BlockDevice]) -> List[MountableDevice]:
         mountable_devices: List[MountableDevice] = []
@@ -179,39 +212,6 @@ def error(*args):
     print("\033[31m", *args, "\033[0m", file=sys.stderr)
 
 
-def get_block_devices() -> List[BlockDevice]:
-    cmd: list[str] = [
-        "lsblk", "--bytes", "--tree", "--json",
-        "--output", "PATH,FSTYPE,LABEL,MOUNTPOINT,TRAN,TYPE,SIZE",
-    ]
-
-    result: subprocess.CompletedProcess[str] = subprocess.run(
-        cmd, capture_output=True, text=True, check=True
-    )
-
-    data: Dict[str, Any] = json.loads(result.stdout)
-
-    def parse_device(dev: Dict[str, Any]) -> BlockDevice:
-        device: BlockDevice = BlockDevice(
-            path=dev.get("path"),
-            fstype=dev.get("fstype"),
-            label=dev.get("label"),
-            tran=dev.get("tran"),
-            mount_point=dev.get("mountpoint"),
-            type=dev.get("type"),
-            size=int(dev["size"]) if dev.get("size") is not None else None,
-            children=[],
-        )
-
-        if "children" in dev and isinstance(dev["children"], list):
-            for child in dev["children"]:
-                device.children.append(parse_device(child))
-
-        return device
-
-    return [parse_device(d) for d in data.get("blockdevices", [])]
-
-
 def read_char(prompt: str) -> str:
     if not sys.stdin.isatty():
         return input(prompt)
@@ -230,7 +230,7 @@ def read_char(prompt: str) -> str:
 
 
 def main():
-    block_devices = get_block_devices()
+    block_devices = BlockDevicesFactory().resolve()
     mountable_devices = MountableDevicesFactory().resolve(block_devices)
 
     # TODO Test device
