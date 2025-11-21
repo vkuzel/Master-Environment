@@ -7,7 +7,7 @@ import termios
 import tty
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List, Optional, Dict
+from typing import Any, List, Optional, Dict, Tuple
 
 
 @dataclass
@@ -20,6 +20,16 @@ class BlockDevice:
     type: Optional[str]
     size: Optional[int]
     children: Optional[List["BlockDevice"]]  # recursive definition
+
+
+@dataclass
+class MtpDevice:
+    busLocation: int
+    devNum: int
+    productId: str
+    vendorId: str
+    product: str
+    vendor: str
 
 
 class PasswordManager:
@@ -167,6 +177,37 @@ class BlockDevicesFactory:
         )
 
 
+class MtpDevicesFactory:
+    def resolve(self) -> List[MtpDevice]:
+        result = self._run_jmtpfs()
+        if result.returncode != 0:
+            error("Cannot get MTP devices:", result.stderr)
+            return []
+
+        raw_device_pattern = r'^(\d+),\s*(\d+),\s*(0x[0-9a-fA-F]+),\s*(0x[0-9a-fA-F]+),\s*(.*?),\s*([^,]+)$'
+        raw_devices = [match.groups() for match in re.finditer(raw_device_pattern, result.stdout, re.MULTILINE)]
+        return [self._parse_device(raw_device) for raw_device in raw_devices]
+
+    @staticmethod
+    def _run_jmtpfs() -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            args=["jmtpfs", "-l"],
+            capture_output=True,
+            text=True,
+        )
+
+    @staticmethod
+    def _parse_device(raw_device: Tuple[str, ...]) -> MtpDevice:
+        return MtpDevice(
+            busLocation=int(raw_device[0]),
+            devNum=int(raw_device[1]),
+            productId=raw_device[2],
+            vendorId=raw_device[3],
+            product=raw_device[4],
+            vendor=raw_device[5],
+        )
+
+
 class MountableDevicesFactory:
     def resolve(self, block_devices: List[BlockDevice]) -> List[MountableDevice]:
         mountable_devices: List[MountableDevice] = []
@@ -231,6 +272,7 @@ def read_char(prompt: str) -> str:
 
 def main():
     block_devices = BlockDevicesFactory().resolve()
+    mtp_devices = MtpDevicesFactory().resolve()
     mountable_devices = MountableDevicesFactory().resolve(block_devices)
 
     # TODO Test device
