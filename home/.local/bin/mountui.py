@@ -5,6 +5,7 @@ import re
 import subprocess
 import sys
 import termios
+import time
 import tty
 from dataclasses import dataclass
 from pathlib import Path
@@ -163,11 +164,6 @@ class MountableMtpDevice(MountableDevice):
     def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.name, "->", self.mount_point)
 
-        path = Path(self.mount_point)
-        if path.exists():
-            error("Directory", self.mount_point, "already exists!")
-            return
-
         result = sudo_runner.run(["mkdir", self.mount_point])
         if result.returncode != 0:
             error("Cannot create directory:", result.stderr)
@@ -187,6 +183,15 @@ class MountableMtpDevice(MountableDevice):
         if result.returncode != 0:
             error("Cannot mount:", result.stderr)
             return
+
+        path = Path(self.mount_point)
+        try:
+            path.stat()
+        except OSError:
+            error("Mounted device not accessible, enable MTP on your phone and try it again!")
+            # Prevent busy device error
+            time.sleep(1)
+            self.unmount(sudo_runner)
 
     def unmount(self, sudo_runner: SudoRunner):
         print("Dismounting", self.name, "->", self.mount_point)
