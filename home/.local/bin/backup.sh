@@ -19,7 +19,7 @@ hostname=$(hostname)
 currentYear=$(date "+%Y")
 backupDir="$backupDevice/$hostname/$currentYear"
 
-read -p "Backup into $backupDir? [y/N]" answer
+read -p "Backup into $backupDir [y/N]" answer
 [[ "y" == "$answer" || "Y" == "$answer" ]] || exit
 
 rsync \
