@@ -113,6 +113,7 @@ class MountableDevice:
 
 @dataclass
 class MountableBlockDevice(MountableDevice):
+    fstype: str
     path: str
     mounted: bool
 
@@ -125,7 +126,20 @@ class MountableBlockDevice(MountableDevice):
         if not self._setup_mount_point(sudo_runner):
             return
 
-        result = sudo_runner.run(["mount", self.path, self.mount_point])
+        options = ["nosuid", "nodev"]
+        # ext4 does not support mounting w/ specific user
+        if self.fstype != "ext4":
+            uid = os.getuid()
+            options.append(f"uid={uid}")
+            gid = os.getgid()
+            options.append(f"gid={gid}")
+
+        result = sudo_runner.run([
+            "mount",
+            "--options", ",".join(options),
+            self.path,
+            self.mount_point
+        ])
         if result.returncode != 0:
             error("Cannot mount:", result.stderr)
             self._cleanup_mount_point(sudo_runner)
@@ -309,6 +323,7 @@ class MountableDevicesFactory:
                 mountable_devices.append(MountableBlockDevice(
                     id=str(device_id),
                     name=f"{device.path}[{device.fstype}]{label}",
+                    fstype=device.fstype,
                     path=device.path,
                     mount_point=device.mount_point if device.mount_point is not None else f"/media/usb{device_id}",
                     mounted=bool(device.mount_point),
@@ -440,6 +455,7 @@ def main():
     mountable_devices.append(MountableBlockDevice(
         id="d",
         name="/dev/null[dummy]",
+        fstype="unknown",
         path="/dev/null",
         mount_point="/media/usbD",
         mounted=False,
