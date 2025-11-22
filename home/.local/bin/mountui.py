@@ -280,7 +280,7 @@ class MountableDevicesFactory:
         device_id = 0
         for parent_device in block_devices:
             for device in parent_device.children:
-                if not self.is_mountable(parent_device, device):
+                if not self.is_mountable_block(parent_device, device):
                     continue
 
                 device_id = device_id + 1
@@ -321,7 +321,7 @@ class MountableDevicesFactory:
         return mountable_devices
 
     @staticmethod
-    def is_mountable(parent_device: BlockDevice, device: BlockDevice) -> bool:
+    def is_mountable_block(parent_device: BlockDevice, device: BlockDevice) -> bool:
         if not (parent_device.type == "disk" and parent_device.tran == "usb"):
             return False
 
