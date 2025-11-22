@@ -113,10 +113,10 @@ class MountableDevice:
 @dataclass
 class MountableBlockDevice(MountableDevice):
     path: str
-    _is_mounted: bool
+    mounted: bool
 
     def is_mounted(self) -> bool:
-        return self._is_mounted
+        return self.mounted
 
     def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.path, "->", self.mount_point)
@@ -291,7 +291,7 @@ class MountableDevicesFactory:
                     name=f"{device.path}[{device.fstype}]{label}",
                     path=device.path,
                     mount_point=device.mount_point if device.mount_point is not None else f"/media/usb{device_id}",
-                    _is_mounted=bool(device.mount_point),
+                    mounted=bool(device.mount_point),
                 ))
 
         for device in block_devices:
@@ -395,7 +395,7 @@ def main():
         name="/dev/null[dummy]",
         path="/dev/null",
         mount_point="/media/usbD",
-        _is_mounted=False,
+        mounted=False,
     ))
 
     print()
