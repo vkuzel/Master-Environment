@@ -8,7 +8,18 @@ remove_file() {
   local fileName=$1
 
   info "=== Delete file $fileName ==="
-  if [[ -d "$fileName" ]]; then
+  if [[ -f "$fileName" ]]; then
+    rm "$fileName"
+  else
+    info "Already removed"
+  fi
+}
+
+remove_link() {
+  local fileName=$1
+
+  info "=== Delete link $fileName ==="
+  if [[ -h "$fileName" ]]; then
     rm "$fileName"
   else
     info "Already removed"
@@ -43,3 +54,4 @@ purge_apt_package vim
 remove_dir "$HOME/.local/share/gedit"
 remove_dir "$HOME/.local/config/gedit"
 remove_file "$HOME/.vimrc"
+remove_link "$HOME/.local/bin/mountui.sh"
