@@ -304,13 +304,16 @@ class MountableDevicesFactory:
                 continue
 
             device_id = device_id + 1
+            mount_point = f"/media/encrypted{device_id}"
+            if len(device.children) == 1 and device.children[0].mount_point:
+                mount_point = device.children[0].mount_point
 
             mountable_devices.append(MountableVeraCryptDevice(
                 id=str(device_id),
                 name=f"{device.path}[encrypted]",
                 path=device.path,
-                mount_point=device.mount_point if device.mount_point is not None else f"/media/encrypted{device_id}",
-                mounted=bool(device.mount_point),
+                mount_point=mount_point,
+                mounted=len(device.children) == 1,
             ))
 
         for device in mtp_devices:
@@ -338,7 +341,7 @@ class MountableDevicesFactory:
         if device.size == 0:
             return False
 
-        media_mount_point_pattern = re.compile("^/media")
+        media_mount_point_pattern = re.compile("^/media/usb")
         if device.mount_point is not None and not media_mount_point_pattern.match(device.mount_point):
             return False
 
@@ -359,10 +362,9 @@ class MountableDevicesFactory:
 
         # It would be better to detect encrypted device by reading few bytes
         # off it, detect there is no known filesystem, and calculate entropy.
-        if len(device.children) != 0:
-            return False
-
-        return True
+        unmounted_crypt = len(device.children) == 0
+        mounted_crypt = len(device.children) == 1 and "veracrypt" in device.children[0].path
+        return unmounted_crypt or mounted_crypt
 
 
 def password_prompt(prompt: str) -> str:
