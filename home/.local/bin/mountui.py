@@ -32,20 +32,9 @@ class MtpDevice:
     name: str
 
 
-class PasswordManager:
+class SudoRunner:
     def __init__(self):
         self._password: Optional[str] = None
-
-    def get_password(self) -> str:
-        if not self._password:
-            user = getpass.getuser()
-            self._password = password_prompt(f"Sudo password for {user}:")
-        return self._password
-
-
-@dataclass
-class SudoRunner:
-    password_manager: PasswordManager
 
     def run(self, cmd: List[str]) -> subprocess.CompletedProcess[str]:
         if self._is_password_needed():
@@ -53,7 +42,7 @@ class SudoRunner:
                 args=["sudo", "-S"] + cmd,
                 capture_output=True,
                 text=True,
-                input=self.password_manager.get_password()
+                input=self._get_password()
             )
         else:
             return subprocess.run(
@@ -71,6 +60,12 @@ class SudoRunner:
             text=True,
         )
         return result.returncode != 0
+
+    def _get_password(self) -> str:
+        if not self._password:
+            user = getpass.getuser()
+            self._password = password_prompt(f"[sudo] password for {user}:")
+        return self._password
 
 
 @dataclass
@@ -411,8 +406,7 @@ def main():
 
     for mountable_device in mountable_devices:
         if mountable_device.id == device_id:
-            password_manager = PasswordManager()
-            sudo_runner = SudoRunner(password_manager)
+            sudo_runner = SudoRunner()
             if mountable_device.is_mounted():
                 mountable_device.unmount(sudo_runner)
             else:
