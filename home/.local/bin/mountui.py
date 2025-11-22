@@ -216,6 +216,22 @@ class MountableVeraCryptDevice(MountableDevice):
             # TODO Cleanup mount point
             return
 
+    def unmount(self, sudo_runner: SudoRunner):
+        print("Dismounting", self.name, "->", self.mount_point)
+
+        result = sudo_runner.run([
+            "veracrypt", "--text",
+            "--unmount", self.mount_point,
+        ])
+        if result.returncode != 0:
+            error("Cannot dismount:", result.stderr)
+            return
+
+        result = sudo_runner.run(["rmdir", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot remove directory:", result.stderr)
+            return
+
 
 class BlockDevicesFactory:
     def resolve(self) -> List[BlockDevice]:
