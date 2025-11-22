@@ -13,6 +13,19 @@ from pathlib import Path
 from typing import Any, List, Optional, Dict, Tuple
 
 
+@dataclass(frozen=True)
+class Success:
+    pass
+
+
+@dataclass(frozen=True)
+class Error:
+    msg: str
+
+
+Result = Success | Error
+
+
 @dataclass
 class BlockDevice:
     path: Optional[str]
@@ -84,32 +97,28 @@ class MountableDevice:
     def unmount(self, sudo_runner: SudoRunner):
         pass
 
-    def _setup_mount_point(self, sudo_runner: SudoRunner) -> bool:
+    def _setup_mount_point(self, sudo_runner: SudoRunner) -> Result:
         target_path = Path(self.mount_point)
         if target_path.exists():
-            error("Directory", self.mount_point, "already exists!")
-            return False
+            return Error(f"Directory {self.mount_point} already exists!")
 
         result = sudo_runner.run(["mkdir", self.mount_point])
         if result.returncode != 0:
-            error("Cannot create directory:", result.stderr)
-            return False
+            return Error(f"Cannot create directory: {result.stderr}")
 
         uid = os.getuid()
         result = sudo_runner.run(["chown", f"{uid}", self.mount_point])
         if result.returncode != 0:
-            error("Cannot mount:", result.stderr)
-            return False
+            return Error(f"Cannot chown: {result.stderr}")
 
-        return True
+        return Success()
 
-    def _cleanup_mount_point(self, sudo_runner: SudoRunner) -> bool:
+    def _cleanup_mount_point(self, sudo_runner: SudoRunner) -> Result:
         result = sudo_runner.run(["rmdir", self.mount_point])
         if result.returncode != 0:
-            error("Cannot remove directory:", result.stderr)
-            return False
+            return Error("Cannot remove directory: {result.stderr}")
 
-        return True
+        return Success()
 
 
 @dataclass
@@ -121,11 +130,12 @@ class MountableBlockDevice(MountableDevice):
     def is_mounted(self) -> bool:
         return self.mounted
 
-    def mount(self, sudo_runner: SudoRunner):
+    def mount(self, sudo_runner: SudoRunner) -> Result:
         print("Mounting", self.path, "->", self.mount_point)
 
-        if not self._setup_mount_point(sudo_runner):
-            return
+        result = self._setup_mount_point(sudo_runner)
+        if isinstance(result, Error):
+            return result
 
         options = ["nosuid", "nodev"]
         # ext4 does not support mounting w/ specific user
@@ -142,21 +152,22 @@ class MountableBlockDevice(MountableDevice):
             self.mount_point
         ])
         if result.returncode != 0:
-            error("Cannot mount:", result.stderr)
             self._cleanup_mount_point(sudo_runner)
-            return
+            return Error(f"Cannot mount: {result.stderr}")
 
-    def unmount(self, sudo_runner: SudoRunner):
+        return Success()
+
+    def unmount(self, sudo_runner: SudoRunner) -> Result:
         print("Dismounting", self.path, "->", self.mount_point)
 
         result = sudo_runner.run(["umount", self.mount_point])
         if result.returncode != 0:
-            error("Cannot dismount:", result.stderr)
-            return
+            return Error(f"Cannot dismount: {result.stderr}")
 
-        if not self._cleanup_mount_point(sudo_runner):
-            return
+        result = self._cleanup_mount_point(sudo_runner)
+        if isinstance(result, Error): return result
 
+        return Success()
 
 @dataclass
 class MountableMtpDevice(MountableDevice):
@@ -171,8 +182,9 @@ class MountableMtpDevice(MountableDevice):
     def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.name, "->", self.mount_point)
 
-        if not self._setup_mount_point(sudo_runner):
-            return
+        result = self._setup_mount_point(sudo_runner)
+        if isinstance(result, Error):
+            return result
 
         result = subprocess.run(
             args=["jmtpfs", f"-device={self.busLocation},{self.devNum}", self.mount_point],
@@ -180,27 +192,30 @@ class MountableMtpDevice(MountableDevice):
             text=True,
         )
         if result.returncode != 0:
-            error("Cannot mount:", result.stderr)
             self._cleanup_mount_point(sudo_runner)
-            return
+            return Error(f"Cannot mount: {result.stderr}")
 
         path = Path(self.mount_point)
         try:
             path.stat()
         except OSError:
-            error("Mounted device not accessible, enable MTP on your phone and try it again!")
             self.unmount(sudo_runner)
+            return Error("Mounted device not accessible, enable MTP on your phone and try it again!")
+
+        return Success()
 
     def unmount(self, sudo_runner: SudoRunner):
         print("Dismounting", self.name, "->", self.mount_point)
 
         result = sudo_runner.run(["fusermount", "-u", self.mount_point])
         if result.returncode != 0:
-            error("Cannot dismount:", result.stderr)
-            return
+            return Error(f"Cannot dismount: {result.stderr}")
 
-        if not self._cleanup_mount_point(sudo_runner):
-            return
+        result = self._cleanup_mount_point(sudo_runner)
+        if isinstance(result, Error):
+            return result
+
+        return Success()
 
 
 @dataclass
@@ -214,8 +229,9 @@ class MountableVeraCryptDevice(MountableDevice):
     def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.name, "->", self.mount_point)
 
-        if not self._setup_mount_point(sudo_runner):
-            return
+        result = self._setup_mount_point(sudo_runner)
+        if isinstance(result, Error):
+            return result
 
         password = password_prompt("Enter VeraCrypt password:")
         result = sudo_runner.run([
@@ -228,9 +244,10 @@ class MountableVeraCryptDevice(MountableDevice):
             self.mount_point,
         ])
         if result.returncode != 0:
-            error("Cannot mount:", result.stderr)
             self._cleanup_mount_point(sudo_runner)
-            return
+            return Error(f"Cannot mount: {result.stderr}")
+
+        return Success()
 
     def unmount(self, sudo_runner: SudoRunner):
         print("Dismounting", self.name, "->", self.mount_point)
@@ -240,11 +257,13 @@ class MountableVeraCryptDevice(MountableDevice):
             "--unmount", self.mount_point,
         ])
         if result.returncode != 0:
-            error("Cannot dismount:", result.stderr)
-            return
+            return Error(f"Cannot dismount: {result.stderr}")
 
-        if not self._cleanup_mount_point(sudo_runner):
-            return
+        result = self._cleanup_mount_point(sudo_runner)
+        if isinstance(result, Error):
+            return result
+
+        return Success()
 
 
 class BlockDevicesFactory:
@@ -411,11 +430,13 @@ class MountableDevicesFactory:
             return f"{prefix}-{suffix}"
 
 
-def rescan_pci_devices(sudo_runner: SudoRunner):
+def rescan_pci_devices(sudo_runner: SudoRunner) -> Result:
     print("Rescanning PCI devices")
     result = sudo_runner.run(["tee", "/sys/bus/pci/rescan"], extra_input="1")
     if result.returncode != 0:
-        error("PCI devices rescan failed:", result.stderr)
+        return Error(f"PCI devices rescan failed: {result.stderr}")
+    else:
+        return Success()
 
 
 def password_prompt(prompt: str) -> str:
@@ -484,13 +505,17 @@ def main():
     if device_index.isdigit() and 0 <= int(device_index) - 1 < len(mountable_devices):
         mountable_device = mountable_devices[int(device_index) - 1]
         if mountable_device.is_mounted():
-            mountable_device.unmount(sudo_runner)
+            result = mountable_device.unmount(sudo_runner)
         else:
-            mountable_device.mount(sudo_runner)
+            result = mountable_device.mount(sudo_runner)
     elif device_index == 'r':
-        rescan_pci_devices(sudo_runner)
+        result = rescan_pci_devices(sudo_runner)
     else:
+        result = Success()
         print("exit")
+
+    if isinstance(result, Error):
+        error(result.msg)
 
 
 if __name__ == "__main__":
