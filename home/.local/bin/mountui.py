@@ -108,6 +108,7 @@ class MountableBlockDevice(MountableDevice):
         result = sudo_runner.run(["mount", self.path, self.mount_point])
         if result.returncode != 0:
             error("Cannot mount:", result.stderr)
+            # TODO Cleanup mount point
             return
 
     def unmount(self, sudo_runner: SudoRunner):
@@ -155,6 +156,7 @@ class MountableMtpDevice(MountableDevice):
         )
         if result.returncode != 0:
             error("Cannot mount:", result.stderr)
+            # TODO Cleanup mount point
             return
 
         path = Path(self.mount_point)
@@ -211,7 +213,7 @@ class MountableVeraCryptDevice(MountableDevice):
         ])
         if result.returncode != 0:
             error("Cannot mount:", result.stderr)
-            # TODO Cleanup
+            # TODO Cleanup mount point
             return
 
 
