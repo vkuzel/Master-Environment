@@ -7,6 +7,7 @@ import re
 import subprocess
 import sys
 import termios
+import time
 import tty
 from dataclasses import dataclass
 from pathlib import Path
@@ -193,7 +194,12 @@ class MountableMtpDevice(MountableDevice):
         try:
             path.stat()
         except OSError:
-            self.unmount(sudo_runner)
+            # Device may be busy, try dismount for a few times
+            for i in range(1, 3):
+                if isinstance(self.unmount(sudo_runner), Success):
+                    break
+                else:
+                    time.sleep(1)
             return Error("Mounted device not accessible, enable MTP on your phone and try it again!")
 
         return Success()
