@@ -193,21 +193,10 @@ class MountableMtpDevice(MountableDevice):
     def unmount(self, sudo_runner: SudoRunner):
         print("Dismounting", self.name, "->", self.mount_point)
 
-        for i in range(0, 1000):
-            result = sudo_runner.run(["fusermount", "-u", self.mount_point])
-            if result.returncode == 1 and "busy" in result.stderr:
-                if i == 0:
-                    print("Device is busy |", end="", flush=True)
-                else:
-                    spin(i)
-                time.sleep(1)
-                continue
-            elif result.returncode != 0:
-                error("Cannot dismount:", result.stderr)
-                return
-            else:
-                print()
-                break
+        result = sudo_runner.run(["fusermount", "-u", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot dismount:", result.stderr)
+            return
 
         result = sudo_runner.run(["rmdir", self.mount_point])
         if result.returncode != 0:
