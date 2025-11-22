@@ -37,19 +37,20 @@ class SudoRunner:
     def __init__(self):
         self._password: Optional[str] = None
 
-    def run(self, cmd: List[str]) -> subprocess.CompletedProcess[str]:
+    def run(self, cmd: List[str], extra_input: Optional[str] = None) -> subprocess.CompletedProcess[str]:
         if self._is_password_needed():
             return subprocess.run(
                 args=["sudo", "-S"] + cmd,
                 capture_output=True,
                 text=True,
-                input=self._get_password()
+                input=self._get_password() + (f"\n{extra_input}\n" if extra_input else ""),
             )
         else:
             return subprocess.run(
                 args=["sudo", "-n"] + cmd,
                 capture_output=True,
                 text=True,
+                input=extra_input,
             )
 
     @staticmethod
@@ -410,6 +411,13 @@ class MountableDevicesFactory:
             return f"{prefix}-{suffix}"
 
 
+def rescan_pci_devices(sudo_runner: SudoRunner):
+    print("Rescanning PCI devices")
+    result = sudo_runner.run(["tee", "/sys/bus/pci/rescan"], extra_input="1")
+    if result.returncode != 0:
+        error("PCI devices rescan failed:", result.stderr)
+
+
 def password_prompt(prompt: str) -> str:
     if not sys.stdin.isatty():
         return input(prompt)
@@ -477,16 +485,19 @@ def main():
     for index, mountable_device in enumerate(mountable_devices, start=1):
         mounted = f" \033[31m*mounted*\033[0m" if mountable_device.is_mounted() else ""
         print(f"{index}) {mountable_device.name} -> {mountable_device.mount_point}{mounted}")
+    print("r) Rescan PCI devices, e.g. to detect SD cards")
     print()
 
     device_index=read_char("Select disk:")
+    sudo_runner = SudoRunner()
     if device_index.isdigit() and 0 <= int(device_index) - 1 < len(mountable_devices):
         mountable_device = mountable_devices[int(device_index) - 1]
-        sudo_runner = SudoRunner()
         if mountable_device.is_mounted():
             mountable_device.unmount(sudo_runner)
         else:
             mountable_device.mount(sudo_runner)
+    elif device_index == 'r':
+        rescan_pci_devices(sudo_runner)
     else:
         print("exit")
 
