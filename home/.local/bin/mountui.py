@@ -83,6 +83,33 @@ class MountableDevice:
     def unmount(self, sudo_runner: SudoRunner):
         pass
 
+    def _setup_mount_point(self, sudo_runner: SudoRunner) -> bool:
+        target_path = Path(self.mount_point)
+        if target_path.exists():
+            error("Directory", self.mount_point, "already exists!")
+            return False
+
+        result = sudo_runner.run(["mkdir", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot create directory:", result.stderr)
+            return False
+
+        uid = os.getuid()
+        result = sudo_runner.run(["chown", f"{uid}", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot mount:", result.stderr)
+            return False
+
+        return True
+
+    def _cleanup_mount_point(self, sudo_runner: SudoRunner) -> bool:
+        result = sudo_runner.run(["rmdir", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot remove directory:", result.stderr)
+            return False
+
+        return True
+
 
 @dataclass
 class MountableBlockDevice(MountableDevice):
@@ -95,20 +122,13 @@ class MountableBlockDevice(MountableDevice):
     def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.path, "->", self.mount_point)
 
-        target_path = Path(self.mount_point)
-        if target_path.exists():
-            error("Directory", self.mount_point, "already exists!")
-            return
-
-        result = sudo_runner.run(["mkdir", self.mount_point])
-        if result.returncode != 0:
-            error("Cannot create directory:", result.stderr)
+        if not self._setup_mount_point(sudo_runner):
             return
 
         result = sudo_runner.run(["mount", self.path, self.mount_point])
         if result.returncode != 0:
             error("Cannot mount:", result.stderr)
-            # TODO Cleanup mount point
+            self._cleanup_mount_point(sudo_runner)
             return
 
     def unmount(self, sudo_runner: SudoRunner):
@@ -119,9 +139,7 @@ class MountableBlockDevice(MountableDevice):
             error("Cannot dismount:", result.stderr)
             return
 
-        result = sudo_runner.run(["rmdir", self.mount_point])
-        if result.returncode != 0:
-            error("Cannot remove directory:", result.stderr)
+        if not self._cleanup_mount_point(sudo_runner):
             return
 
 
@@ -138,15 +156,7 @@ class MountableMtpDevice(MountableDevice):
     def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.name, "->", self.mount_point)
 
-        result = sudo_runner.run(["mkdir", self.mount_point])
-        if result.returncode != 0:
-            error("Cannot create directory:", result.stderr)
-            return
-
-        uid = os.getuid()
-        result = sudo_runner.run(["chown", f"{uid}", self.mount_point])
-        if result.returncode != 0:
-            error("Cannot mount:", result.stderr)
+        if not self._setup_mount_point(sudo_runner):
             return
 
         result = subprocess.run(
@@ -156,7 +166,7 @@ class MountableMtpDevice(MountableDevice):
         )
         if result.returncode != 0:
             error("Cannot mount:", result.stderr)
-            # TODO Cleanup mount point
+            self._cleanup_mount_point(sudo_runner)
             return
 
         path = Path(self.mount_point)
@@ -174,9 +184,7 @@ class MountableMtpDevice(MountableDevice):
             error("Cannot dismount:", result.stderr)
             return
 
-        result = sudo_runner.run(["rmdir", self.mount_point])
-        if result.returncode != 0:
-            error("Cannot remove directory:", result.stderr)
+        if not self._cleanup_mount_point(sudo_runner):
             return
 
 
@@ -191,14 +199,7 @@ class MountableVeraCryptDevice(MountableDevice):
     def mount(self, sudo_runner: SudoRunner):
         print("Mounting", self.name, "->", self.mount_point)
 
-        target_path = Path(self.mount_point)
-        if target_path.exists():
-            error("Directory", self.mount_point, "already exists!")
-            return
-
-        result = sudo_runner.run(["mkdir", self.mount_point])
-        if result.returncode != 0:
-            error("Cannot create directory:", result.stderr)
+        if not self._setup_mount_point(sudo_runner):
             return
 
         password = password_prompt("Enter VeraCrypt password:")
@@ -213,7 +214,7 @@ class MountableVeraCryptDevice(MountableDevice):
         ])
         if result.returncode != 0:
             error("Cannot mount:", result.stderr)
-            # TODO Cleanup mount point
+            self._cleanup_mount_point(sudo_runner)
             return
 
     def unmount(self, sudo_runner: SudoRunner):
@@ -227,9 +228,7 @@ class MountableVeraCryptDevice(MountableDevice):
             error("Cannot dismount:", result.stderr)
             return
 
-        result = sudo_runner.run(["rmdir", self.mount_point])
-        if result.returncode != 0:
-            error("Cannot remove directory:", result.stderr)
+        if not self._cleanup_mount_point(sudo_runner):
             return
 
 
