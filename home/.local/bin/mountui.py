@@ -131,8 +131,6 @@ class MountableBlockDevice(MountableDevice):
         return self.mounted
 
     def mount(self, sudo_runner: SudoRunner) -> Result:
-        print("Mounting", self.path, "->", self.mount_point)
-
         result = self._setup_mount_point(sudo_runner)
         if isinstance(result, Error):
             return result
@@ -158,8 +156,6 @@ class MountableBlockDevice(MountableDevice):
         return Success()
 
     def unmount(self, sudo_runner: SudoRunner) -> Result:
-        print("Dismounting", self.path, "->", self.mount_point)
-
         result = sudo_runner.run(["umount", self.mount_point])
         if result.returncode != 0:
             return Error(f"Cannot dismount: {result.stderr}")
@@ -180,8 +176,6 @@ class MountableMtpDevice(MountableDevice):
         return path.exists()
 
     def mount(self, sudo_runner: SudoRunner):
-        print("Mounting", self.name, "->", self.mount_point)
-
         result = self._setup_mount_point(sudo_runner)
         if isinstance(result, Error):
             return result
@@ -205,8 +199,6 @@ class MountableMtpDevice(MountableDevice):
         return Success()
 
     def unmount(self, sudo_runner: SudoRunner):
-        print("Dismounting", self.name, "->", self.mount_point)
-
         result = sudo_runner.run(["fusermount", "-u", self.mount_point])
         if result.returncode != 0:
             return Error(f"Cannot dismount: {result.stderr}")
@@ -227,8 +219,6 @@ class MountableVeraCryptDevice(MountableDevice):
         return self.mounted
 
     def mount(self, sudo_runner: SudoRunner):
-        print("Mounting", self.name, "->", self.mount_point)
-
         result = self._setup_mount_point(sudo_runner)
         if isinstance(result, Error):
             return result
@@ -250,8 +240,6 @@ class MountableVeraCryptDevice(MountableDevice):
         return Success()
 
     def unmount(self, sudo_runner: SudoRunner):
-        print("Dismounting", self.name, "->", self.mount_point)
-
         result = sudo_runner.run([
             "veracrypt", "--text",
             "--unmount", self.mount_point,
@@ -429,7 +417,6 @@ class MountableDevicesFactory:
 
 
 def rescan_pci_devices(sudo_runner: SudoRunner) -> Result:
-    print("Rescanning PCI devices")
     result = sudo_runner.run(["tee", "/sys/bus/pci/rescan"], extra_input="1")
     if result.returncode != 0:
         return Error(f"PCI devices rescan failed: {result.stderr}")
@@ -515,10 +502,13 @@ def main():
     if device_index.isdigit() and 0 <= int(device_index) - 1 < len(mountable_devices):
         mountable_device = mountable_devices[int(device_index) - 1]
         if mountable_device.is_mounted():
+            print("Dismounting", mountable_device.name, "->", mountable_device.mount_point)
             result = mountable_device.unmount(sudo_runner)
         else:
+            print("Mounting", mountable_device.name, "->", mountable_device.mount_point)
             result = mountable_device.mount(sudo_runner)
     elif device_index == 'r':
+        print("Rescanning PCI devices")
         result = rescan_pci_devices(sudo_runner)
     else:
         result = Success()
