@@ -359,9 +359,12 @@ class MountableDevicesFactory:
             ))
 
         for device in mtp_devices:
+            suffix = hashlib.md5(device.name.encode()).hexdigest()[:3]
+            mount_point = f"/media/android-{suffix}"
+
             mountable_devices.append(MountableMtpDevice(
                 name=device.name,
-                mount_point=f"/media/android",
+                mount_point=mount_point,
                 busLocation=device.busLocation,
                 devNum=device.devNum,
             ))
