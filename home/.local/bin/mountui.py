@@ -463,20 +463,8 @@ def error(*args):
 
 
 def read_char(prompt: str) -> str:
-    if not sys.stdin.isatty():
-        return input(prompt)
-
-    print(prompt, end=" ", flush=True)
-    fd = sys.stdin.fileno()
-    old = termios.tcgetattr(fd)
-    ch = ""
-    try:
-        tty.setraw(fd)
-        ch = sys.stdin.read(1)
-        return ch
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old)
-        print(ch)
+    # if not sys.stdin.isatty():
+    return input(f"{prompt} ")
 
 
 def main():
