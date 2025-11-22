@@ -80,7 +80,7 @@ class SudoRunner:
     def _get_password(self) -> str:
         if not self._password:
             user = getpass.getuser()
-            self._password = password_prompt(f"[sudo] password for {user}:")
+            self._password = UI.enter_password(f"Enter <bold>sudo</bold> password for {user}:")
         return self._password
 
 
@@ -166,6 +166,7 @@ class MountableBlockDevice(MountableDevice):
 
         return Success()
 
+
 @dataclass
 class MountableMtpDevice(MountableDevice):
     busLocation: int
@@ -229,7 +230,7 @@ class MountableVeraCryptDevice(MountableDevice):
         if isinstance(result, Error):
             return result
 
-        password = password_prompt("Enter VeraCrypt password:")
+        password = UI.enter_password("Enter <bold>VeraCrypt</bold> password:")
         result = sudo_runner.run([
             "veracrypt", "--text",
             "--pim", "0",
@@ -430,86 +431,105 @@ def rescan_pci_devices(sudo_runner: SudoRunner) -> Result:
         return Success()
 
 
-def password_prompt(prompt: str) -> str:
-    if not sys.stdin.isatty():
-        return input(prompt)
-
-    print(f"{prompt} |", end="", flush=True)
-    fd = sys.stdin.fileno()
-    old = termios.tcgetattr(fd)
-    try:
-        tty.setraw(fd)
-        password = ""
-        for i in range(0, 1000):
-            ch = sys.stdin.read(1)
-            if ch in ("\n", "\r"):
-                break
-            else:
-                spin(i)
-                password = password + ch
-        return password
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+class UI:
+    @staticmethod
+    def render_device_menu(items: List[str]):
+        print()
+        for item in items:
+            print(UI._format(item))
         print()
 
+    @staticmethod
+    def enter_device_id() -> str:
+        return input(f"Select device: ")
 
-def spin(i: int):
-    symbol = ('/', '-', '\\', '|')[i % 4]
-    print(f"\b{symbol}", end="", flush=True)
+    @staticmethod
+    def render_device_menu_action(msg: str):
+        print(msg)
 
+    @staticmethod
+    def enter_password(prompt: str) -> str:
+        if not sys.stdin.isatty():
+            return input(UI._format(prompt))
 
-def error(*args):
-    print("\033[31m", *args, "\033[0m", file=sys.stderr)
+        print(UI._format(f"{prompt} |"), end="", flush=True)
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            password = ""
+            for i in range(0, 1000):
+                ch = sys.stdin.read(1)
+                if ch in ("\n", "\r"):
+                    break
+                else:
+                    UI._spin(i)
+                    password = password + ch
+            return password
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+            print()
 
+    @staticmethod
+    def render_error(msg: str):
+        print(UI._format(f"<red>{msg}</red>"), file=sys.stderr)
 
-def read_char(prompt: str) -> str:
-    # if not sys.stdin.isatty():
-    return input(f"{prompt} ")
+    @staticmethod
+    def _spin(i: int):
+        symbol = ('/', '-', '\\', '|')[i % 4]
+        print(f"\b{symbol}", end="", flush=True)
+
+    @staticmethod
+    def _format(msg: str):
+        return (msg.replace("<red>", "\033[31m")
+                .replace("</red>", "\033[0m")
+                .replace("<bold>", "\033[1m")
+                .replace("</bold>", "\033[0m"))
 
 
 def main():
     block_devices_result = BlockDevicesFactory().resolve()
     if isinstance(block_devices_result, Error):
-        error(block_devices_result.msg)
+        UI.render_error(block_devices_result.msg)
         block_devices = []
     else:
         block_devices = block_devices_result
 
     mtp_devices_result = MtpDevicesFactory().resolve()
     if isinstance(mtp_devices_result, Error):
-        error(mtp_devices_result.msg)
+        UI.render_error(mtp_devices_result.msg)
         mtp_devices = []
     else:
         mtp_devices = mtp_devices_result
 
     mountable_devices = MountableDevicesFactory().resolve(block_devices, mtp_devices)
 
-    print()
+    menu_items = []
     for index, mountable_device in enumerate(mountable_devices, start=1):
-        mounted = f" \033[31m*mounted*\033[0m" if mountable_device.is_mounted() else ""
-        print(f"{index}) {mountable_device.name} -> {mountable_device.mount_point}{mounted}")
-    print("r) Rescan PCI devices, e.g. to detect SD cards")
-    print()
+        mounted = f" <red>*mounted*</red>" if mountable_device.is_mounted() else ""
+        menu_items.append(f"{index}) {mountable_device.name} -> {mountable_device.mount_point}{mounted}")
+    menu_items.append("r) Rescan PCI devices, e.g. to detect SD cards")
+    UI.render_device_menu(menu_items)
 
-    device_index=read_char("Select disk:")
+    device_id = UI.enter_device_id()
     sudo_runner = SudoRunner()
-    if device_index.isdigit() and 0 <= int(device_index) - 1 < len(mountable_devices):
-        mountable_device = mountable_devices[int(device_index) - 1]
+    if device_id.isdigit() and 0 <= int(device_id) - 1 < len(mountable_devices):
+        mountable_device = mountable_devices[int(device_id) - 1]
         if mountable_device.is_mounted():
-            print("Dismounting", mountable_device.name, "->", mountable_device.mount_point)
+            UI.render_device_menu_action(f"Dismounting {mountable_device.name} -> {mountable_device.mount_point}")
             result = mountable_device.unmount(sudo_runner)
         else:
-            print("Mounting", mountable_device.name, "->", mountable_device.mount_point)
+            UI.render_device_menu_action(f"Mounting {mountable_device.name} -> {mountable_device.mount_point}")
             result = mountable_device.mount(sudo_runner)
-    elif device_index == 'r':
-        print("Rescanning PCI devices")
+    elif device_id == 'r':
+        UI.render_device_menu_action("Rescanning PCI devices")
         result = rescan_pci_devices(sudo_runner)
     else:
         result = Success()
-        print("exit")
+        UI.render_device_menu_action("exit")
 
     if isinstance(result, Error):
-        error(result.msg)
+        UI.render_error(result.msg)
 
 
 if __name__ == "__main__":
