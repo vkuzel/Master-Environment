@@ -462,21 +462,19 @@ def main():
     ))
 
     print()
-    for mountable_device in mountable_devices:
+    for index, mountable_device in enumerate(mountable_devices, start=1):
         mounted = f" \033[31m*mounted*\033[0m" if mountable_device.is_mounted() else ""
-        print(f"{mountable_device.id}) {mountable_device.name} -> {mountable_device.mount_point}{mounted}")
+        print(f"{index}) {mountable_device.name} -> {mountable_device.mount_point}{mounted}")
     print()
 
-    device_id=read_char("Select disk:")
-
-    for mountable_device in mountable_devices:
-        if mountable_device.id == device_id:
-            sudo_runner = SudoRunner()
-            if mountable_device.is_mounted():
-                mountable_device.unmount(sudo_runner)
-            else:
-                mountable_device.mount(sudo_runner)
-            break
+    device_index=read_char("Select disk:")
+    if device_index.isdigit() and 0 <= int(device_index) - 1 < len(mountable_devices):
+        mountable_device = mountable_devices[int(device_index) - 1]
+        sudo_runner = SudoRunner()
+        if mountable_device.is_mounted():
+            mountable_device.unmount(sudo_runner)
+        else:
+            mountable_device.mount(sudo_runner)
     else:
         print("exit")
 
