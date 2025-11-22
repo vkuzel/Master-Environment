@@ -3,6 +3,7 @@ import getpass
 import json
 import os
 import re
+import hashlib
 import subprocess
 import sys
 import termios
@@ -316,14 +317,24 @@ class MountableDevicesFactory:
                 if not self.is_mountable_block(parent_device, device):
                     continue
 
-                device_id = device_id + 1
                 label = f" ({device.label}) " if device.label is not None else ""
+                name = f"{device.path}[{device.fstype}]{label}"
+
+                if device.mount_point:
+                    mount_point = device.mount_point
+                else:
+                    match = re.compile("^.*/([a-z0-9]+)$").match(device.path)
+                    if match:
+                        mount_point = f"/media/usb-{match.group(1)}"
+                    else:
+                        suffix = hashlib.md5(name.encode()).hexdigest()[:3]
+                        mount_point = f"/media/usb-{suffix}"
 
                 mountable_devices.append(MountableBlockDevice(
-                    name=f"{device.path}[{device.fstype}]{label}",
+                    name=name,
                     fstype=device.fstype,
                     path=device.path,
-                    mount_point=device.mount_point if device.mount_point is not None else f"/media/usb{device_id}",
+                    mount_point=mount_point,
                     mounted=bool(device.mount_point),
                 ))
 
