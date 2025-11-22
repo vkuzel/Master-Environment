@@ -313,89 +313,92 @@ class MountableDevicesFactory:
         mountable_devices: List[MountableDevice] = []
         for parent_device in block_devices:
             for device in parent_device.children:
-                if not self.is_mountable_block(parent_device, device):
-                    continue
-
-                label = f" ({device.label}) " if device.label is not None else ""
-                name = f"{device.path}[{device.fstype}]{label}"
-
-                if device.mount_point:
-                    mount_point = device.mount_point
-                else:
-                    mount_point = self._resolve_mount_point("/media/usb", device.path)
-
-                mountable_devices.append(MountableBlockDevice(
-                    name=name,
-                    fstype=device.fstype,
-                    path=device.path,
-                    mount_point=mount_point,
-                    mounted=bool(device.mount_point),
-                ))
+                mountable_device = self._to_mountable_block_device(parent_device, device)
+                if not mountable_device: continue
+                mountable_devices.append(mountable_device)
 
         for device in block_devices:
-            if not self.is_mountable_vera_crypt(device):
-                continue
-
-            if len(device.children) == 1 and device.children[0].mount_point:
-                mount_point = device.children[0].mount_point
-            else:
-                mount_point = self._resolve_mount_point("/media/encrypted", device.path)
-
-            mountable_devices.append(MountableVeraCryptDevice(
-                name=f"{device.path}[encrypted]",
-                path=device.path,
-                mount_point=mount_point,
-                mounted=len(device.children) == 1,
-            ))
+            mountable_device = self._to_mountable_vera_crypt_device(device)
+            if not mountable_device: continue
+            mountable_devices.append(mountable_device)
 
         for device in mtp_devices:
-            mount_point = self._resolve_mount_point("/media/android", device.name)
-
-            mountable_devices.append(MountableMtpDevice(
-                name=device.name,
-                mount_point=mount_point,
-                busLocation=device.busLocation,
-                devNum=device.devNum,
-            ))
+            mountable_device = self._to_mountable_mtp_device(device)
+            if not mountable_device: continue
+            mountable_devices.append(mountable_device)
 
         return mountable_devices
 
-    @staticmethod
-    def is_mountable_block(parent_device: BlockDevice, device: BlockDevice) -> bool:
+    def _to_mountable_block_device(self, parent_device: BlockDevice, device: BlockDevice) -> Optional[MountableDevice]:
         if not (parent_device.type == "disk" and parent_device.tran == "usb"):
-            return False
+            return None
 
         if device.type not in ['part', 'dm']:
-            return False
+            return None
 
         # Zero size disks are (probably) card readers w/o a card inserted in them
         if device.size == 0:
-            return False
+            return None
 
         media_mount_point_pattern = re.compile("^/media/usb")
         if device.mount_point is not None and not media_mount_point_pattern.match(device.mount_point):
-            return False
+            return None
 
-        return True
+        label = f" ({device.label}) " if device.label is not None else ""
+        name = f"{device.path}[{device.fstype}]{label}"
 
-    @staticmethod
-    def is_mountable_vera_crypt(device: BlockDevice) -> bool:
+        if device.mount_point:
+            mount_point = device.mount_point
+        else:
+            mount_point = self._resolve_mount_point("/media/usb", device.path)
+
+        return MountableBlockDevice(
+            name=name,
+            fstype=device.fstype,
+            path=device.path,
+            mount_point=mount_point,
+            mounted=bool(device.mount_point),
+        )
+
+    def _to_mountable_vera_crypt_device(self, device: BlockDevice) -> Optional[MountableDevice]:
         """Fuzzy detection of VeraCrypt encrypted devices.
 
         Encrypted devices does not report themselves, thus we have to employ
         some heuristics to find them, which may report false positives.
         """
         if not (device.type == "disk" and device.tran == "usb"):
-            return False
+            return None
 
         if device.size == 0:
-            return False
+            return None
 
         # It would be better to detect encrypted device by reading few bytes
         # off it, detect there is no known filesystem, and calculate entropy.
         unmounted_crypt = len(device.children) == 0
         mounted_crypt = len(device.children) == 1 and "veracrypt" in device.children[0].path
-        return unmounted_crypt or mounted_crypt
+
+        if mounted_crypt:
+            mount_point = device.children[0].mount_point
+        elif unmounted_crypt:
+            mount_point = self._resolve_mount_point("/media/encrypted", device.path)
+        else:
+            return None
+
+        return MountableVeraCryptDevice(
+            name=f"{device.path}[encrypted]",
+            path=device.path,
+            mount_point=mount_point,
+            mounted=mounted_crypt,
+        )
+
+    def _to_mountable_mtp_device(self, device: MtpDevice) -> Optional[MountableDevice]:
+        mount_point = self._resolve_mount_point("/media/android", device.name)
+        return MountableMtpDevice(
+            name=device.name,
+            mount_point=mount_point,
+            busLocation=device.busLocation,
+            devNum=device.devNum,
+        )
 
     @staticmethod
     def _resolve_mount_point(prefix: str, device_name: str):
