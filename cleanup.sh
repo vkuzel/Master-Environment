@@ -51,6 +51,7 @@ purge_apt_package() {
 
 purge_apt_package gedit
 purge_apt_package vim
+purge_apt_package jq
 remove_dir "$HOME/.local/share/gedit"
 remove_dir "$HOME/.local/config/gedit"
 remove_file "$HOME/.vimrc"

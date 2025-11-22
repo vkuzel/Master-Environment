@@ -337,7 +337,6 @@ install_apt_package 7zip
 install_apt_package uuid
 install_apt_package whois
 install_apt_package ack
-install_apt_package jq
 install_apt_package mc
 install_apt_package bc
 install_apt_package transmission-cli
