@@ -6,7 +6,12 @@ error() {
   exit 1
 }
 
-backupDevice="/media/veracrypt1"
+backupDevice="$1"
+if [[ -z "$backupDevice" ]]; then
+  firstDevice=$(ls /media/ | grep "encrypted" | sort | head -1)
+  [[ ! -z "$firstDevice" ]] || error "Couldn't find backup device mount /media/encrypted*"
+  backupDevice="/media/$firstDevice"
+fi
 
 [[ -d "$backupDevice" ]] || error "Backup device $backupDevice does not exist!"
 
@@ -14,7 +19,9 @@ hostname=$(hostname)
 currentYear=$(date "+%Y")
 backupDir="$backupDevice/$hostname/$currentYear"
 
-echo "Backup into $backupDir"
+read -p "Backup into $backupDir? [y/N]" answer
+[[ "y" == "$answer" || "Y" == "$answer" ]] || exit
+
 rsync \
 	--archive \
 	--delete \
