@@ -70,7 +70,6 @@ class SudoRunner:
 
 @dataclass
 class MountableDevice:
-    id: str
     name: str
     mount_point: str
 
@@ -321,7 +320,6 @@ class MountableDevicesFactory:
                 label = f" ({device.label}) " if device.label is not None else ""
 
                 mountable_devices.append(MountableBlockDevice(
-                    id=str(device_id),
                     name=f"{device.path}[{device.fstype}]{label}",
                     fstype=device.fstype,
                     path=device.path,
@@ -339,7 +337,6 @@ class MountableDevicesFactory:
                 mount_point = device.children[0].mount_point
 
             mountable_devices.append(MountableVeraCryptDevice(
-                id=str(device_id),
                 name=f"{device.path}[encrypted]",
                 path=device.path,
                 mount_point=mount_point,
@@ -347,10 +344,7 @@ class MountableDevicesFactory:
             ))
 
         for device in mtp_devices:
-            device_id = device_id + 1
-
             mountable_devices.append(MountableMtpDevice(
-                id=str(device_id),
                 name=device.name,
                 mount_point=f"/media/android",
                 busLocation=device.busLocation,
@@ -453,7 +447,6 @@ def main():
 
     # TODO Test device
     mountable_devices.append(MountableBlockDevice(
-        id="d",
         name="/dev/null[dummy]",
         fstype="unknown",
         path="/dev/null",
