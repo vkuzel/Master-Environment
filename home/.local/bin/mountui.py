@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
+import getpass
 import json
 import os
 import re
 import subprocess
 import sys
 import termios
-import time
 import tty
 from dataclasses import dataclass
 from pathlib import Path
@@ -38,30 +38,9 @@ class PasswordManager:
 
     def get_password(self) -> str:
         if not self._password:
-            self._password = self._read_password()
+            user = getpass.getuser()
+            self._password = password_prompt(f"Sudo password for {user}:")
         return self._password
-
-    def _read_password(self):
-        if not sys.stdin.isatty():
-            return input("Enter password:")
-
-        print("Enter password: |", end="", flush=True)
-        fd = sys.stdin.fileno()
-        old = termios.tcgetattr(fd)
-        try:
-            tty.setraw(fd)
-            password = ""
-            for i in range(0, 1000):
-                ch = sys.stdin.read(1)
-                if ch in ("\n", "\r"):
-                    break
-                else:
-                    spin(i)
-                    password = password + ch
-            return password
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old)
-            print()
 
 
 @dataclass
@@ -357,6 +336,30 @@ class MountableDevicesFactory:
             return False
 
         return True
+
+
+def password_prompt(prompt: str) -> str:
+    if not sys.stdin.isatty():
+        return input(prompt)
+
+    print(f"{prompt} |", end="", flush=True)
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        password = ""
+        for i in range(0, 1000):
+            ch = sys.stdin.read(1)
+            if ch in ("\n", "\r"):
+                break
+            else:
+                spin(i)
+                password = password + ch
+        return password
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        print()
+
 
 def spin(i: int):
     symbol = ('/', '-', '\\', '|')[i % 4]
