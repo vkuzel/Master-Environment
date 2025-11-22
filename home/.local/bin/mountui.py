@@ -472,15 +472,6 @@ def main():
     mtp_devices = MtpDevicesFactory().resolve()
     mountable_devices = MountableDevicesFactory().resolve(block_devices, mtp_devices)
 
-    # TODO Test device
-    mountable_devices.append(MountableBlockDevice(
-        name="/dev/null[dummy]",
-        fstype="unknown",
-        path="/dev/null",
-        mount_point="/media/usbD",
-        mounted=False,
-    ))
-
     print()
     for index, mountable_device in enumerate(mountable_devices, start=1):
         mounted = f" \033[31m*mounted*\033[0m" if mountable_device.is_mounted() else ""
