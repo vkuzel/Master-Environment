@@ -311,7 +311,6 @@ class MtpDevicesFactory:
 class MountableDevicesFactory:
     def resolve(self, block_devices: List[BlockDevice], mtp_devices: List[MtpDevice]) -> List[MountableDevice]:
         mountable_devices: List[MountableDevice] = []
-        device_id = 0
         for parent_device in block_devices:
             for device in parent_device.children:
                 if not self.is_mountable_block(parent_device, device):
@@ -342,10 +341,15 @@ class MountableDevicesFactory:
             if not self.is_mountable_vera_crypt(device):
                 continue
 
-            device_id = device_id + 1
-            mount_point = f"/media/encrypted{device_id}"
             if len(device.children) == 1 and device.children[0].mount_point:
                 mount_point = device.children[0].mount_point
+            else:
+                match = re.compile("^.*/([a-z0-9]+)$").match(device.path)
+                if match:
+                    mount_point = f"/media/encrypted-{match.group(1)}"
+                else:
+                    suffix = hashlib.md5(device.path.encode()).hexdigest()[:3]
+                    mount_point = f"/media/encrypted-{suffix}"
 
             mountable_devices.append(MountableVeraCryptDevice(
                 name=f"{device.path}[encrypted]",
