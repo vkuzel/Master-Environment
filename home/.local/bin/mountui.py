@@ -267,11 +267,10 @@ class MountableVeraCryptDevice(MountableDevice):
 
 
 class BlockDevicesFactory:
-    def resolve(self) -> List[BlockDevice]:
+    def resolve(self) -> List[BlockDevice] | Error:
         result = self._run_lsblk()
         if result.returncode != 0:
-            error("Cannot get devices:", result.stderr)
-            return []
+            return Error(f"Cannot get block devices: {result.stderr}")
 
         json_devices: Dict[str, Any] = json.loads(result.stdout)
         raw_devices = json_devices.get("blockdevices", [])
@@ -300,11 +299,10 @@ class BlockDevicesFactory:
 
 
 class MtpDevicesFactory:
-    def resolve(self) -> List[MtpDevice]:
+    def resolve(self) -> List[MtpDevice] | Error:
         result = self._run_lsusb()
         if result.returncode != 0:
-            error("Cannot get MTP devices:", result.stderr)
-            return []
+            return Error(f"Cannot get MTP devices: {result.stderr}")
 
         raw_device_pattern = r'^Bus (\d+) Device (\d+): ID ([0-9a-fA-F]+:[0-9a-fA-F]+) (.+MTP mode.*)$'
         raw_devices = [match.groups() for match in re.finditer(raw_device_pattern, result.stdout, re.MULTILINE)]
@@ -489,8 +487,20 @@ def read_char(prompt: str) -> str:
 
 
 def main():
-    block_devices = BlockDevicesFactory().resolve()
-    mtp_devices = MtpDevicesFactory().resolve()
+    block_devices_result = BlockDevicesFactory().resolve()
+    if isinstance(block_devices_result, Error):
+        error(block_devices_result.msg)
+        block_devices = []
+    else:
+        block_devices = block_devices_result
+
+    mtp_devices_result = MtpDevicesFactory().resolve()
+    if isinstance(mtp_devices_result, Error):
+        error(mtp_devices_result.msg)
+        mtp_devices = []
+    else:
+        mtp_devices = mtp_devices_result
+
     mountable_devices = MountableDevicesFactory().resolve(block_devices, mtp_devices)
 
     print()
