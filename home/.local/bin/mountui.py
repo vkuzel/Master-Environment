@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import getpass
+import hashlib
 import json
 import os
 import re
-import hashlib
 import subprocess
 import sys
 import termios
