@@ -322,12 +322,7 @@ class MountableDevicesFactory:
                 if device.mount_point:
                     mount_point = device.mount_point
                 else:
-                    match = re.compile("^.*/([a-z0-9]+)$").match(device.path)
-                    if match:
-                        mount_point = f"/media/usb-{match.group(1)}"
-                    else:
-                        suffix = hashlib.md5(name.encode()).hexdigest()[:3]
-                        mount_point = f"/media/usb-{suffix}"
+                    mount_point = self._resolve_mount_point("/media/usb", device.path)
 
                 mountable_devices.append(MountableBlockDevice(
                     name=name,
@@ -344,12 +339,7 @@ class MountableDevicesFactory:
             if len(device.children) == 1 and device.children[0].mount_point:
                 mount_point = device.children[0].mount_point
             else:
-                match = re.compile("^.*/([a-z0-9]+)$").match(device.path)
-                if match:
-                    mount_point = f"/media/encrypted-{match.group(1)}"
-                else:
-                    suffix = hashlib.md5(device.path.encode()).hexdigest()[:3]
-                    mount_point = f"/media/encrypted-{suffix}"
+                mount_point = self._resolve_mount_point("/media/encrypted", device.path)
 
             mountable_devices.append(MountableVeraCryptDevice(
                 name=f"{device.path}[encrypted]",
@@ -359,8 +349,7 @@ class MountableDevicesFactory:
             ))
 
         for device in mtp_devices:
-            suffix = hashlib.md5(device.name.encode()).hexdigest()[:3]
-            mount_point = f"/media/android-{suffix}"
+            mount_point = self._resolve_mount_point("/media/android", device.name)
 
             mountable_devices.append(MountableMtpDevice(
                 name=device.name,
@@ -407,6 +396,15 @@ class MountableDevicesFactory:
         unmounted_crypt = len(device.children) == 0
         mounted_crypt = len(device.children) == 1 and "veracrypt" in device.children[0].path
         return unmounted_crypt or mounted_crypt
+
+    @staticmethod
+    def _resolve_mount_point(prefix: str, device_name: str):
+        match = re.compile("^.*/([a-z0-9-]+)$").match(device_name)
+        if match:
+            return f"{prefix}-{match.group(1)}"
+        else:
+            suffix = hashlib.md5(device_name.encode()).hexdigest()[:3]
+            return f"{prefix}-{suffix}"
 
 
 def password_prompt(prompt: str) -> str:
