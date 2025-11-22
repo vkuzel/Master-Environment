@@ -204,6 +204,14 @@ class MountableMtpDevice(MountableDevice):
             return
 
 
+@dataclass
+class MountableVeraCryptDevice(MountableDevice):
+    mounted: bool
+
+    def is_mounted(self) -> bool:
+        return self.mounted
+
+
 class BlockDevicesFactory:
     def resolve(self) -> List[BlockDevice]:
         result = self._run_lsblk()
@@ -286,6 +294,19 @@ class MountableDevicesFactory:
                     _is_mounted=bool(device.mount_point),
                 ))
 
+        for device in block_devices:
+            if not self.is_mountable_vera_crypt(device):
+                continue
+
+            device_id = device_id + 1
+
+            mountable_devices.append(MountableVeraCryptDevice(
+                id=str(device_id),
+                name=f"{device.path}[encrypted]",
+                mount_point=device.mount_point if device.mount_point is not None else f"/media/encrypted{device_id}",
+                mounted=bool(device.mount_point),
+            ))
+
         for device in mtp_devices:
             device_id = device_id + 1
 
@@ -317,6 +338,25 @@ class MountableDevicesFactory:
 
         return True
 
+    @staticmethod
+    def is_mountable_vera_crypt(device: BlockDevice) -> bool:
+        """Fuzzy detection of VeraCrypt encrypted devices.
+
+        Encrypted devices does not report themselves, thus we have to employ
+        some heuristics to find them, which may report false positives.
+        """
+        if not (device.type == "disk" and device.tran == "usb"):
+            return False
+
+        if device.size == 0:
+            return False
+
+        # It would be better to detect encrypted device by reading few bytes
+        # off it, detect there is no known filesystem, and calculate entropy.
+        if len(device.children) != 0:
+            return False
+
+        return True
 
 def spin(i: int):
     symbol = ('/', '-', '\\', '|')[i % 4]
