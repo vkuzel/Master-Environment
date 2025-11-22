@@ -405,9 +405,14 @@ class MountableDevicesFactory:
         )
 
     def _to_mountable_mtp_device(self, device: MtpDevice) -> Optional[MountableDevice]:
+        # heh
+        if "Samsung" in device.name and "Galaxy" in device.name:
+            name = "Samsung Galaxy Phone"
+        else:
+            name = device.name
         mount_point = self._resolve_mount_point("/media/android", device.name)
         return MountableMtpDevice(
-            name=device.name,
+            name=name,
             mount_point=mount_point,
             busLocation=device.busLocation,
             devNum=device.devNum,
