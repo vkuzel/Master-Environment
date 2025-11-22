@@ -212,7 +212,7 @@ create_links() {
 
   for filePath in $(find . -mindepth 1 -type f); do
 		local srcPath=$(realpath "$filePath")
-		local dstPath=$(normalpath "$dstDir/$filePath")
+		local dstPath=$(normalpath "$dstDir/$filePath" | sed 's/\.py$//')
 		if [ -h "$dstPath" ]; then
 			continue
 		elif [ -e "$dstPath" ]; then
