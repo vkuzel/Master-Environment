@@ -180,10 +180,39 @@ class MountableMtpDevice(MountableDevice):
 
 @dataclass
 class MountableVeraCryptDevice(MountableDevice):
+    path: str
     mounted: bool
 
     def is_mounted(self) -> bool:
         return self.mounted
+
+    def mount(self, sudo_runner: SudoRunner):
+        print("Mounting", self.name, "->", self.mount_point)
+
+        target_path = Path(self.mount_point)
+        if target_path.exists():
+            error("Directory", self.mount_point, "already exists!")
+            return
+
+        result = sudo_runner.run(["mkdir", self.mount_point])
+        if result.returncode != 0:
+            error("Cannot create directory:", result.stderr)
+            return
+
+        password = password_prompt("Enter VeraCrypt password:")
+        result = sudo_runner.run([
+            "veracrypt", "--text",
+            "--pim", "0",
+            "--keyfiles", "",
+            "--protect-hidden", "no",
+            f"--password={password}",
+            "--mount", self.path,
+            self.mount_point,
+        ])
+        if result.returncode != 0:
+            error("Cannot mount:", result.stderr)
+            # TODO Cleanup
+            return
 
 
 class BlockDevicesFactory:
@@ -277,6 +306,7 @@ class MountableDevicesFactory:
             mountable_devices.append(MountableVeraCryptDevice(
                 id=str(device_id),
                 name=f"{device.path}[encrypted]",
+                path=device.path,
                 mount_point=device.mount_point if device.mount_point is not None else f"/media/encrypted{device_id}",
                 mounted=bool(device.mount_point),
             ))
