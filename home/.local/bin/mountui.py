@@ -2,6 +2,7 @@
 import getpass
 import hashlib
 import json
+import shutil
 import os
 import re
 import subprocess
@@ -438,6 +439,14 @@ def rescan_pci_devices(sudo_runner: SudoRunner) -> Result:
 
 class UI:
     @staticmethod
+    def render_header():
+        label = " Mount TUI "
+        pad = shutil.get_terminal_size().columns - len(label)
+        lpad = pad // 2
+        rpad = pad - lpad
+        print(UI._format(f"{'=' * lpad}<invert>{label}</invert>{'=' * rpad}"))
+
+    @staticmethod
     def render_device_menu(items: List[str]):
         print()
         for item in items:
@@ -489,10 +498,14 @@ class UI:
         return (msg.replace("<red>", "\033[31m")
                 .replace("</red>", "\033[0m")
                 .replace("<bold>", "\033[1m")
-                .replace("</bold>", "\033[0m"))
+                .replace("</bold>", "\033[0m")
+                .replace("<invert>", "\033[7m")
+                .replace("</invert>", "\033[0m"))
 
 
 def main():
+    UI.render_header()
+
     block_devices_result = BlockDevicesFactory().resolve()
     if isinstance(block_devices_result, Error):
         UI.render_error(block_devices_result.msg)
