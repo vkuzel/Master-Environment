@@ -18,6 +18,19 @@ prepareFirefoxBackupInto() {
   echo "$backupDir"
 }
 
+prepareMtBackupInto() {
+  local tmpDir="$1"
+  local backupDir="$tmpDir/mt"
+
+  mkdir "$backupDir" || error "Cannot create directory $backupDir"
+  find "$HOME" \
+    -maxdepth 1 \
+    -name ".m*-*t*" \
+    -exec cp --recursive {} "$backupDir" \;
+
+    echo "$backupDir"
+}
+
 backupDevice="$1"
 if [[ -z "$backupDevice" ]]; then
   firstDevice=$(ls /media/ | grep "encrypted" | sort | head -1)
@@ -37,6 +50,7 @@ read -p "Backup into $backupDir [y/N]" answer
 tmpDir=$(mktemp --directory --suffix=backup)
 
 firefoxBackupDir=$(prepareFirefoxBackupInto "$tmpDir")
+mtBackupDir=$(prepareMtBackupInto "$tmpDir")
 
 rsync \
 	--archive \
@@ -54,6 +68,7 @@ rsync \
 	"$HOME/Videos" \
 	"$HOME/Pictures" \
   "$firefoxBackupDir" \
+  "$mtBackupDir" \
 	"$backupDir"
 
 rm -r "$tmpDir"
