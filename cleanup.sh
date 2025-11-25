@@ -54,5 +54,5 @@ purge_apt_package vim
 purge_apt_package jq
 remove_dir "$HOME/.local/share/gedit"
 remove_dir "$HOME/.local/config/gedit"
-remove_file "$HOME/.vimrc"
+remove_link "$HOME/.vimrc"
 remove_link "$HOME/.local/bin/mountui.sh"
