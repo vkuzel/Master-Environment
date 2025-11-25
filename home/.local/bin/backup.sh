@@ -13,7 +13,7 @@ prepareFirefoxBackupInto() {
   mkdir "$backupDir" || error "Cannot create directory $backupDir"
   find $HOME/.mozilla/firefox/*.default-release/bookmarkbackups \
     -name "bookmarks*jsonlz4" \
-    -exec cp {} "$backupDir" \;
+    -exec cp {} "$backupDir" \; || error "Cannot prepare Firefox backup!"
 
   echo "$backupDir"
 }
@@ -26,7 +26,7 @@ prepareMtBackupInto() {
   find "$HOME" \
     -maxdepth 1 \
     -name ".m*-*t*" \
-    -exec cp --recursive {} "$backupDir" \;
+    -exec cp --recursive {} "$backupDir" \; || error "Cannot prepare MT backup!"
 
     echo "$backupDir"
 }
