@@ -78,6 +78,7 @@ configure_mozilla_apt_repository() {
   if [[ -e "/etc/apt/preferences.d/mozillateamppa" ]]; then
 		info "Already configured"
   else
+    sudo add-apt-repository ppa:mozillateam/ppa
 		# Due to a bug, after installing and pinning the Mozilla's package, we have
 		# to decrease priority of Ubuntu's Firefox meta-package to prevent
 		# overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
@@ -307,6 +308,7 @@ create_directory_structure $SRC_DIR $DST_DIR
 create_links $SRC_DIR $DST_DIR
 
 # Mozilla Thunderbird and Firefox
+install_apt_package software-properties-common
 configure_mozilla_apt_repository
 # TODO On some machines latest firefox should be installed on other firefox-esr
 # install_apt_package firefox-esr
