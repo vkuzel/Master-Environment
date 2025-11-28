@@ -1,4 +1,6 @@
 #!/bin/bash
+set -Eeuo pipefail
+trap 'echo "\033[2K  [\033[0;31mFAIL\033[0m] Line $LINENO w/ exit code $?"' ERR
 
 info() {
 	printf '  [ \033[00;34m..\033[0m ] %s\n' "$1"
@@ -39,8 +41,8 @@ uninstall_cloud_init() {
   else
 		info 'Disable all services except "none" and then press Enter'
 		read -r
-		sudo dpkg-reconfigure cloud-init || fail "Cannot reconfigure cloud-init!"
-		sudo apt purge cloud-init || fail "Cannot purge cloud-init!"
+		sudo dpkg-reconfigure cloud-init
+		sudo apt purge cloud-init
 		sudo rm -r /etc/cloud/ /var/lib/cloud/ /etc/netplan/*cloud-init.yaml
   fi
 }
@@ -64,7 +66,7 @@ install_nerd_fonts() {
 		local fontFile="DejaVuSansMono.zip"
 		local fontUrl="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/$fontFile"
 
-		curl --location --output-dir "/tmp/" --remote-name "$fontUrl" || fail "Cannot download font!"
+		curl --location --output-dir "/tmp/" --remote-name "$fontUrl"
 		sudo mkdir -p "$targetDir"
 		sudo unzip "/tmp/$fontFile" -d "$targetDir"
 		info "Refresh font cache"
@@ -82,7 +84,7 @@ configure_mozilla_apt_repository() {
 		# Due to a bug, after installing and pinning the Mozilla's package, we have
 		# to decrease priority of Ubuntu's Firefox meta-package to prevent
 		# overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
-		cat <<EOF | sudo tee /etc/apt/preferences.d/mozillateamppa > /dev/null || fail "Cannot set Mozilla PPA!"
+		cat <<EOF | sudo tee /etc/apt/preferences.d/mozillateamppa > /dev/null
 Package: firefox*
 Pin: release o=LP-PPA-mozillateam
 Pin-Priority: 1001
@@ -99,7 +101,7 @@ Package: thunderbird*
 Pin: release o=Ubuntu*
 Pin-Priority: -1
 EOF
-		sudo apt update || fail "Cannot APT update!"
+		sudo apt update
   fi
 }
 
@@ -110,7 +112,7 @@ add_current_user_into_group() {
   if id -nG "$USER" | grep -qw "$group"; then
 	  info "$USER is already in $group"
   else
-	  sudo usermod -aG "$group" "$USER" || fail "Cannot add user into group!"
+	  sudo usermod -aG "$group" "$USER"
   fi
 }
 
@@ -121,7 +123,7 @@ enable_systemctl_service() {
   if systemctl is-enabled --quiet "$service"; then
 	  info "Service is already enabled"
   else
-	  sudo enable --now "$service" || fail "Cannot enable and start service!"
+	  sudo enable --now "$service"
   fi
 }
 
@@ -129,7 +131,7 @@ install_apt_package() {
 	local pkgName=$1
 
 	info "=== Install $pkgName ==="
-	local status=$(dpkg --status "$pkgName" 2>/dev/null)
+	local status=$(dpkg --status "$pkgName" 2>/dev/null || true)
 	if [[ ! -z "$status" ]]; then
 		info "Already installed"
 	else
@@ -141,7 +143,7 @@ uninstall_apt_package() {
 	local pkgName=$1
 
 	info "=== Uninstall $pkgName ==="
-	local status=$(dpkg --status "$pkgName" 2>/dev/null)
+	local status=$(dpkg --status "$pkgName" 2>/dev/null || true)
 	if [[ -z "$status" ]]; then
 		info "Already uninstalled"
 	else
@@ -170,11 +172,11 @@ install_zsh_plugin() {
 	fi
 	
 	if [[ -d "$pluginDir/.git" ]]; then
-		pushd "$pluginDir" >> /dev/null || fail "Cannot enter $pluginDir!"
-		git pull || fail "Cannot pull $pluginName"
-		popd > /dev/null || fail "Cannot exit $pluginDir!"
+		pushd "$pluginDir" >> /dev/null
+		git pull
+		popd > /dev/null
 	else
-		git clone "$pluginUrl" "$pluginDir" || fail "Cannot clone Git repository $pluginUrl into $pluginDir"
+		git clone "$pluginUrl" "$pluginDir"
 	fi
 }
 
@@ -183,7 +185,7 @@ create_directory_structure() {
 	local srcDir=$1
 	local dstDir=$2
 
-	pushd "$srcDir" > /dev/null || fail "Cannot enter $srcDir!"
+	pushd "$srcDir" > /dev/null
 
 	for dirPath in $(find . -mindepth 1 -type d); do
 		local dstPath="$dstDir/$dirPath"
@@ -192,10 +194,10 @@ create_directory_structure() {
 		fi
 		
 		info "Create $dstPath"
-		mkdir -p "$dstPath" || fail "Cannot create $dstPath"
+		mkdir -p "$dstPath"
 	done
 
-	popd > /dev/null || fail "Cannot exit $srcDir!"
+	popd > /dev/null
 }
 
 normalpath() {
@@ -209,7 +211,7 @@ create_links() {
   local srcDir=$1
   local dstDir=$2
 
-  pushd "$srcDir" > /dev/null || fail "Cannot enter $srcDir!"
+  pushd "$srcDir" > /dev/null
 
   for filePath in $(find . -mindepth 1 -type f); do
 		local srcPath=$(realpath "$filePath")
@@ -220,11 +222,11 @@ create_links() {
 		  info "Cannot symlink into existing regular file $dstPath"
 		else
 		  info "Create $dstPath"
-			ln -s "$srcPath" "$dstPath" || fail "Cannot create symlink $dstPath"
+			ln -s "$srcPath" "$dstPath"
 		fi
   done
 
-  popd > /dev/null || fail "Cannot exit $srcDir"
+  popd > /dev/null
 }
 
 chsh_zsh() {
