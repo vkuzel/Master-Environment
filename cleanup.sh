@@ -1,4 +1,6 @@
 #!/bin/bash
+set -Eeuo pipefail
+trap 'echo -e "\033[2K  [\033[0;31mFAIL\033[0m] Line $LINENO w/ exit code $?"' ERR
 
 info() {
 	printf '  [ \033[00;34m..\033[0m ] %s\n' "$1"
@@ -41,7 +43,7 @@ purge_apt_package() {
 	local pkgName=$1
 
 	info "=== Purge $pkgName ==="
-	local status=$(dpkg --status "$pkgName" 2>/dev/null)
+	local status=$(dpkg --status "$pkgName" 2>/dev/null || true)
 	if [[ -z "$status" ]]; then
 		info "Already purged"
 	else
