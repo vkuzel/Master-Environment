@@ -201,7 +201,7 @@ create_directory_structure() {
 normalpath() {
 	local path=$1
 	# Hacky path normalization
-	echo "$1" | sed "s/\/.\//\//g"
+	echo "$path" | sed "s/\/.\//\//g"
 }
 
 create_links() {
