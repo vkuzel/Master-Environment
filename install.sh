@@ -24,7 +24,7 @@ check_working_dir() {
 
 configure_timezone() {
 	info "=== Configure timezone ==="
-	if [[ -e "/etc/timezone" ]]; then
+	if [[ ! -e "/etc/localtime" ]]; then
 		info "Already configured"
 	else
 		sudo ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
