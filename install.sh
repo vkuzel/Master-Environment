@@ -54,6 +54,8 @@ configure_network_manager() {
   else
 		info "Disable systemd-networkd"
 		sudo systemctl disable systemd-networkd systemd-networkd.socket
+		info "Restart NetworkManager"
+		sudo systemctl restart NetworkManager
   fi
 }
 
