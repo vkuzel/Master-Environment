@@ -256,6 +256,7 @@ uninstall_apt_package cloud-initramfs-dyn-netconf
 configure_timezone
 
 # Networking
+uninstall_apt_package networkd-dispatcher
 install_apt_package network-manager
 configure_network_manager
 
