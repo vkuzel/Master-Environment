@@ -53,11 +53,6 @@ purge_apt_package() {
 
 purge_apt_package gedit
 purge_apt_package vim
-# Provides desktop-portal integration for GTK 3 applications. When installed,
-# for example Firefox loads color scheme (dark mode) configuration from
-# `gsettings` instead of GTK 3 settings file. Thus, appropriate configuration
-# has to be set: `gsettings set org.gnome.desktop.interface color-scheme prefer-dark`
-purge_apt_package xdg-desktop-portal-gtk
 remove_dir "$HOME/.local/share/gedit"
 remove_dir "$HOME/.local/config/gedit"
 remove_link "$HOME/.vimrc"

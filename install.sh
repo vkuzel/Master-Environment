@@ -60,6 +60,17 @@ configure_network_manager() {
   fi
 }
 
+configure_dark_mode() {
+  info "=== Configure dark mode ==="
+  local colorScheme=$(gsettings get org.gnome.desktop.interface color-scheme)
+  if [[ "$colorScheme" == "'prefer-dark'" ]]; then
+    info "Already configured"
+  else
+    info "Set gsettings color scheme"
+    gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+  fi
+}
+
 install_nerd_fonts() {
 	info "=== Install Nerd Fonts ==="
 	local targetDir="/usr/share/fonts/truetype/dejavu-nerd"
@@ -295,6 +306,13 @@ install_apt_package chafa
 # Run sway in D-Bus session to allow screensharing, i.e., `dbus-run-session sway`
 # Test: https://mozilla.github.io/webrtc-landing/gum_test.html
 install_apt_package xdg-desktop-portal-wlr
+# Provides desktop-portal integration for GTK 3 applications. E.g., file picker
+# dialog for Outlook running in Chrome.
+install_apt_package xdg-desktop-portal-gtk
+# When Gtk portal is installed Firefox reads color scheme (dark mode)
+# information from `gsettings` instead of GTK 3 settings file. Thus,
+# appropriate configuration has to be set.
+configure_dark_mode
 
 # Audio
 install_apt_package pipewire
