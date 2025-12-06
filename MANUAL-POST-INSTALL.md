@@ -80,3 +80,8 @@
    * Select Next Tab: Ctrl + Page Down
    * Select Previous Tab: Ctrl + Page Up
    * Close Tab: Ctrl + W
+
+9. Firefox focus extensions
+
+    * uBlock Origin
+    * Unhook - Remove YouTube Recommended & Shorts
