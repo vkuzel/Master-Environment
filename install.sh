@@ -274,6 +274,7 @@ install_apt_package network-manager
 configure_network_manager
 
 # Shell
+install_apt_package fontconfig
 install_nerd_fonts
 install_apt_package fonts-noto-color-emoji
 install_apt_package zsh
