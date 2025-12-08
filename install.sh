@@ -42,7 +42,7 @@ uninstall_cloud_init() {
 		info 'Disable all services except "none" and then press Enter'
 		read -r
 		sudo dpkg-reconfigure cloud-init
-		sudo apt purge cloud-init
+		sudo apt purge --yes cloud-init
 		sudo rm -r /etc/cloud/ /var/lib/cloud/ /etc/netplan/*cloud-init.yaml
   fi
 }
@@ -54,7 +54,7 @@ configure_network_manager() {
   else
 		info "Disable systemd-networkd"
 		sudo systemctl disable systemd-networkd systemd-networkd.socket
-		sudo apt purge networkd-dispatcher
+		sudo apt purge -- yes networkd-dispatcher
 		info "Restart NetworkManager"
 		sudo systemctl restart NetworkManager
   fi
@@ -149,7 +149,7 @@ install_apt_package() {
 	if [[ ! -z "$status" ]]; then
 		info "Already installed"
 	else
-		sudo apt install "$pkgName"
+		sudo apt install --yes "$pkgName"
 	fi
 }
 

@@ -47,7 +47,7 @@ purge_apt_package() {
 	if [[ -z "$status" ]]; then
 		info "Already purged"
 	else
-		sudo apt purge "$pkgName"
+		sudo apt purge --yes "$pkgName"
 	fi
 }
 
