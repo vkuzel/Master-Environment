@@ -77,12 +77,12 @@ install_nerd_fonts() {
 	if [ -d "$targetDir" ]; then
 		info "Already installed"
 	else
-		local fontFile="DejaVuSansMono.zip"
+		local fontFile="DejaVuSansMono.tar.xz"
 		local fontUrl="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/$fontFile"
 
 		curl --location --output-dir "/tmp/" --remote-name "$fontUrl"
 		sudo mkdir -p "$targetDir"
-		sudo unzip "/tmp/$fontFile" -d "$targetDir"
+		sudo tar -xf "/tmp/$fontFile" -C "$targetDir"
 		info "Refresh font cache"
 		sudo fc-cache -fv
 		# Verify font installed: `fc-list`
