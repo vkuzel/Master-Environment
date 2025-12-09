@@ -75,11 +75,15 @@
 	sudo apt install rhythmbox 
 	```
 
-8. IntelliJ IDEA shortcuts:
+8. IntelliJ IDEA setup:
 
-   * Select Next Tab: Ctrl + Page Down
-   * Select Previous Tab: Ctrl + Page Up
-   * Close Tab: Ctrl + W
+    Shortcuts:
+    * Select Next Tab: Ctrl + Page Down
+    * Select Previous Tab: Ctrl + Page Up
+    * Close Tab: Ctrl + W
+
+    Settings:
+    * Disable: Settings -> Editor -> General -> Smart Keys -> Markdown -> Adjust indentation on type
 
 9. Firefox focus extensions
 
