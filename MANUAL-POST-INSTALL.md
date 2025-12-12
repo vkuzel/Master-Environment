@@ -87,5 +87,6 @@
 
 9. Firefox focus extensions
 
+    * Startpage - Private Search Engine
     * uBlock Origin
     * Unhook - Remove YouTube Recommended & Shorts
