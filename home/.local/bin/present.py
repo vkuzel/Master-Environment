@@ -32,13 +32,8 @@ import sys
 import tkinter as tk
 from tkinter import font as tkfont
 
-try:
-    from PIL import Image, ImageTk
-    PIL_AVAILABLE = True
-except ImportError:
-    PIL_AVAILABLE = False
-    print("Warning: PIL not available. Install with: sudo apt install python3-pil python3-pil.imagetk")
-    print("Only GIF and PNG images will be supported without PIL.")
+from PIL import Image, ImageTk
+
 
 class MarkdownPresenter:
     def __init__(self, markdown_file):
@@ -350,20 +345,16 @@ class MarkdownPresenter:
                     img_path = self.resolve_path(element['path'])
 
                     # Load image with PIL if available
-                    if PIL_AVAILABLE:
-                        pil_img = Image.open(img_path)
+                    pil_img = Image.open(img_path)
 
-                        # Resize if too large (max 80% of screen height)
-                        max_height = int(self.root.winfo_height() * 0.8)
-                        max_width = int(self.root.winfo_width() * 0.9)
+                    # Resize if too large (max 80% of screen height)
+                    max_height = int(self.root.winfo_height() * 0.8)
+                    max_width = int(self.root.winfo_width() * 0.9)
 
-                        if pil_img.height > max_height or pil_img.width > max_width:
-                            pil_img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+                    if pil_img.height > max_height or pil_img.width > max_width:
+                        pil_img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
 
-                        img = ImageTk.PhotoImage(pil_img)
-                    else:
-                        # Fallback to tkinter PhotoImage (GIF/PNG only)
-                        img = tk.PhotoImage(file=img_path)
+                    img = ImageTk.PhotoImage(pil_img)
 
                     # Keep reference to prevent garbage collection
                     if not hasattr(self, 'images'):
