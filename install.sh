@@ -354,6 +354,11 @@ install_apt_package gvfs-fuse
 install_apt_package mtp-tools
 install_apt_package jmtpfs
 
+# Presentation
+install_apt_package python3-tk
+install_apt_package python3-pil
+install_apt_package python3-pil.imagetk
+
 # Utils
 install_apt_package libfuse2t64
 install_apt_package htop
