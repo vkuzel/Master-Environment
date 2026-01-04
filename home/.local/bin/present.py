@@ -45,7 +45,6 @@ class MarkdownPresenter:
         self.markdown_file = markdown_file
         self.current_slide = 0
         self.slides = []
-        self.video_playing = False
         self.current_video = None
 
         # Parse markdown file
@@ -439,37 +438,13 @@ class MarkdownPresenter:
     def toggle_video(self):
         """Toggle video playback"""
         if self.current_video:
-            if self.video_playing:
-                print(f"Pausing video: {self.current_video}")
-                self.video_playing = False
-            else:
-                print(f"Playing video: {self.current_video}")
-                # Open video with system player
-                try:
-                    if sys.platform.startswith('linux'):
-                        # Try mpv first (common on Sway), then fallback to xdg-open
-                        # Run in foreground without & to get focus
-                        import subprocess
-                        import shutil
-
-                        if shutil.which('mpv'):
-                            # Use mpv with fullscreen flag
-                            subprocess.Popen(['mpv', '--fullscreen', self.current_video])
-                        elif shutil.which('vlc'):
-                            subprocess.Popen(['vlc', '--fullscreen', self.current_video])
-                        else:
-                            # Fallback to xdg-open without &
-                            subprocess.Popen(['xdg-open', self.current_video])
-
-                        self.video_playing = True
-                    elif sys.platform == 'darwin':
-                        os.system(f'open "{self.current_video}"')
-                        self.video_playing = True
-                    else:
-                        os.system(f'start "" "{self.current_video}"')
-                        self.video_playing = True
-                except Exception as e:
-                    print(f"Error playing video: {e}")
+            print(f"Playing video: {self.current_video}")
+            # Open video with system player
+            try:
+                import subprocess
+                subprocess.Popen(['mpv', '--fullscreen', self.current_video])
+            except Exception as e:
+                print(f"Error playing video: {e}")
         else:
             # If no video, space acts as next slide
             self.next_slide()
