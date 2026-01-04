@@ -26,12 +26,11 @@ Requirements:
 - python3-pil: sudo apt install python3-pil python3-pil.imagetk
 """
 
-import tkinter as tk
-from tkinter import font as tkfont
+import os
 import re
 import sys
-import os
-from pathlib import Path
+import tkinter as tk
+from tkinter import font as tkfont
 
 try:
     from PIL import Image, ImageTk
