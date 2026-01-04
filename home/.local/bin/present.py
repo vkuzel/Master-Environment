@@ -154,7 +154,7 @@ class MarkdownPresenter:
                 })
             # Check for images
             elif '![' in line:
-                match = re.search(r'!\[([^\]]*)\]\(([^\)]+)\)', line)
+                match = re.search(r'!\[([^]]*)]\(([^)]+)\)', line)
                 if match:
                     alt_text = match.group(1)
                     path = match.group(2)
