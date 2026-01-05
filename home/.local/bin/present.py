@@ -31,8 +31,134 @@ import re
 import sys
 import tkinter as tk
 from tkinter import font as tkfont
+from typing import Optional
 
 from PIL import Image, ImageTk
+
+
+class SlideRenderer:
+    def __init__(self, root: tk.Tk, canvas: tk.Canvas):
+        self.canvas = canvas
+
+        self._screen_width = root.winfo_width()
+        self._screen_height = root.winfo_height()
+
+        self._title_font: Optional[tkfont.Font] = None
+        self._normal_font: Optional[tkfont.Font] = None
+        self._code_font: Optional[tkfont.Font] = None
+
+
+    def setup_fonts(self, title_size, normal_size, code_size):
+        """Create fonts with specified sizes"""
+        self._title_font = tkfont.Font(family="Arial", size=title_size, weight="bold")
+        self._normal_font = tkfont.Font(family="Arial", size=normal_size)
+        self._code_font = tkfont.Font(family="Courier", size=code_size)
+
+    def render_text(self, text, x, y, align='left', is_title=False) -> int:
+        """Render formatted text with markdown styling"""
+        font = self._title_font if is_title else self._normal_font
+
+        # Parse inline formatting
+        segments = self._parse_inline_formatting(text)
+
+        # Calculate total width for alignment
+        total_width = 0
+        for seg_text, seg_font in segments:
+            if seg_font == 'code':
+                temp_font = self._code_font
+            elif seg_font == 'bold':
+                temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
+            elif seg_font == 'italic':
+                temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
+            elif seg_font == 'bold_italic':
+                temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
+            else:
+                temp_font = font
+            total_width += temp_font.measure(seg_text)
+
+        # Adjust x based on alignment
+        screen_width = self._screen_width
+        if align == 'center':
+            x = (screen_width - total_width) // 2
+        elif align == 'right':
+            x = screen_width - total_width - 50
+
+        # Render each segment
+        current_x = x
+        for seg_text, seg_font in segments:
+            if seg_font == 'code':
+                use_font = self._code_font
+                fill = '#00ff00'
+            elif seg_font == 'bold':
+                use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
+                fill = 'white'
+            elif seg_font == 'italic':
+                use_font = tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
+                fill = 'white'
+            elif seg_font == 'bold_italic':
+                use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
+                fill = 'white'
+            else:
+                use_font = font
+                fill = 'white'
+
+            self.canvas.create_text(current_x, y, text=seg_text, fill=fill,
+                                    font=use_font, anchor='nw')
+            current_x += use_font.measure(seg_text)
+
+        return y + font.metrics()['linespace']
+
+    def render_code_text(self, text, x, y) -> int:
+        self.canvas.create_text(x, y, text=text, fill='#00ff00', font=self._code_font, anchor='nw')
+        return y + self._code_font.metrics()['linespace']
+
+    def render_image(self, img, anchor, x, y) -> int:
+        self.canvas.create_image(x, y, image=img, anchor=anchor)
+        return y + img.height()
+
+    def render_video_text(self, name, label, x, y) -> int:
+        self.canvas.create_text(x, y, text=name, fill='yellow', font=self._normal_font, anchor='nw')
+        # TODO Hardcoded name line height 35px
+        self.canvas.create_text(x, y + 35, text=label, fill='gray', font=self._code_font, anchor='nw')
+        return y + 35 + self._code_font.metrics()['linespace']
+
+    def render_error_text(self, text, x, y) -> int:
+        self.canvas.create_text(x, y, text=text, fill='red', font=self._normal_font, anchor='nw')
+        return y + self._normal_font.metrics()['linespace']
+
+    def render_slide_number(self, text):
+        screen_width = self._screen_width
+        screen_height = self._screen_height
+        self.canvas.create_text(screen_width - 50, screen_height - 30, text=text, fill='gray', font=self._code_font, anchor='se')
+
+    @staticmethod
+    def _parse_inline_formatting(text):
+        """Parse bold, italic, and code formatting"""
+        segments = []
+        pos = 0
+
+        # Pattern to match **bold**, __bold__, *italic*, _italic_, `code`
+        pattern = r'(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|`([^`]+)`'
+
+        for match in re.finditer(pattern, text):
+            # Add text before match
+            if match.start() > pos:
+                segments.append((text[pos:match.start()], 'normal'))
+
+            if match.group(1):  # Bold
+                segments.append((match.group(2), 'bold'))
+            elif match.group(3):  # Italic
+                segments.append((match.group(4), 'italic'))
+            elif match.group(5):  # Code
+                segments.append((match.group(5), 'code'))
+
+            pos = match.end()
+
+        # Add remaining text
+        if pos < len(text):
+            segments.append((text[pos:], 'normal'))
+
+        return segments if segments else [(text, 'normal')]
 
 
 class MarkdownPresenter:
@@ -55,11 +181,6 @@ class MarkdownPresenter:
         self.base_title_size = 48
         self.base_normal_size = 24
         self.base_code_size = 20
-
-        # Setup fonts (will be recreated for each slide)
-        self.title_font = None
-        self.normal_font = None
-        self.code_font = None
 
         # Create canvas for rendering
         self.canvas = tk.Canvas(self.root, bg='black', highlightthickness=0)
@@ -221,117 +342,6 @@ class MarkdownPresenter:
 
         return title_size, normal_size, code_size
 
-    def setup_fonts(self, title_size, normal_size, code_size):
-        """Create fonts with specified sizes"""
-        self.title_font = tkfont.Font(family="Arial", size=title_size, weight="bold")
-        self.normal_font = tkfont.Font(family="Arial", size=normal_size)
-        self.code_font = tkfont.Font(family="Courier", size=code_size)
-
-    def render_text(self, text, x, y, align='left', is_title=False):
-        """Render formatted text with markdown styling"""
-        font = self.title_font if is_title else self.normal_font
-
-        # Parse inline formatting
-        segments = self.parse_inline_formatting(text)
-
-        # Calculate total width for alignment
-        total_width = 0
-        for seg_text, seg_font in segments:
-            if seg_font == 'code':
-                temp_font = self.code_font
-            elif seg_font == 'bold':
-                temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
-            elif seg_font == 'italic':
-                temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
-            elif seg_font == 'bold_italic':
-                temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
-            else:
-                temp_font = font
-            total_width += temp_font.measure(seg_text)
-
-        # Adjust x based on alignment
-        screen_width = self.root.winfo_width()
-        if align == 'center':
-            x = (screen_width - total_width) // 2
-        elif align == 'right':
-            x = screen_width - total_width - 50
-
-        # Render each segment
-        current_x = x
-        for seg_text, seg_font in segments:
-            if seg_font == 'code':
-                use_font = self.code_font
-                fill = '#00ff00'
-            elif seg_font == 'bold':
-                use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
-                fill = 'white'
-            elif seg_font == 'italic':
-                use_font = tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
-                fill = 'white'
-            elif seg_font == 'bold_italic':
-                use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
-                fill = 'white'
-            else:
-                use_font = font
-                fill = 'white'
-
-            self.canvas.create_text(current_x, y, text=seg_text, fill=fill,
-                                    font=use_font, anchor='nw')
-            current_x += use_font.measure(seg_text)
-
-        return y + font.metrics()['linespace']
-
-    def render_code_text(self, text, x, y):
-        self.canvas.create_text(x, y, text=text, fill='#00ff00', font=self.code_font, anchor='nw')
-        return y + self.code_font.metrics()['linespace']
-
-    def render_image(self, img, anchor, x, y):
-        self.canvas.create_image(x, y, image=img, anchor=anchor)
-        return y + img.height()
-
-    def render_video_text(self, name, label, x, y):
-        self.canvas.create_text(x, y, text=name, fill='yellow', font=self.normal_font, anchor='nw')
-        # TODO Hardcoded name line height 35px
-        self.canvas.create_text(x, y + 35, text=label, fill='gray', font=self.code_font, anchor='nw')
-        return y + 35 + self.code_font.metrics()['linespace']
-
-    def render_error_text(self, text, x, y):
-        self.canvas.create_text(x, y, text=text, fill='red', font=self.normal_font, anchor='nw')
-        return y + self.normal_font.metrics()['linespace']
-
-    def render_slide_number(self, text):
-        screen_width = self.root.winfo_width()
-        screen_height = self.root.winfo_height()
-        self.canvas.create_text(screen_width - 50, screen_height - 30, text=text, fill='gray', font=self.code_font, anchor='se')
-
-    def parse_inline_formatting(self, text):
-        """Parse bold, italic, and code formatting"""
-        segments = []
-        pos = 0
-
-        # Pattern to match **bold**, __bold__, *italic*, _italic_, `code`
-        pattern = r'(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|`([^`]+)`'
-
-        for match in re.finditer(pattern, text):
-            # Add text before match
-            if match.start() > pos:
-                segments.append((text[pos:match.start()], 'normal'))
-
-            if match.group(1):  # Bold
-                segments.append((match.group(2), 'bold'))
-            elif match.group(3):  # Italic
-                segments.append((match.group(4), 'italic'))
-            elif match.group(5):  # Code
-                segments.append((match.group(5), 'code'))
-
-            pos = match.end()
-
-        # Add remaining text
-        if pos < len(text):
-            segments.append((text[pos:], 'normal'))
-
-        return segments if segments else [(text, 'normal')]
-
     def display_slide(self):
         """Display current slide"""
         self.canvas.delete('all')
@@ -341,24 +351,29 @@ class MarkdownPresenter:
 
         slide = self.slides[self.current_slide]
 
+        slide_renderer = SlideRenderer(
+            root=self.root,
+            canvas=self.canvas
+        )
+
         # Calculate and setup fonts based on slide content
         title_size, normal_size, code_size = self.calculate_font_sizes(slide)
-        self.setup_fonts(title_size, normal_size, code_size)
+        slide_renderer.setup_fonts(title_size, normal_size, code_size)
 
         y = 100
         x = 100
 
         for element in slide:
             if element['type'] == 'title':
-                y = self.render_text(element['content'], x, y, element['align'], is_title=True)
+                y = slide_renderer.render_text(element['content'], x, y, element['align'], is_title=True)
                 y += 30
             elif element['type'] == 'text':
-                y = self.render_text(element['content'], x, y, element['align'])
+                y = slide_renderer.render_text(element['content'], x, y, element['align'])
                 y += 10
             elif element['type'] == 'code_block':
                 lines = element['content'].split('\n')
                 for line in lines:
-                    y = self.render_code_text(line, x, y)
+                    y = slide_renderer.render_code_text(line, x, y)
                 y += 20
             elif element['type'] == 'image':
                 try:
@@ -393,27 +408,27 @@ class MarkdownPresenter:
                         img_x = x
                         anchor = 'nw'
 
-                    y = self.render_image(img, anchor, img_x, y)
+                    y = slide_renderer.render_image(img, anchor, img_x, y)
                     y += 20
                 except Exception as e:
                     error_msg = f"[Image error: {element['path']} - {str(e)}]"
-                    y = self.render_error_text(error_msg, x, y)
+                    y = slide_renderer.render_error_text(error_msg, x, y)
                     y += 20
             elif element['type'] == 'video':
                 try:
                     video_path = self.resolve_path(element['path'])
                     video_msg = f"🎬 Video: {os.path.basename(video_path)}"
-                    y = self.render_video_text(video_msg, "(Press SPACE to play/pause)", x, y)
+                    y = slide_renderer.render_video_text(video_msg, "(Press SPACE to play/pause)", x, y)
                     self.current_video = video_path
                     y += 20
                 except Exception as e:
                     error_msg = f"[Video not found: {element['path']}]"
-                    self.render_error_text(error_msg, x, y)
+                    slide_renderer.render_error_text(error_msg, x, y)
                     y += 20
 
         # Display slide number
         slide_info = f"Slide {self.current_slide + 1} / {len(self.slides)}"
-        self.render_slide_number(slide_info)
+        slide_renderer.render_slide_number(slide_info)
 
     def resolve_path(self, path):
         """Resolve relative path based on markdown file location"""
