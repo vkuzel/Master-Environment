@@ -281,6 +281,29 @@ class MarkdownPresenter:
 
         return y + font.metrics()['linespace']
 
+    def render_code_text(self, text, x, y):
+        self.canvas.create_text(x, y, text=text, fill='#00ff00', font=self.code_font, anchor='nw')
+        return y + self.code_font.metrics()['linespace']
+
+    def render_image(self, img, anchor, x, y):
+        self.canvas.create_image(x, y, image=img, anchor=anchor)
+        return y + img.height()
+
+    def render_video_text(self, name, label, x, y):
+        self.canvas.create_text(x, y, text=name, fill='yellow', font=self.normal_font, anchor='nw')
+        # TODO Hardcoded name line height 35px
+        self.canvas.create_text(x, y + 35, text=label, fill='gray', font=self.code_font, anchor='nw')
+        return y + 35 + self.code_font.metrics()['linespace']
+
+    def render_error_text(self, text, x, y):
+        self.canvas.create_text(x, y, text=text, fill='red', font=self.normal_font, anchor='nw')
+        return y + self.normal_font.metrics()['linespace']
+
+    def render_slide_number(self, text):
+        screen_width = self.root.winfo_width()
+        screen_height = self.root.winfo_height()
+        self.canvas.create_text(screen_width - 50, screen_height - 30, text=text, fill='gray', font=self.code_font, anchor='se')
+
     def parse_inline_formatting(self, text):
         """Parse bold, italic, and code formatting"""
         segments = []
@@ -327,8 +350,7 @@ class MarkdownPresenter:
 
         for element in slide:
             if element['type'] == 'title':
-                y = self.render_text(element['content'], x, y,
-                                     element['align'], is_title=True)
+                y = self.render_text(element['content'], x, y, element['align'], is_title=True)
                 y += 30
             elif element['type'] == 'text':
                 y = self.render_text(element['content'], x, y, element['align'])
@@ -336,9 +358,7 @@ class MarkdownPresenter:
             elif element['type'] == 'code_block':
                 lines = element['content'].split('\n')
                 for line in lines:
-                    self.canvas.create_text(x, y, text=line, fill='#00ff00',
-                                            font=self.code_font, anchor='nw')
-                    y += self.code_font.metrics()['linespace']
+                    y = self.render_code_text(line, x, y)
                 y += 20
             elif element['type'] == 'image':
                 try:
@@ -373,37 +393,27 @@ class MarkdownPresenter:
                         img_x = x
                         anchor = 'nw'
 
-                    self.canvas.create_image(img_x, y, image=img, anchor=anchor)
-                    y += img.height() + 20
+                    y = self.render_image(img, anchor, img_x, y)
+                    y += 20
                 except Exception as e:
                     error_msg = f"[Image error: {element['path']} - {str(e)}]"
-                    self.canvas.create_text(x, y, text=error_msg, fill='red',
-                                            font=self.normal_font, anchor='nw')
-                    y += 40
+                    y = self.render_error_text(error_msg, x, y)
+                    y += 20
             elif element['type'] == 'video':
                 try:
                     video_path = self.resolve_path(element['path'])
                     video_msg = f"🎬 Video: {os.path.basename(video_path)}"
-                    self.canvas.create_text(x, y, text=video_msg, fill='yellow',
-                                            font=self.normal_font, anchor='nw')
-                    self.canvas.create_text(x, y + 35,
-                                            text="(Press SPACE to play/pause)",
-                                            fill='gray', font=self.code_font, anchor='nw')
+                    y = self.render_video_text(video_msg, "(Press SPACE to play/pause)", x, y)
                     self.current_video = video_path
-                    y += 80
+                    y += 20
                 except Exception as e:
                     error_msg = f"[Video not found: {element['path']}]"
-                    self.canvas.create_text(x, y, text=error_msg, fill='red',
-                                            font=self.normal_font, anchor='nw')
-                    y += 40
+                    self.render_error_text(error_msg, x, y)
+                    y += 20
 
         # Display slide number
         slide_info = f"Slide {self.current_slide + 1} / {len(self.slides)}"
-        screen_width = self.root.winfo_width()
-        screen_height = self.root.winfo_height()
-        self.canvas.create_text(screen_width - 50, screen_height - 30,
-                                text=slide_info, fill='gray',
-                                font=self.code_font, anchor='se')
+        self.render_slide_number(slide_info)
 
     def resolve_path(self, path):
         """Resolve relative path based on markdown file location"""
