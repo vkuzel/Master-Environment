@@ -44,7 +44,7 @@ class Element:
 
 @dataclass(frozen=True)
 class TitleElement(Element):
-    content: str
+    segments: List[Any]
     level: int
 
 
@@ -142,7 +142,7 @@ class Parser:
                 level = len(line) - len(line.lstrip('#'))
                 text = line.lstrip('#').strip()
                 elements.append(TitleElement(
-                    content=text,
+                    segments=Parser._parse_inline_formatting(text),
                     level=level,
                     align=align,
                 ))
@@ -403,8 +403,8 @@ class MarkdownPresenter:
 
         for element in slide.elements:
             match element:
-                case TitleElement(content=content, align=align):
-                    y = slide_renderer.render_text([(content, 'normal')], x, y, align, is_title=True)
+                case TitleElement(segments=segments, align=align):
+                    y = slide_renderer.render_text(segments, x, y, align, is_title=True)
                     y += 30
 
                 case TextElement(segments=segments, align=align):
