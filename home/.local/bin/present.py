@@ -43,14 +43,20 @@ class Element:
 
 
 @dataclass(frozen=True)
+class TextSegment:
+    text: str
+    format: str
+
+
+@dataclass(frozen=True)
 class TitleElement(Element):
-    segments: List[Any]
+    segments: List[TextSegment]
     level: int
 
 
 @dataclass(frozen=True)
 class TextElement(Element):
-    segments: List[Any]
+    segments: List[TextSegment]
 
 
 @dataclass(frozen=True)
@@ -186,22 +192,22 @@ class Parser:
         for match in re.finditer(pattern, text):
             # Add text before match
             if match.start() > pos:
-                segments.append((text[pos:match.start()], 'normal'))
+                segments.append(TextSegment(text[pos:match.start()], 'normal'))
 
             if match.group(1):  # Bold
-                segments.append((match.group(2), 'bold'))
+                segments.append(TextSegment(match.group(2), 'bold'))
             elif match.group(3):  # Italic
-                segments.append((match.group(4), 'italic'))
+                segments.append(TextSegment(match.group(4), 'italic'))
             elif match.group(5):  # Code
-                segments.append((match.group(5), 'code'))
+                segments.append(TextSegment(match.group(5), 'code'))
 
             pos = match.end()
 
         # Add remaining text
         if pos < len(text):
-            segments.append((text[pos:], 'normal'))
+            segments.append(TextSegment(text[pos:], 'normal'))
 
-        return segments if segments else [(text, 'normal')]
+        return segments if segments else [TextSegment(text, 'normal')]
 
 
 class SlideRenderer:
@@ -222,24 +228,24 @@ class SlideRenderer:
         self._normal_font = tkfont.Font(family="Arial", size=normal_size)
         self._code_font = tkfont.Font(family="Courier", size=code_size)
 
-    def render_text(self, segments: List[Any], x, y, align='left', is_title=False) -> int:
+    def render_text(self, segments: List[TextSegment], x, y, align='left', is_title=False) -> int:
         """Render formatted text with markdown styling"""
         font = self._title_font if is_title else self._normal_font
 
         # Calculate total width for alignment
         total_width = 0
-        for seg_text, seg_font in segments:
-            if seg_font == 'code':
-                temp_font = self._code_font
-            elif seg_font == 'bold':
-                temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
-            elif seg_font == 'italic':
-                temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
-            elif seg_font == 'bold_italic':
-                temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
-            else:
-                temp_font = font
-            total_width += temp_font.measure(seg_text)
+        for segment in segments:
+            temp_font = font
+            match segment.format:
+                case 'code':
+                    temp_font = self._code_font
+                case 'bold':
+                    temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
+                case 'italic':
+                    temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
+                case 'bold_italic':
+                    temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
+            total_width += temp_font.measure(segment.text)
 
         # Adjust x based on alignment
         screen_width = self._screen_width
@@ -250,26 +256,31 @@ class SlideRenderer:
 
         # Render each segment
         current_x = x
-        for seg_text, seg_font in segments:
-            if seg_font == 'code':
-                use_font = self._code_font
-                fill = '#00ff00'
-            elif seg_font == 'bold':
-                use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
-                fill = 'white'
-            elif seg_font == 'italic':
-                use_font = tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
-                fill = 'white'
-            elif seg_font == 'bold_italic':
-                use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
-                fill = 'white'
-            else:
-                use_font = font
-                fill = 'white'
+        for segment in segments:
+            use_font = font
+            fill = 'white'
+            match segment.format:
+                case 'code':
+                    use_font = self._code_font
+                    fill = '#00ff00'
+                case 'bold':
+                    use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
+                    fill = 'white'
+                case 'italic':
+                    use_font = tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
+                    fill = 'white'
+                case 'bold_italic':
+                    use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
+                    fill = 'white'
 
-            self.canvas.create_text(current_x, y, text=seg_text, fill=fill,
-                                    font=use_font, anchor='nw')
-            current_x += use_font.measure(seg_text)
+            self.canvas.create_text(
+                current_x, y,
+                text=segment.text,
+                fill=fill,
+                font=use_font,
+                anchor='nw'
+            )
+            current_x += use_font.measure(segment.text)
 
         return y + font.metrics()['linespace']
 
