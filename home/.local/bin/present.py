@@ -31,9 +31,113 @@ import re
 import sys
 import tkinter as tk
 from tkinter import font as tkfont
-from typing import Optional
+from typing import Optional, List, Any
 
 from PIL import Image, ImageTk
+
+
+class Parser:
+    def parse_markdown(self, markdown_file: str) -> List[Any]:
+        """Parse markdown file into slides"""
+        try:
+            with open(markdown_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except FileNotFoundError:
+            print(f"Error: File '{markdown_file}' not found")
+            sys.exit(1)
+
+        # Split by horizontal rules
+        raw_slides = re.split(r'\n---+\n', content)
+
+        slides = []
+        for raw_slide in raw_slides:
+            if raw_slide.strip():
+                slides.append(self._parse_slide_content(raw_slide.strip()))
+        return slides
+
+    @staticmethod
+    def _parse_slide_content(content):
+        """Parse individual slide content into structured format"""
+        elements = []
+        lines = content.split('\n')
+        in_code_block = False
+        code_block = []
+
+        for line in lines:
+            # Check for code block
+            if line.strip().startswith('```'):
+                if in_code_block:
+                    elements.append({
+                        'type': 'code_block',
+                        'content': '\n'.join(code_block),
+                        'align': 'left'
+                    })
+                    code_block = []
+                    in_code_block = False
+                else:
+                    in_code_block = True
+                continue
+
+            if in_code_block:
+                code_block.append(line)
+                continue
+
+            # Skip empty lines
+            if not line.strip():
+                continue
+
+            # Check for alignment tags
+            align = 'left'
+            if '<center>' in line.lower():
+                align = 'center'
+                line = re.sub(r'</?center>', '', line, flags=re.IGNORECASE)
+            elif '<right>' in line.lower():
+                align = 'right'
+                line = re.sub(r'</?right>', '', line, flags=re.IGNORECASE)
+            elif '<left>' in line.lower():
+                align = 'left'
+                line = re.sub(r'</?left>', '', line, flags=re.IGNORECASE)
+
+            # Check for title
+            if line.startswith('#'):
+                level = len(line) - len(line.lstrip('#'))
+                text = line.lstrip('#').strip()
+                elements.append({
+                    'type': 'title',
+                    'level': level,
+                    'content': text,
+                    'align': align
+                })
+            # Check for images
+            elif '![' in line:
+                match = re.search(r'!\[([^]]*)]\(([^)]+)\)', line)
+                if match:
+                    alt_text = match.group(1)
+                    path = match.group(2)
+                    # Determine if it's a video
+                    if path.lower().endswith(('.mp4', '.avi', '.mov', '.mkv', '.webm')):
+                        elements.append({
+                            'type': 'video',
+                            'path': path,
+                            'alt': alt_text,
+                            'align': align
+                        })
+                    else:
+                        elements.append({
+                            'type': 'image',
+                            'path': path,
+                            'alt': alt_text,
+                            'align': align
+                        })
+            # Regular text
+            else:
+                elements.append({
+                    'type': 'text',
+                    'content': line,
+                    'align': align
+                })
+
+        return elements
 
 
 class SlideRenderer:
@@ -169,7 +273,7 @@ class MarkdownPresenter:
         self.current_video = None
 
         # Parse markdown file
-        self.parse_markdown()
+        self.slides = Parser().parse_markdown(markdown_file)
 
         # Setup GUI
         self.root = tk.Tk()
@@ -198,105 +302,6 @@ class MarkdownPresenter:
 
         # Display first slide
         self.display_slide()
-
-    def parse_markdown(self):
-        """Parse markdown file into slides"""
-        try:
-            with open(self.markdown_file, 'r', encoding='utf-8') as f:
-                content = f.read()
-        except FileNotFoundError:
-            print(f"Error: File '{self.markdown_file}' not found")
-            sys.exit(1)
-
-        # Split by horizontal rules
-        raw_slides = re.split(r'\n---+\n', content)
-
-        for raw_slide in raw_slides:
-            if raw_slide.strip():
-                self.slides.append(self.parse_slide_content(raw_slide.strip()))
-
-    def parse_slide_content(self, content):
-        """Parse individual slide content into structured format"""
-        elements = []
-        lines = content.split('\n')
-        in_code_block = False
-        code_block = []
-
-        for line in lines:
-            # Check for code block
-            if line.strip().startswith('```'):
-                if in_code_block:
-                    elements.append({
-                        'type': 'code_block',
-                        'content': '\n'.join(code_block),
-                        'align': 'left'
-                    })
-                    code_block = []
-                    in_code_block = False
-                else:
-                    in_code_block = True
-                continue
-
-            if in_code_block:
-                code_block.append(line)
-                continue
-
-            # Skip empty lines
-            if not line.strip():
-                continue
-
-            # Check for alignment tags
-            align = 'left'
-            if '<center>' in line.lower():
-                align = 'center'
-                line = re.sub(r'</?center>', '', line, flags=re.IGNORECASE)
-            elif '<right>' in line.lower():
-                align = 'right'
-                line = re.sub(r'</?right>', '', line, flags=re.IGNORECASE)
-            elif '<left>' in line.lower():
-                align = 'left'
-                line = re.sub(r'</?left>', '', line, flags=re.IGNORECASE)
-
-            # Check for title
-            if line.startswith('#'):
-                level = len(line) - len(line.lstrip('#'))
-                text = line.lstrip('#').strip()
-                elements.append({
-                    'type': 'title',
-                    'level': level,
-                    'content': text,
-                    'align': align
-                })
-            # Check for images
-            elif '![' in line:
-                match = re.search(r'!\[([^]]*)]\(([^)]+)\)', line)
-                if match:
-                    alt_text = match.group(1)
-                    path = match.group(2)
-                    # Determine if it's a video
-                    if path.lower().endswith(('.mp4', '.avi', '.mov', '.mkv', '.webm')):
-                        elements.append({
-                            'type': 'video',
-                            'path': path,
-                            'alt': alt_text,
-                            'align': align
-                        })
-                    else:
-                        elements.append({
-                            'type': 'image',
-                            'path': path,
-                            'alt': alt_text,
-                            'align': align
-                        })
-            # Regular text
-            else:
-                elements.append({
-                    'type': 'text',
-                    'content': line,
-                    'align': align
-                })
-
-        return elements
 
     def count_text_lines(self, slide):
         """Count the number of text lines in a slide (excluding images/videos)"""
