@@ -32,7 +32,7 @@ import sys
 import tkinter as tk
 from dataclasses import dataclass
 from tkinter import font as tkfont
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from PIL import Image, ImageTk
 
@@ -50,7 +50,7 @@ class TitleElement(Element):
 
 @dataclass(frozen=True)
 class TextElement(Element):
-    content: str
+    segments: List[Any]
 
 
 @dataclass(frozen=True)
@@ -168,11 +168,40 @@ class Parser:
             # Regular text
             else:
                 elements.append(TextElement(
-                    content=line,
+                    segments=Parser._parse_inline_formatting(line),
                     align=align,
                 ))
 
         return elements
+
+    @staticmethod
+    def _parse_inline_formatting(text: str) -> List[Any]:
+        """Parse bold, italic, and code formatting"""
+        segments = []
+        pos = 0
+
+        # Pattern to match **bold**, __bold__, *italic*, _italic_, `code`
+        pattern = r'(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|`([^`]+)`'
+
+        for match in re.finditer(pattern, text):
+            # Add text before match
+            if match.start() > pos:
+                segments.append((text[pos:match.start()], 'normal'))
+
+            if match.group(1):  # Bold
+                segments.append((match.group(2), 'bold'))
+            elif match.group(3):  # Italic
+                segments.append((match.group(4), 'italic'))
+            elif match.group(5):  # Code
+                segments.append((match.group(5), 'code'))
+
+            pos = match.end()
+
+        # Add remaining text
+        if pos < len(text):
+            segments.append((text[pos:], 'normal'))
+
+        return segments if segments else [(text, 'normal')]
 
 
 class SlideRenderer:
@@ -193,12 +222,9 @@ class SlideRenderer:
         self._normal_font = tkfont.Font(family="Arial", size=normal_size)
         self._code_font = tkfont.Font(family="Courier", size=code_size)
 
-    def render_text(self, text, x, y, align='left', is_title=False) -> int:
+    def render_text(self, segments: List[Any], x, y, align='left', is_title=False) -> int:
         """Render formatted text with markdown styling"""
         font = self._title_font if is_title else self._normal_font
-
-        # Parse inline formatting
-        segments = self._parse_inline_formatting(text)
 
         # Calculate total width for alignment
         total_width = 0
@@ -269,35 +295,6 @@ class SlideRenderer:
         screen_width = self._screen_width
         screen_height = self._screen_height
         self.canvas.create_text(screen_width - 50, screen_height - 30, text=text, fill='gray', font=self._code_font, anchor='se')
-
-    @staticmethod
-    def _parse_inline_formatting(text):
-        """Parse bold, italic, and code formatting"""
-        segments = []
-        pos = 0
-
-        # Pattern to match **bold**, __bold__, *italic*, _italic_, `code`
-        pattern = r'(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|`([^`]+)`'
-
-        for match in re.finditer(pattern, text):
-            # Add text before match
-            if match.start() > pos:
-                segments.append((text[pos:match.start()], 'normal'))
-
-            if match.group(1):  # Bold
-                segments.append((match.group(2), 'bold'))
-            elif match.group(3):  # Italic
-                segments.append((match.group(4), 'italic'))
-            elif match.group(5):  # Code
-                segments.append((match.group(5), 'code'))
-
-            pos = match.end()
-
-        # Add remaining text
-        if pos < len(text):
-            segments.append((text[pos:], 'normal'))
-
-        return segments if segments else [(text, 'normal')]
 
 
 class MarkdownPresenter:
@@ -407,11 +404,11 @@ class MarkdownPresenter:
         for element in slide.elements:
             match element:
                 case TitleElement(content=content, align=align):
-                    y = slide_renderer.render_text(content, x, y, align, is_title=True)
+                    y = slide_renderer.render_text([(content, 'normal')], x, y, align, is_title=True)
                     y += 30
 
-                case TextElement(content=content, align=align):
-                    y = slide_renderer.render_text(content, x, y, align)
+                case TextElement(segments=segments, align=align):
+                    y = slide_renderer.render_text(segments, x, y, align)
                     y += 10
 
                 case CodeBlockElement(content=content):
