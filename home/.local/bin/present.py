@@ -30,14 +30,53 @@ import os
 import re
 import sys
 import tkinter as tk
+from dataclasses import dataclass
 from tkinter import font as tkfont
-from typing import Optional, List, Any
+from typing import Optional, List
 
 from PIL import Image, ImageTk
 
 
+@dataclass(frozen=True)
+class Element:
+    align: str
+
+
+@dataclass(frozen=True)
+class TitleElement(Element):
+    content: str
+    level: int
+
+
+@dataclass(frozen=True)
+class TextElement(Element):
+    content: str
+
+
+@dataclass(frozen=True)
+class CodeBlockElement(Element):
+    content: str
+
+
+@dataclass(frozen=True)
+class ImageElement(Element):
+    path: str
+    alt: str
+
+
+@dataclass(frozen=True)
+class VideoElement(Element):
+    path: str
+    alt: str
+
+
+@dataclass(frozen=True)
+class Slide:
+    elements: List[Element]
+
+
 class Parser:
-    def parse_markdown(self, markdown_file: str) -> List[Any]:
+    def parse_markdown(self, markdown_file: str) -> List[Slide]:
         """Parse markdown file into slides"""
         try:
             with open(markdown_file, 'r', encoding='utf-8') as f:
@@ -51,14 +90,15 @@ class Parser:
 
         slides = []
         for raw_slide in raw_slides:
-            if raw_slide.strip():
-                slides.append(self._parse_slide_content(raw_slide.strip()))
+            if not raw_slide.strip(): continue
+            elements = self._parse_slide_content(raw_slide.strip())
+            slides.append(Slide(elements))
         return slides
 
     @staticmethod
-    def _parse_slide_content(content):
+    def _parse_slide_content(content) -> List[Element]:
         """Parse individual slide content into structured format"""
-        elements = []
+        elements: List[Element] = []
         lines = content.split('\n')
         in_code_block = False
         code_block = []
@@ -67,11 +107,10 @@ class Parser:
             # Check for code block
             if line.strip().startswith('```'):
                 if in_code_block:
-                    elements.append({
-                        'type': 'code_block',
-                        'content': '\n'.join(code_block),
-                        'align': 'left'
-                    })
+                    elements.append(CodeBlockElement(
+                        content='\n'.join(code_block),
+                        align='left',
+                    ))
                     code_block = []
                     in_code_block = False
                 else:
@@ -102,12 +141,11 @@ class Parser:
             if line.startswith('#'):
                 level = len(line) - len(line.lstrip('#'))
                 text = line.lstrip('#').strip()
-                elements.append({
-                    'type': 'title',
-                    'level': level,
-                    'content': text,
-                    'align': align
-                })
+                elements.append(TitleElement(
+                    content=text,
+                    level=level,
+                    align=align,
+                ))
             # Check for images
             elif '![' in line:
                 match = re.search(r'!\[([^]]*)]\(([^)]+)\)', line)
@@ -116,26 +154,23 @@ class Parser:
                     path = match.group(2)
                     # Determine if it's a video
                     if path.lower().endswith(('.mp4', '.avi', '.mov', '.mkv', '.webm')):
-                        elements.append({
-                            'type': 'video',
-                            'path': path,
-                            'alt': alt_text,
-                            'align': align
-                        })
+                        elements.append(VideoElement(
+                            path=path,
+                            alt=alt_text,
+                            align=align,
+                        ))
                     else:
-                        elements.append({
-                            'type': 'image',
-                            'path': path,
-                            'alt': alt_text,
-                            'align': align
-                        })
+                        elements.append(ImageElement(
+                            path=path,
+                            alt=alt_text,
+                            align=align
+                        ))
             # Regular text
             else:
-                elements.append({
-                    'type': 'text',
-                    'content': line,
-                    'align': align
-                })
+                elements.append(TextElement(
+                    content=line,
+                    align=align,
+                ))
 
         return elements
 
@@ -303,17 +338,18 @@ class MarkdownPresenter:
         # Display first slide
         self.display_slide()
 
-    def count_text_lines(self, slide):
+    def count_text_lines(self, slide: Slide):
         """Count the number of text lines in a slide (excluding images/videos)"""
         line_count = 0
-        for element in slide:
-            if element['type'] in ['title', 'text']:
-                line_count += 1
-            elif element['type'] == 'code_block':
-                line_count += len(element['content'].split('\n'))
+        for element in slide.elements:
+            match element:
+                case TitleElement() | TextElement():
+                    line_count += 1
+                case CodeBlockElement(content=content):
+                    line_count += len(content.split('\n'))
         return line_count
 
-    def calculate_font_sizes(self, slide):
+    def calculate_font_sizes(self, slide: Slide):
         """Calculate appropriate font sizes based on slide content"""
         # Force window update to get accurate dimensions
         self.root.update_idletasks()
@@ -368,68 +404,76 @@ class MarkdownPresenter:
         y = 100
         x = 100
 
-        for element in slide:
-            if element['type'] == 'title':
-                y = slide_renderer.render_text(element['content'], x, y, element['align'], is_title=True)
-                y += 30
-            elif element['type'] == 'text':
-                y = slide_renderer.render_text(element['content'], x, y, element['align'])
-                y += 10
-            elif element['type'] == 'code_block':
-                lines = element['content'].split('\n')
-                for line in lines:
-                    y = slide_renderer.render_code_text(line, x, y)
-                y += 20
-            elif element['type'] == 'image':
-                try:
-                    img_path = self.resolve_path(element['path'])
+        for element in slide.elements:
+            match element:
+                case TitleElement(content=content, align=align):
+                    y = slide_renderer.render_text(content, x, y, align, is_title=True)
+                    y += 30
 
-                    # Load image with PIL if available
-                    pil_img = Image.open(img_path)
+                case TextElement(content=content, align=align):
+                    y = slide_renderer.render_text(content, x, y, align)
+                    y += 10
 
-                    # Resize if too large (max 80% of screen height)
-                    max_height = int(self.root.winfo_height() * 0.8)
-                    max_width = int(self.root.winfo_width() * 0.9)
-
-                    if pil_img.height > max_height or pil_img.width > max_width:
-                        pil_img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
-
-                    img = ImageTk.PhotoImage(pil_img)
-
-                    # Keep reference to prevent garbage collection
-                    if not hasattr(self, 'images'):
-                        self.images = []
-                    self.images.append(img)
-
-                    # Calculate position based on alignment
-                    screen_width = self.root.winfo_width()
-                    if element['align'] == 'center':
-                        img_x = screen_width // 2
-                        anchor = 'n'
-                    elif element['align'] == 'right':
-                        img_x = screen_width - 50
-                        anchor = 'ne'
-                    else:
-                        img_x = x
-                        anchor = 'nw'
-
-                    y = slide_renderer.render_image(img, anchor, img_x, y)
+                case CodeBlockElement(content=content):
+                    lines = content.split('\n')
+                    for line in lines:
+                        y = slide_renderer.render_code_text(line, x, y)
                     y += 20
-                except Exception as e:
-                    error_msg = f"[Image error: {element['path']} - {str(e)}]"
-                    y = slide_renderer.render_error_text(error_msg, x, y)
-                    y += 20
-            elif element['type'] == 'video':
-                try:
-                    video_path = self.resolve_path(element['path'])
-                    video_msg = f"🎬 Video: {os.path.basename(video_path)}"
-                    y = slide_renderer.render_video_text(video_msg, "(Press SPACE to play/pause)", x, y)
-                    self.current_video = video_path
-                    y += 20
-                except Exception as e:
-                    error_msg = f"[Video not found: {element['path']}]"
-                    slide_renderer.render_error_text(error_msg, x, y)
-                    y += 20
+
+                case ImageElement(path=path, alt=alt, align=align):
+                    try:
+                        img_path = self.resolve_path(path)
+
+                        # Load image with PIL if available
+                        pil_img = Image.open(img_path)
+
+                        # Resize if too large (max 80% of screen height)
+                        max_height = int(self.root.winfo_height() * 0.8)
+                        max_width = int(self.root.winfo_width() * 0.9)
+
+                        if pil_img.height > max_height or pil_img.width > max_width:
+                            pil_img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+
+                        img = ImageTk.PhotoImage(pil_img)
+
+                        # Keep reference to prevent garbage collection
+                        if not hasattr(self, 'images'):
+                            self.images = []
+                        self.images.append(img)
+
+                        # Calculate position based on alignment
+                        screen_width = self.root.winfo_width()
+                        if align == 'center':
+                            img_x = screen_width // 2
+                            anchor = 'n'
+                        elif align == 'right':
+                            img_x = screen_width - 50
+                            anchor = 'ne'
+                        else:
+                            img_x = x
+                            anchor = 'nw'
+
+                        y = slide_renderer.render_image(img, anchor, img_x, y)
+                        y += 20
+                    except Exception as e:
+                        error_msg = f"[Image error: {path} - {str(e)}]"
+                        y = slide_renderer.render_error_text(error_msg, x, y)
+                        y += 20
+
+                case VideoElement(path=path, alt=alt, align=align):
+                    try:
+                        video_path = self.resolve_path(path)
+                        video_msg = f"🎬 Video: {os.path.basename(video_path)}"
+                        y = slide_renderer.render_video_text(video_msg, "(Press SPACE to play/pause)", x, y)
+                        self.current_video = video_path
+                        y += 20
+                    except Exception as e:
+                        error_msg = f"[Video not found: {path}]"
+                        slide_renderer.render_error_text(error_msg, x, y)
+                        y += 20
+
+                case _:
+                    raise TypeError(type(element))
 
         # Display slide number
         slide_info = f"Slide {self.current_slide + 1} / {len(self.slides)}"
