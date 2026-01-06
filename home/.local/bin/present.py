@@ -55,7 +55,7 @@ class TextElement(Element):
 
 @dataclass(frozen=True)
 class CodeBlockElement(Element):
-    content: str
+    content: List[str]
 
 
 @dataclass(frozen=True)
@@ -108,7 +108,7 @@ class Parser:
             if line.strip().startswith('```'):
                 if in_code_block:
                     elements.append(CodeBlockElement(
-                        content='\n'.join(code_block),
+                        content=code_block,
                         align='left',
                     ))
                     code_block = []
@@ -346,7 +346,7 @@ class MarkdownPresenter:
                 case TitleElement() | TextElement():
                     line_count += 1
                 case CodeBlockElement(content=content):
-                    line_count += len(content.split('\n'))
+                    line_count += len(content)
         return line_count
 
     def calculate_font_sizes(self, slide: Slide):
@@ -415,8 +415,7 @@ class MarkdownPresenter:
                     y += 10
 
                 case CodeBlockElement(content=content):
-                    lines = content.split('\n')
-                    for line in lines:
+                    for line in content:
                         y = slide_renderer.render_code_text(line, x, y)
                     y += 20
 
