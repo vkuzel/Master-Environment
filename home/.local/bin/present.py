@@ -82,13 +82,16 @@ class Slide:
 
 
 class Parser:
-    def parse_markdown(self, markdown_file: str) -> List[Slide]:
+    def __init__(self, markdown_file: str):
+        self._markdown_file = markdown_file
+
+    def parse_markdown(self) -> List[Slide]:
         """Parse markdown file into slides"""
         try:
-            with open(markdown_file, 'r', encoding='utf-8') as f:
+            with open(self._markdown_file, 'r', encoding='utf-8') as f:
                 content = f.read()
         except FileNotFoundError:
-            print(f"Error: File '{markdown_file}' not found")
+            print(f"Error: File '{self._markdown_file}' not found")
             sys.exit(1)
 
         # Split by horizontal rules
@@ -101,8 +104,7 @@ class Parser:
             slides.append(Slide(elements))
         return slides
 
-    @staticmethod
-    def _parse_slide_content(content) -> List[Element]:
+    def _parse_slide_content(self, content) -> List[Element]:
         """Parse individual slide content into structured format"""
         elements: List[Element] = []
         lines = content.split('\n')
@@ -161,13 +163,13 @@ class Parser:
                     # Determine if it's a video
                     if path.lower().endswith(('.mp4', '.avi', '.mov', '.mkv', '.webm')):
                         elements.append(VideoElement(
-                            path=path,
+                            path=self._resolve_path(path),
                             alt=alt_text,
                             align=align,
                         ))
                     else:
                         elements.append(ImageElement(
-                            path=path,
+                            path=self._resolve_path(path),
                             alt=alt_text,
                             align=align
                         ))
@@ -208,6 +210,13 @@ class Parser:
             segments.append(TextSegment(text[pos:], 'normal'))
 
         return segments if segments else [TextSegment(text, 'normal')]
+
+    def _resolve_path(self, path):
+        """Resolve relative path based on markdown file location"""
+        if os.path.isabs(path):
+            return path
+        md_dir = os.path.dirname(os.path.abspath(self._markdown_file))
+        return os.path.join(md_dir, path)
 
 
 class SlideRenderer:
@@ -316,7 +325,7 @@ class MarkdownPresenter:
         self.current_video = None
 
         # Parse markdown file
-        self.slides = Parser().parse_markdown(markdown_file)
+        self.slides = Parser(markdown_file).parse_markdown()
 
         # Setup GUI
         self.root = tk.Tk()
@@ -429,10 +438,8 @@ class MarkdownPresenter:
 
                 case ImageElement(path=path, alt=alt, align=align):
                     try:
-                        img_path = self.resolve_path(path)
-
                         # Load image with PIL if available
-                        pil_img = Image.open(img_path)
+                        pil_img = Image.open(path)
 
                         # Resize if too large (max 80% of screen height)
                         max_height = int(self.root.winfo_height() * 0.8)
@@ -469,10 +476,9 @@ class MarkdownPresenter:
 
                 case VideoElement(path=path, alt=alt, align=align):
                     try:
-                        video_path = self.resolve_path(path)
-                        video_msg = f"🎬 Video: {os.path.basename(video_path)}"
+                        video_msg = f"🎬 Video: {os.path.basename(path)}"
                         y = slide_renderer.render_video_text(video_msg, "(Press SPACE to play/pause)", x, y)
-                        self.current_video = video_path
+                        self.current_video = path
                         y += 20
                     except Exception as e:
                         error_msg = f"[Video not found: {path}]"
@@ -485,13 +491,6 @@ class MarkdownPresenter:
         # Display slide number
         slide_info = f"Slide {self.current_slide + 1} / {len(self.slides)}"
         slide_renderer.render_slide_number(slide_info)
-
-    def resolve_path(self, path):
-        """Resolve relative path based on markdown file location"""
-        if os.path.isabs(path):
-            return path
-        md_dir = os.path.dirname(os.path.abspath(self.markdown_file))
-        return os.path.join(md_dir, path)
 
     def next_slide(self):
         """Go to next slide"""
