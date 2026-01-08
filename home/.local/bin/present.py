@@ -245,16 +245,7 @@ class SlideRenderer:
         # Calculate total width for alignment
         total_width = 0
         for segment in segments:
-            temp_font = font
-            match segment.format:
-                case 'code':
-                    temp_font = self._code_font
-                case 'bold':
-                    temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
-                case 'italic':
-                    temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
-                case 'bold_italic':
-                    temp_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
+            temp_font = self._select_font(segment.format, is_title=is_title)
             total_width += temp_font.measure(segment.text)
 
         # Adjust x based on alignment
@@ -267,26 +258,28 @@ class SlideRenderer:
         # Render each segment
         current_x = x
         for segment in segments:
-            use_font = font
-            fill = 'white'
-            match segment.format:
-                case 'code':
-                    use_font = self._code_font
-                    fill = '#00ff00'
-                case 'bold':
-                    use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
-                    fill = 'white'
-                case 'italic':
-                    use_font = tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
-                    fill = 'white'
-                case 'bold_italic':
-                    use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
-                    fill = 'white'
+            use_font = self._select_font(segment.format, is_title=is_title)
+            fill = '#00ff00' if segment.format == 'code' else 'white'
 
             self._render_text(use_font, segment.text, current_x, y, fill)
             current_x += use_font.measure(segment.text)
 
         return y + font.metrics()['linespace']
+
+    def _select_font(self, text_format = 'normal', is_title = False) -> Font:
+        font = self._title_font if is_title else self._normal_font
+        match text_format:
+            case 'code':
+                return self._code_font
+            case 'bold':
+                # TODO Use self._normal_font family
+                return tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
+            case 'italic':
+                return tkfont.Font(family="Arial", size=font.actual()['size'], slant="italic")
+            case 'bold_italic':
+                return tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
+            case _:
+                return font
 
     def _render_text(self, font: Font, text: str, x: int, y: int, fill = 'white'):
         self.canvas.create_text(x, y, text=text, fill=fill, font=font, anchor='nw')
