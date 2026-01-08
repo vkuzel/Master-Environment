@@ -286,35 +286,39 @@ class SlideRenderer:
         return self._render_text(font, text, x, y, fill='#00ff00')
 
     def render_image(self, path: str, align: str, x, y) -> int:
-        # Load image with PIL if available
-        image = Image.open(path)
+        try:
+            # Load image with PIL if available
+            image = Image.open(path)
 
-        # Resize if too large (max 80% of screen height)
-        max_height = int(self._screen_height * 0.8)
-        max_width = int(self._screen_width * 0.9)
+            # Resize if too large (max 80% of screen height)
+            max_height = int(self._screen_height * 0.8)
+            max_width = int(self._screen_width * 0.9)
 
-        if image.height > max_height or image.width > max_width:
-            image.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+            if image.height > max_height or image.width > max_width:
+                image.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
 
-        img = ImageTk.PhotoImage(image)
+            img = ImageTk.PhotoImage(image)
 
-        # Keep reference to prevent garbage collection
-        SlideRenderer._images[path] = img
+            # Keep reference to prevent garbage collection
+            SlideRenderer._images[path] = img
 
-        # Calculate position based on alignment
-        screen_width = self._screen_width
-        if align == 'center':
-            img_x = screen_width // 2
-            anchor = 'n'
-        elif align == 'right':
-            img_x = screen_width - 50
-            anchor = 'ne'
-        else:
-            img_x = x
-            anchor = 'nw'
+            # Calculate position based on alignment
+            screen_width = self._screen_width
+            if align == 'center':
+                img_x = screen_width // 2
+                anchor = 'n'
+            elif align == 'right':
+                img_x = screen_width - 50
+                anchor = 'ne'
+            else:
+                img_x = x
+                anchor = 'nw'
 
-        self.canvas.create_image(img_x, y, image=img, anchor=anchor)
-        return y + img.height()
+            self.canvas.create_image(img_x, y, image=img, anchor=anchor)
+            return y + img.height()
+        except Exception as e:
+            msg = f"[Image error: {path} - {str(e)}]"
+            return self.render_error_text(msg, x, y)
 
     def render_video_text(self, name, label, x, y) -> int:
         font = self._select_font(text_format='normal')
@@ -407,13 +411,8 @@ class MarkdownPresenter:
                     y += 20
 
                 case ImageElement(path=path, alt=alt, align=align):
-                    try:
-                        y = slide_renderer.render_image(path, align, x, y)
-                        y += 20
-                    except Exception as e:
-                        error_msg = f"[Image error: {path} - {str(e)}]"
-                        y = slide_renderer.render_error_text(error_msg, x, y)
-                        y += 20
+                    y = slide_renderer.render_image(path, align, x, y)
+                    y += 20
 
                 case VideoElement(path=path, alt=alt, align=align):
                     try:
