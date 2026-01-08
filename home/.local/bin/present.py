@@ -33,7 +33,7 @@ import tkinter as tk
 from dataclasses import dataclass
 from tkinter import font as tkfont
 from tkinter.font import Font
-from typing import List, Any
+from typing import List, Any, ClassVar
 
 from PIL import Image, ImageTk
 
@@ -221,6 +221,8 @@ class Parser:
 
 
 class SlideRenderer:
+    _images: ClassVar[dict[str, Image]] = {}
+
     def __init__(self, root: tk.Tk, canvas: tk.Canvas):
         self.canvas = canvas
 
@@ -283,8 +285,35 @@ class SlideRenderer:
         font = self._select_font(text_format='code')
         return self._render_text(font, text, x, y, fill='#00ff00')
 
-    def render_image(self, img, anchor, x, y) -> int:
-        self.canvas.create_image(x, y, image=img, anchor=anchor)
+    def render_image(self, path: str, align: str, x, y) -> int:
+        # Load image with PIL if available
+        image = Image.open(path)
+
+        # Resize if too large (max 80% of screen height)
+        max_height = int(self._screen_height * 0.8)
+        max_width = int(self._screen_width * 0.9)
+
+        if image.height > max_height or image.width > max_width:
+            image.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+
+        img = ImageTk.PhotoImage(image)
+
+        # Keep reference to prevent garbage collection
+        SlideRenderer._images[path] = img
+
+        # Calculate position based on alignment
+        screen_width = self._screen_width
+        if align == 'center':
+            img_x = screen_width // 2
+            anchor = 'n'
+        elif align == 'right':
+            img_x = screen_width - 50
+            anchor = 'ne'
+        else:
+            img_x = x
+            anchor = 'nw'
+
+        self.canvas.create_image(img_x, y, image=img, anchor=anchor)
         return y + img.height()
 
     def render_video_text(self, name, label, x, y) -> int:
@@ -379,36 +408,7 @@ class MarkdownPresenter:
 
                 case ImageElement(path=path, alt=alt, align=align):
                     try:
-                        # Load image with PIL if available
-                        pil_img = Image.open(path)
-
-                        # Resize if too large (max 80% of screen height)
-                        max_height = int(self.root.winfo_height() * 0.8)
-                        max_width = int(self.root.winfo_width() * 0.9)
-
-                        if pil_img.height > max_height or pil_img.width > max_width:
-                            pil_img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
-
-                        img = ImageTk.PhotoImage(pil_img)
-
-                        # Keep reference to prevent garbage collection
-                        if not hasattr(self, 'images'):
-                            self.images = []
-                        self.images.append(img)
-
-                        # Calculate position based on alignment
-                        screen_width = self.root.winfo_width()
-                        if align == 'center':
-                            img_x = screen_width // 2
-                            anchor = 'n'
-                        elif align == 'right':
-                            img_x = screen_width - 50
-                            anchor = 'ne'
-                        else:
-                            img_x = x
-                            anchor = 'nw'
-
-                        y = slide_renderer.render_image(img, anchor, img_x, y)
+                        y = slide_renderer.render_image(path, align, x, y)
                         y += 20
                     except Exception as e:
                         error_msg = f"[Image error: {path} - {str(e)}]"
