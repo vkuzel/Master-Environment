@@ -32,6 +32,7 @@ import sys
 import tkinter as tk
 from dataclasses import dataclass
 from tkinter import font as tkfont
+from tkinter.font import Font
 from typing import Optional, List, Any
 
 from PIL import Image, ImageTk
@@ -282,20 +283,17 @@ class SlideRenderer:
                     use_font = tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold", slant="italic")
                     fill = 'white'
 
-            self.canvas.create_text(
-                current_x, y,
-                text=segment.text,
-                fill=fill,
-                font=use_font,
-                anchor='nw'
-            )
+            self._render_text(use_font, segment.text, current_x, y, fill)
             current_x += use_font.measure(segment.text)
 
         return y + font.metrics()['linespace']
 
+    def _render_text(self, font: Font, text: str, x: int, y: int, fill = 'white'):
+        self.canvas.create_text(x, y, text=text, fill=fill, font=font, anchor='nw')
+        return y + font.metrics()['linespace']
+
     def render_code_text(self, text, x, y) -> int:
-        self.canvas.create_text(x, y, text=text, fill='#00ff00', font=self._code_font, anchor='nw')
-        return y + self._code_font.metrics()['linespace']
+        return self._render_text(self._code_font, text, x, y, fill='#00ff00')
 
     def render_image(self, img, anchor, x, y) -> int:
         self.canvas.create_image(x, y, image=img, anchor=anchor)
