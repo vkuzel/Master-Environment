@@ -240,8 +240,6 @@ class SlideRenderer:
 
     def render_text(self, segments: List[TextSegment], x, y, align='left', is_title=False) -> int:
         """Render formatted text with markdown styling"""
-        font = self._title_font if is_title else self._normal_font
-
         # Calculate total width for alignment
         total_width = 0
         for segment in segments:
@@ -264,6 +262,7 @@ class SlideRenderer:
             self._render_text(use_font, segment.text, current_x, y, fill)
             current_x += use_font.measure(segment.text)
 
+        font = self._title_font if is_title else self._normal_font
         return y + font.metrics()['linespace']
 
     def _select_font(self, text_format = 'normal', is_title = False) -> Font:
