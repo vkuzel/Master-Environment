@@ -161,16 +161,24 @@ class Parser:
                 if match:
                     alt_text = match.group(1)
                     path = match.group(2)
+
+                    resolved_path = self._resolve_path(path)
                     # Determine if it's a video
-                    if path.lower().endswith(('.mp4', '.avi', '.mov', '.mkv', '.webm')):
+                    if not os.path.exists(resolved_path):
+                        # TODO Error element instead
+                        elements.append(TextElement(
+                            segments=[TextSegment(f"File not found: {resolved_path}", format='code')],
+                            align='left'
+                        ))
+                    elif path.lower().endswith(('.mp4', '.avi', '.mov', '.mkv', '.webm')):
                         elements.append(VideoElement(
-                            path=self._resolve_path(path),
+                            path=resolved_path,
                             alt=alt_text,
                             align=align,
                         ))
                     else:
                         elements.append(ImageElement(
-                            path=self._resolve_path(path),
+                            path=resolved_path,
                             alt=alt_text,
                             align=align
                         ))
