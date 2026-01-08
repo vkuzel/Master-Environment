@@ -415,15 +415,10 @@ class MarkdownPresenter:
                     y += 20
 
                 case VideoElement(path=path, alt=alt, align=align):
-                    try:
-                        video_msg = f"🎬 Video: {os.path.basename(path)}"
-                        y = slide_renderer.render_video_text(video_msg, "(Press SPACE to play/pause)", x, y)
-                        self.current_video = path
-                        y += 20
-                    except Exception as e:
-                        error_msg = f"[Video not found: {path}]"
-                        slide_renderer.render_error_text(error_msg, x, y)
-                        y += 20
+                    video_msg = f"🎬 Video: {alt}"
+                    y = slide_renderer.render_video_text(video_msg, "(Press SPACE to play/pause)", x, y)
+                    self.current_video = path
+                    y += 20
 
                 case _:
                     raise TypeError(type(element))
