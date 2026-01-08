@@ -33,7 +33,7 @@ import tkinter as tk
 from dataclasses import dataclass
 from tkinter import font as tkfont
 from tkinter.font import Font
-from typing import Optional, List, Any
+from typing import List, Any
 
 from PIL import Image, ImageTk
 
@@ -227,17 +227,6 @@ class SlideRenderer:
         self._screen_width = root.winfo_width()
         self._screen_height = root.winfo_height()
 
-        self._title_font: Optional[tkfont.Font] = None
-        self._normal_font: Optional[tkfont.Font] = None
-        self._code_font: Optional[tkfont.Font] = None
-
-
-    def setup_fonts(self, title_size, normal_size, code_size):
-        """Create fonts with specified sizes"""
-        self._title_font = tkfont.Font(family="Arial", size=title_size, weight="bold")
-        self._normal_font = tkfont.Font(family="Arial", size=normal_size)
-        self._code_font = tkfont.Font(family="Courier", size=code_size)
-
     def render_text(self, segments: List[TextSegment], x, y, align='left', is_title=False) -> int:
         """Render formatted text with markdown styling"""
         # Calculate total width for alignment
@@ -262,14 +251,20 @@ class SlideRenderer:
             self._render_text(use_font, segment.text, current_x, y, fill)
             current_x += use_font.measure(segment.text)
 
-        font = self._title_font if is_title else self._normal_font
-        return y + font.metrics()['linespace']
+        return y + self._select_font().metrics()['linespace']
 
-    def _select_font(self, text_format = 'normal', is_title = False) -> Font:
-        font = self._title_font if is_title else self._normal_font
+    def _select_font(self, text_format='normal', is_title=False) -> Font:
+        base_title_size = 48
+        base_normal_size = 24
+        base_code_size = 20
+
+        title_font = tkfont.Font(family="Arial", size=base_title_size, weight="bold")
+        normal_font = tkfont.Font(family="Arial", size=base_normal_size)
+
+        font = title_font if is_title else normal_font
         match text_format:
             case 'code':
-                return self._code_font
+                return tkfont.Font(family="Courier", size=base_code_size)
             case 'bold':
                 # TODO Use self._normal_font family
                 return tkfont.Font(family="Arial", size=font.actual()['size'], weight="bold")
@@ -285,26 +280,31 @@ class SlideRenderer:
         return y + font.metrics()['linespace']
 
     def render_code_text(self, text, x, y) -> int:
-        return self._render_text(self._code_font, text, x, y, fill='#00ff00')
+        font = self._select_font(text_format='code')
+        return self._render_text(font, text, x, y, fill='#00ff00')
 
     def render_image(self, img, anchor, x, y) -> int:
         self.canvas.create_image(x, y, image=img, anchor=anchor)
         return y + img.height()
 
     def render_video_text(self, name, label, x, y) -> int:
-        self.canvas.create_text(x, y, text=name, fill='yellow', font=self._normal_font, anchor='nw')
+        font = self._select_font(text_format='normal')
+        self.canvas.create_text(x, y, text=name, fill='yellow', font=font, anchor='nw')
         # TODO Hardcoded name line height 35px
-        self.canvas.create_text(x, y + 35, text=label, fill='gray', font=self._code_font, anchor='nw')
-        return y + 35 + self._code_font.metrics()['linespace']
+        font = self._select_font(text_format='code')
+        self.canvas.create_text(x, y + 35, text=label, fill='gray', font=font, anchor='nw')
+        return y + 35 + font.metrics()['linespace']
 
     def render_error_text(self, text, x, y) -> int:
-        self.canvas.create_text(x, y, text=text, fill='red', font=self._normal_font, anchor='nw')
-        return y + self._normal_font.metrics()['linespace']
+        font = self._select_font(text_format='code')
+        self.canvas.create_text(x, y, text=text, fill='red', font=font, anchor='nw')
+        return y + font.metrics()['linespace']
 
     def render_slide_number(self, text):
+        font = self._select_font(text_format='code')
         screen_width = self._screen_width
         screen_height = self._screen_height
-        self.canvas.create_text(screen_width - 50, screen_height - 30, text=text, fill='gray', font=self._code_font, anchor='se')
+        self.canvas.create_text(screen_width - 50, screen_height - 30, text=text, fill='gray', font=font, anchor='se')
 
 
 class MarkdownPresenter:
@@ -345,51 +345,6 @@ class MarkdownPresenter:
         # Display first slide
         self.display_slide()
 
-    def count_text_lines(self, slide: Slide):
-        """Count the number of text lines in a slide (excluding images/videos)"""
-        line_count = 0
-        for element in slide.elements:
-            match element:
-                case TitleElement() | TextElement():
-                    line_count += 1
-                case CodeBlockElement(content=content):
-                    line_count += len(content)
-        return line_count
-
-    def calculate_font_sizes(self, slide: Slide):
-        """Calculate appropriate font sizes based on slide content"""
-        # Force window update to get accurate dimensions
-        self.root.update_idletasks()
-        screen_height = self.root.winfo_height()
-
-        # If window height is still not available, use screen dimensions
-        if screen_height <= 1:
-            screen_height = self.root.winfo_screenheight()
-
-        # Reserve space for margins and slide number (minimum 100px total)
-        margin_space = min(200, int(screen_height * 0.1))
-        available_height = max(screen_height - margin_space, 100)
-
-        # Count text lines
-        text_lines = self.count_text_lines(slide)
-
-        if text_lines == 0:
-            # No text, use default sizes
-            return self.base_title_size, self.base_normal_size, self.base_code_size
-
-        # If we have more than 20 lines, reduce font size proportionally
-        if text_lines > 20:
-            scale_factor = 20 / text_lines
-        else:
-            scale_factor = 1.0
-
-        # Calculate new font sizes
-        title_size = max(16, int(self.base_title_size * scale_factor))
-        normal_size = max(12, int(self.base_normal_size * scale_factor))
-        code_size = max(10, int(self.base_code_size * scale_factor))
-
-        return title_size, normal_size, code_size
-
     def display_slide(self):
         """Display current slide"""
         self.canvas.delete('all')
@@ -403,10 +358,6 @@ class MarkdownPresenter:
             root=self.root,
             canvas=self.canvas
         )
-
-        # Calculate and setup fonts based on slide content
-        title_size, normal_size, code_size = self.calculate_font_sizes(slide)
-        slide_renderer.setup_fonts(title_size, normal_size, code_size)
 
         y = 100
         x = 100
