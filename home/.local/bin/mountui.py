@@ -386,6 +386,9 @@ class MountableDevicesFactory:
         if device.size == 0:
             return None
 
+        if device.fstype:
+            return None
+
         # It would be better to detect encrypted device by reading few bytes
         # off it, detect there is no known filesystem, and calculate entropy.
         unmounted_crypt = len(device.children) == 0
