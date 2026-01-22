@@ -331,6 +331,13 @@ class MountableDevicesFactory:
                 if not mountable_device: continue
                 mountable_devices.append(mountable_device)
 
+        # Mountable disks w/o partitions (PocketBook)
+        for device in block_devices:
+            if device.children: continue
+            mountable_device = self._to_mountable_block_device(device, device)
+            if not mountable_device: continue
+            mountable_devices.append(mountable_device)
+
         for device in block_devices:
             mountable_device = self._to_mountable_vera_crypt_device(device)
             if not mountable_device: continue
