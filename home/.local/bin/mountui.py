@@ -347,11 +347,11 @@ class MountableDevicesFactory:
         if not (parent_device.type == "disk" and parent_device.tran == "usb"):
             return None
 
-        if device.type not in ['part', 'dm']:
-            return None
-
         # Zero size disks are (probably) card readers w/o a card inserted in them
         if device.size == 0:
+            return None
+
+        if not device.fstype:
             return None
 
         media_mount_point_pattern = re.compile("^/media/usb")
