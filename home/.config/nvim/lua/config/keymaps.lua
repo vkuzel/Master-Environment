@@ -3,7 +3,7 @@ vim.keymap.set({"n", "i", "v"}, "<A-Space>", "<Nop>", { noremap = true, silent =
 
 -- Ctrl - delete word
 vim.keymap.set("i", "<C-Backspace>", "<C-w>", { noremap = true, silent = true })
-vim.keymap.set("i", "<C-Del>", "X<Esc>lbce", { noremap = true, silent = true })
+vim.keymap.set("i", "<C-Del>", "<C-o>de", { noremap = true, silent = true })
 
 -- Ctrl + Shift + C/X/V - copy, paste, cut
 vim.keymap.set({'n', 'v'}, '<C-S-c>', '"+y', {desc = 'Copy to system clipboard'})
