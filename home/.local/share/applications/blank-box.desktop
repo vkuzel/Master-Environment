@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Blank Box
+Exec=blank-box
+Terminal=false
+Categories=Application;Utility;
+StartupNotify=false
