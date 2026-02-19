@@ -74,6 +74,10 @@
 	```shell
 	sudo apt install rhythmbox 
 	```
+    
+    Connecting:
+    1. Open GTK file dialog: Rhythmbox -> Preferences -> Music -> Browse
+    2. Open iPod
 
 8. IntelliJ IDEA setup:
 
