@@ -1,15 +1,5 @@
-
-autoload -U colors && colors
-[ -x /usr/bin/dircolors ] && eval "$(dircolors -b)"
-
 EDITOR=vi
 PAGER=less
-
-autoload -U compinit && compinit
-
-source "$HOME/.config/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-source "$HOME/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
-source "$HOME/.config/zsh/zsh-history-substring-search/zsh-history-substring-search.zsh"
 
 alias ls='ls --color=auto'
 alias l="ls -l"
@@ -34,6 +24,14 @@ bindkey '^[[F' end-of-line
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 
+autoload -U colors && colors
+[ -x /usr/bin/dircolors ] && eval "$(dircolors -b)"
+
+autoload -U compinit && compinit
+
+source "$HOME/.config/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source "$HOME/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+source "$HOME/.config/zsh/zsh-history-substring-search/zsh-history-substring-search.zsh"
 # mixins
 [ -f "$HOME/.config/zsh/.zshrc.mixins.zsh" ] && source "$HOME/.config/zsh/.zshrc.mixins.zsh"
 
