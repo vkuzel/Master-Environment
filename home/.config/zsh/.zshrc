@@ -24,18 +24,21 @@ bindkey '^[[F' end-of-line
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 
-autoload -U colors && colors
-[ -x /usr/bin/dircolors ] && eval "$(dircolors -b)"
+# To speed-up mc's startup time we disable some advanced fatures
+if [[ -z "$MC_SID" ]]; then
+	autoload -U colors && colors
+	[ -x /usr/bin/dircolors ] && eval "$(dircolors -b)"
 
-autoload -U compinit && compinit
+	autoload -U compinit && compinit
 
-source "$HOME/.config/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-source "$HOME/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
-source "$HOME/.config/zsh/zsh-history-substring-search/zsh-history-substring-search.zsh"
-# mixins
-[ -f "$HOME/.config/zsh/.zshrc.mixins.zsh" ] && source "$HOME/.config/zsh/.zshrc.mixins.zsh"
+	source "$HOME/.config/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+	source "$HOME/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+	source "$HOME/.config/zsh/zsh-history-substring-search/zsh-history-substring-search.zsh"
+	# mixins
+	[ -f "$HOME/.config/zsh/.zshrc.mixins.zsh" ] && source "$HOME/.config/zsh/.zshrc.mixins.zsh"
 
-# starship prompt
-export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
-eval "$(starship init zsh)"
+	# starship prompt
+	export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
+	eval "$(starship init zsh)"
+fi
 
