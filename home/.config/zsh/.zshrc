@@ -25,7 +25,9 @@ bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 
 # To speed-up mc's startup time we disable some advanced fatures
-if [[ -z "$MC_SID" ]]; then
+if [ -n "$MC_SID" ]; then
+	PROMPT='%n@%m:%~ %# '
+else
 	autoload -U colors && colors
 	[ -x /usr/bin/dircolors ] && eval "$(dircolors -b)"
 
@@ -40,7 +42,5 @@ if [[ -z "$MC_SID" ]]; then
 	# starship prompt
 	export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 	eval "$(starship init zsh)"
-else	
-	PROMPT='%n@%m:%~ %# '
 fi
 
