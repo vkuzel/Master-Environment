@@ -40,5 +40,7 @@ if [[ -z "$MC_SID" ]]; then
 	# starship prompt
 	export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 	eval "$(starship init zsh)"
+else	
+	PROMPT='%n@%m:%~ %# '
 fi
 
