@@ -28,11 +28,6 @@ backupDir="$backupDevice/$phoneName/$currentYear"
 read -p "Backup $phoneDevice into $backupDir [y/N]" answer
 [[ "y" == "$answer" || "Y" == "$answer" ]] || exit
 
-backupTarget() {
-  echo "=== $phoneDevice/Phone/$1 === "
-  ls $phoneDevice/Phone/$1
-}
-
 rsync \
 	--archive \
 	--delete \
