@@ -234,11 +234,12 @@ class MountableVeraCryptDevice(MountableDevice):
         password = UI.enter_password("Enter <bold>VeraCrypt</bold> password:")
         result = sudo_runner.run([
             "veracrypt", "--text",
-            "--pim", "0",
+            "--non-interactive",
+            "--pim=0",
             "--keyfiles", "",
-            "--protect-hidden", "no",
+            "--protect-hidden=no",
             f"--password={password}",
-            "--mount", self.path,
+            self.path,
             self.mount_point,
         ])
         if result.returncode != 0:
