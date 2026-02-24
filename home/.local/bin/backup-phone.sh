@@ -28,24 +28,29 @@ backupDir="$backupDevice/$phoneName/$currentYear"
 read -p "Backup $phoneDevice into $backupDir [y/N]" answer
 [[ "y" == "$answer" || "Y" == "$answer" ]] || exit
 
+phoneBaseDir="$phoneDevice/Phone"
+if [[ ! -d "$phoneBaseDir" ]]; then
+  error "Couldn't find phone base dir $phoneBaseDir"
+fi
+
 rsync \
 	--archive \
 	--delete \
 	--progress \
 	--ignore-missing-args \
 	--mkpath \
-  "$phoneDevice/Phone/Alarms" \
-  "$phoneDevice/Phone/Android/media" \
-  "$phoneDevice/Phone/Audiobooks" \
-  "$phoneDevice/Phone/DCIM" \
-  "$phoneDevice/Phone/Documents" \
-  "$phoneDevice/Phone/Download" \
-  "$phoneDevice/Phone/LazyList" \
-  "$phoneDevice/Phone/Movies" \
-  "$phoneDevice/Phone/Music" \
-  "$phoneDevice/Phone/Notifications" \
-  "$phoneDevice/Phone/Pictures" \
-  "$phoneDevice/Phone/Podcasts" \
-  "$phoneDevice/Phone/Recordings" \
-  "$phoneDevice/Phone/Ringtones" \
+  "$phoneBaseDir/Alarms" \
+  "$phoneBaseDir/Android/media" \
+  "$phoneBaseDir/Audiobooks" \
+  "$phoneBaseDir/DCIM" \
+  "$phoneBaseDir/Documents" \
+  "$phoneBaseDir/Download" \
+  "$phoneBaseDir/LazyList" \
+  "$phoneBaseDir/Movies" \
+  "$phoneBaseDir/Music" \
+  "$phoneBaseDir/Notifications" \
+  "$phoneBaseDir/Pictures" \
+  "$phoneBaseDir/Podcasts" \
+  "$phoneBaseDir/Recordings" \
+  "$phoneBaseDir/Ringtones" \
 	"$backupDir"
