@@ -301,7 +301,7 @@ class MtpDevicesFactory:
         if result.returncode != 0:
             return Error(f"Cannot get MTP devices: {result.stderr}")
 
-        raw_device_pattern = r'^Bus (\d+) Device (\d+): ID ([0-9a-fA-F]+:[0-9a-fA-F]+) (.+MTP mode.*)$'
+        raw_device_pattern = r'^Bus (\d+) Device (\d+): ID ([0-9a-fA-F]+:[0-9a-fA-F]+) (.+MTP.*)$'
         raw_devices = [match.groups() for match in re.finditer(raw_device_pattern, result.stdout, re.MULTILINE)]
         return [self._parse_device(raw_device) for raw_device in raw_devices]
 
