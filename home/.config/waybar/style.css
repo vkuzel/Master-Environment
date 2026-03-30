@@ -57,18 +57,18 @@ button:hover {
     background-color: #eb4d4b;
 }
 
-#clock,
-#battery,
+#idle_inhibitor,
+#custom-player,
+#pulseaudio,
+#backlight,
 #cpu,
 #memory,
 #temperature,
-#backlight,
+#language,
 #network,
-#pulseaudio,
-#tray,
-#idle_inhibitor,
-#custom-player,
-#language {
+#battery,
+#clock,
+#tray {
     padding: 0 8px;
     background-color: #64727D;
     color: #ffffff;
@@ -96,18 +96,17 @@ button:hover {
     }
 }
 
-#battery.critical:not(.charging) {
-    background-color: #f53c3c;
-    color: #ffffff;
-    animation-name: blink;
-    animation-duration: 0.5s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-}
-
 label:focus {
     background-color: #000000;
+}
+
+#idle_inhibitor.activated {
+    background-color: #ecf0f1;
+    color: #2d3436;
+}
+
+#custom-player.Paused {
+    background-color: #51a37a;
 }
 
 #pulseaudio.muted {
@@ -119,6 +118,16 @@ label:focus {
     background-color: #eb4d4b;
 }
 
+#battery.critical:not(.charging) {
+    background-color: #f53c3c;
+    color: #ffffff;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
 #tray > .passive {
     -gtk-icon-effect: dim;
 }
@@ -126,13 +135,4 @@ label:focus {
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
     background-color: #eb4d4b;
-}
-
-#idle_inhibitor.activated {
-    background-color: #ecf0f1;
-    color: #2d3436;
-}
-
-#custom-player.Paused {
-    background-color: #51a37a;
 }

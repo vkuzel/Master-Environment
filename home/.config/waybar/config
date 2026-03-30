@@ -6,7 +6,13 @@
 
     "modules-left": ["sway/workspaces"],
     "modules-center": ["sway/window"],
-    "modules-right": ["custom/player", "pulseaudio", "idle_inhibitor", "network", "cpu", "memory", "temperature", "backlight", "sway/language", "battery", "clock", "tray"],
+    "modules-right": [
+        "idle_inhibitor",
+        "custom/player", "pulseaudio", "backlight",
+        "cpu", "memory", "temperature",
+        "sway/language", "network",
+        "battery", "clock", "tray"
+    ],
 
     "sway/workspaces": {
         "disable-scroll": true,
@@ -29,6 +35,13 @@
         "max-length": 200,
         "separate-outputs": true
     },
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "",
+            "deactivated": ""
+        }
+    },
 	"custom/player": {
 		"format": "{icon} {}",
 		"format-icons": {
@@ -40,61 +53,6 @@
 		"max-length": 30,
 		"on-click": "playerctl play-pause"
 	},
-    "idle_inhibitor": {
-        "format": "{icon}",
-        "format-icons": {
-            "activated": "",
-            "deactivated": ""
-        }
-    },
-    "tray": {
-        // "icon-size": 21,
-        "spacing": 10
-    },
-    "clock": {
-        "format": "{:%m-%d %b %H:%M}",
-        "tooltip-format": "{:%Y-%m-%d}",
-        "format-alt": "{:%Y-%m-%d %B %H:%M}"
-    },
-    "cpu": {
-        "format": "{usage}% ",
-        "tooltip": false
-    },
-    "memory": {
-        "format": "{}% "
-    },
-    "temperature": {
-        "critical-threshold": 80,
-        "format": "{temperatureC}°C {icon}",
-        "format-icons": ["", "", ""]
-    },
-    "backlight": {
-        "format": "{percent}% {icon}",
-        "format-icons": ["", "", "", "", "", "", "", "", ""]
-    },
-    "battery": {
-        "states": {
-            "good": 95,
-            "warning": 30,
-            "critical": 15
-        },
-        "format": "{capacity}% {icon}",
-        "format-charging": "{capacity}% 󰂄",
-        "format-plugged": "{capacity}% ",
-        "format-alt": "{time} {icon}",
-        "format-icons": ["", "", "", "", ""]
-    },
-    "battery#bat2": {
-        "bat": "BAT2"
-    },
-    "network": {
-        "format-wifi": "{essid} ({signalStrength}%) ",
-        "format-ethernet": "{ipaddr}/{cidr} 󰈀",
-        "tooltip-format": "{ifname} via {gwaddr} 󰈁",
-        "format-linked": "{ifname} (No IP) 󰈁",
-        "format-disconnected": "Disconnected ⚠",
-        "format-alt": "{ifname}: {ipaddr}/{cidr}"
-    },
     "pulseaudio": {
         "format": "{volume}% {icon} {format_source}",
         "format-bluetooth": "{volume}% {icon} {format_source}",
@@ -112,6 +70,53 @@
             "default": ["", "", ""]
         },
         "on-click": "pavucontrol"
+    },
+    "backlight": {
+        "format": "{percent}% {icon}",
+        "format-icons": ["", "", "", "", "", "", "", "", ""]
+    },
+    "cpu": {
+        "format": "{usage}% ",
+        "tooltip": false
+    },
+    "memory": {
+        "format": "{}% "
+    },
+    "temperature": {
+        "critical-threshold": 80,
+        "format": "{temperatureC}°C {icon}",
+        "format-icons": ["", "", ""]
+    },
+    "network": {
+        "format-wifi": "{essid} ({signalStrength}%) ",
+        "format-ethernet": "{ipaddr}/{cidr} 󰈀",
+        "tooltip-format": "{ifname} via {gwaddr} 󰈁",
+        "format-linked": "{ifname} (No IP) 󰈁",
+        "format-disconnected": "Disconnected ⚠",
+        "format-alt": "{ifname}: {ipaddr}/{cidr}"
+    },
+    "battery": {
+        "states": {
+            "good": 95,
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{capacity}% {icon}",
+        "format-charging": "{capacity}% 󰂄",
+        "format-plugged": "{capacity}% ",
+        "format-alt": "{time} {icon}",
+        "format-icons": ["", "", "", "", ""]
+    },
+    "battery#bat2": {
+        "bat": "BAT2"
+    },
+    "clock": {
+        "format": "{:%m-%d %b %H:%M}",
+        "tooltip-format": "{:%Y-%m-%d}",
+        "format-alt": "{:%Y-%m-%d %B %H:%M}"
+    },
+    "tray": {
+        // "icon-size": 21,
+        "spacing": 10
     }
 }
-
