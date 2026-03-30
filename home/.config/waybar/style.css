@@ -105,13 +105,9 @@ label:focus {
     color: #2d3436;
 }
 
-#custom-player.Paused {
-    background-color: #51a37a;
-}
-
+#custom-player.Paused,
 #pulseaudio.muted {
-    background-color: #90b1b1;
-    color: #2a5c45;
+    background-color: #4a555e;
 }
 
 #cpu.warning,
