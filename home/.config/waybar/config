@@ -9,9 +9,8 @@
     "modules-right": [
         "idle_inhibitor",
         "custom/player", "pulseaudio", "backlight",
-        "cpu", "memory", "temperature",
-        "sway/language", "network",
-        "battery", "clock", "tray"
+        "cpu", "memory", "temperature", "battery", "network",
+        "sway/language", "clock", "tray"
     ],
 
     "sway/workspaces": {
@@ -97,16 +96,6 @@
         "format": "{temperatureC}°C {icon}",
         "format-icons": ["", "", ""]
     },
-    "network": {
-        "format-ethernet": "󰈀",
-        "format-wifi": "{icon} {signalStrength}%",
-        "format-linked": "󰈁",
-        "format-disconnected": "󰪎",
-        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
-        "tooltip-format-ethernet": "󰈀  {ifname}\n  {ipaddr}/{cidr}\n󰈁  {gwaddr}",
-        "tooltip-format-wifi": "󰤨  {essid}\n  {signalStrength}% ({signaldBm} dBm)\n  {ifname}  {ipaddr}/{cidr}\n󰈁  {gwaddr}",
-        "tooltip-format-disconnected": "Disconnected"
-    },
     "battery": {
         "states": {
             "good": 95,
@@ -121,6 +110,16 @@
     },
     "battery#bat2": {
         "bat": "BAT2"
+    },
+    "network": {
+        "format-ethernet": "󰈀",
+        "format-wifi": "{icon} {signalStrength}%",
+        "format-linked": "󰈁",
+        "format-disconnected": "󰪎",
+        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+        "tooltip-format-ethernet": "󰈀  {ifname}\n  {ipaddr}/{cidr}\n󰈁  {gwaddr}",
+        "tooltip-format-wifi": "󰤨  {essid}\n  {signalStrength}% ({signaldBm} dBm)\n  {ifname}  {ipaddr}/{cidr}\n󰈁  {gwaddr}",
+        "tooltip-format-disconnected": "Disconnected"
     },
     "clock": {
         "format": "{:%m-%d %b %H:%M}",
