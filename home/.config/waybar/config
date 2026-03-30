@@ -71,7 +71,7 @@
         "on-click": "pavucontrol"
     },
     "backlight": {
-        "format": "{percent}% {icon}",
+        "format": "{icon}",
         "format-icons": ["", "", "", "", "", "", "", "", ""]
     },
     "cpu": {
