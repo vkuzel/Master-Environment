@@ -77,13 +77,22 @@
     },
     "cpu": {
         "format": "{usage}% ",
-        "tooltip": false
+        "tooltip": false,
+        "states": {
+            "warning": 80,
+            "critical": 99
+        }
     },
     "memory": {
-        "format": "{}% "
+        "format": "{}% ",
+        "states": {
+            "warning": 80,
+            "critical": 95
+        }
     },
     "temperature": {
         "critical-threshold": 80,
+        "warning-threshold": 70,
         "format": "{temperatureC}°C {icon}",
         "format-icons": ["", "", ""]
     },

@@ -114,6 +114,14 @@ label:focus {
     color: #2a5c45;
 }
 
+#cpu.warning,
+#memory.warning,
+#temperature.warning {
+    background-color: #f0932b;
+}
+
+#cpu.critical,
+#memory.critical,
 #temperature.critical {
     background-color: #eb4d4b;
 }
