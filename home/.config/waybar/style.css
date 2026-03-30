@@ -127,6 +127,11 @@ label:focus {
     background-color: #eb4d4b;
 }
 
+#network.disconnected,
+#network.linked {
+    background-color: #f53c3c;
+}
+
 #battery.critical:not(.charging) {
     background-color: #f53c3c;
     color: #ffffff;

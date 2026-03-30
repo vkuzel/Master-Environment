@@ -97,12 +97,14 @@
         "format-icons": ["", "", ""]
     },
     "network": {
-        "format-wifi": "{essid} ({signalStrength}%) ",
-        "format-ethernet": "{ipaddr}/{cidr} 󰈀",
-        "tooltip-format": "{ifname} via {gwaddr} 󰈁",
-        "format-linked": "{ifname} (No IP) 󰈁",
-        "format-disconnected": "Disconnected ⚠",
-        "format-alt": "{ifname}: {ipaddr}/{cidr}"
+        "format-ethernet": "󰈀",
+        "format-wifi": "{icon} {signalStrength}%",
+        "format-linked": "󰈁",
+        "format-disconnected": "󰪎",
+        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+        "tooltip-format-ethernet": "󰈀  {ifname}\n  {ipaddr}/{cidr}\n󰈁  {gwaddr}",
+        "tooltip-format-wifi": "󰤨  {essid}\n  {signalStrength}% ({signaldBm} dBm)\n  {ifname}  {ipaddr}/{cidr}\n󰈁  {gwaddr}",
+        "tooltip-format-disconnected": "Disconnected"
     },
     "battery": {
         "states": {
