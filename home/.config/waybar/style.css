@@ -54,7 +54,7 @@ button:hover {
 }
 
 #workspaces button.urgent {
-    background-color: #eb4d4b;
+    background-color: #f53c3c;
 }
 
 #idle_inhibitor,
@@ -100,15 +100,15 @@ label:focus {
     background-color: #000000;
 }
 
+#idle_inhibitor,
+#backlight,
+#network {
+    margin-right: 5px;
+}
+
 #idle_inhibitor {
     padding: 0 10px;
     background-color: #4a555e;
-}
-
-#custom-player,
-#cpu,
-#language {
-    margin-left: 5px;
 }
 
 #idle_inhibitor.activated {
@@ -121,16 +121,35 @@ label:focus {
     background-color: #4a555e;
 }
 
+#cpu,
+#memory,
+#temperature {
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    font-size: 0;
+    background-color: transparent;
+}
+
 #cpu.warning,
 #memory.warning,
 #temperature.warning {
-    background-color: #f0932b;
+    background-color: #b86e1e;
 }
 
 #cpu.critical,
 #memory.critical,
 #temperature.critical {
-    background-color: #eb4d4b;
+    background-color: #f53c3c;
+}
+
+#cpu.warning,
+#cpu.critical,
+#memory.warning,
+#memory.critical,
+#temperature.critical {
+    padding: 0 8px;
+    font-size: 13px;
 }
 
 #battery.critical:not(.charging) {
@@ -154,5 +173,5 @@ label:focus {
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
-    background-color: #eb4d4b;
+    background-color: #f53c3c;
 }
