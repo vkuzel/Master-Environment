@@ -5,7 +5,6 @@
     "spacing": 4, // Gaps between modules (4px)
 
     "modules-left": ["sway/workspaces"],
-    "modules-center": ["sway/window"],
     "modules-right": [
         "idle_inhibitor",
         "custom/player", "pulseaudio", "backlight",
@@ -29,10 +28,6 @@
             "focused": "",
             "default": ""
         }
-    },
-    "sway/window": {
-        "max-length": 200,
-        "separate-outputs": true
     },
     "idle_inhibitor": {
         "format": "{icon}",
