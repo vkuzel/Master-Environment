@@ -122,7 +122,8 @@ label:focus {
 
 #cpu,
 #memory,
-#temperature {
+#temperature,
+#battery.full {
     padding: 0;
     margin: 0;
     min-width: 0;
