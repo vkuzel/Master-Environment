@@ -38,7 +38,7 @@ button:hover {
 }
 
 #workspaces button.focused {
-    background-color: rgba(100, 114, 125, 0.5);
+    background-color: rgba(100, 100, 100, 0.5);
 }
 
 #workspaces button.active {
@@ -63,7 +63,7 @@ button:hover {
 #clock,
 #tray {
     padding: 0 8px;
-    background-color: #64727D;
+    background-color: rgba(100, 100, 100, 0.75);
     color: #ffffff;
 }
 
@@ -91,7 +91,7 @@ label:focus {
 
 #idle_inhibitor {
     padding: 0 10px;
-    background-color: #4a555e;
+    background-color: rgba(50, 50, 50, 0.75);
 }
 
 #idle_inhibitor.activated {
@@ -100,7 +100,7 @@ label:focus {
 
 #custom-player.Paused,
 #pulseaudio.muted {
-    background-color: #4a555e;
+    background-color: rgba(50, 50, 50, 0.75);
 }
 
 #cpu,
