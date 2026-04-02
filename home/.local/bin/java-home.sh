@@ -19,11 +19,11 @@ find_java() {
   local javaDir="$2"
 
   local javaDirPattern="(java|corretto|jdk)-$version"
-  for file in $javaDir/*
+  for file in "$javaDir"/*
   do
     local foundJava=$(echo "$file" | grep -Eo "$javaDirPattern")
-    if [[ ! -z "$foundJava" ]]; then
-      echo $file
+    if [[ -n "$foundJava" ]]; then
+      echo "$file"
       exit
     fi
   done
@@ -34,7 +34,7 @@ if [[ -z "$version" ]]; then
 		echo "JAVA_HOME environment variable is not set!"
 		print_usage_and_exit
 	else
-		echo $JAVA_HOME
+		echo "$JAVA_HOME"
 		exit
 	fi
 fi
