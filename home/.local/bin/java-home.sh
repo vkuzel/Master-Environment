@@ -25,7 +25,8 @@ java_dir_pattern() {
 list_java_installations() {
   local javaDir="$1"
 
-  local javaDirPattern=$(java_dir_pattern)
+  local javaDirPattern
+  javaDirPattern=$(java_dir_pattern)
   for file in "$javaDir"/*; do
     if echo "$file" | grep -Eq "$javaDirPattern"; then
       echo "$file"
@@ -37,9 +38,11 @@ find_java() {
   local version=$1
   local javaDir="$2"
 
-  local javaDirPattern="$(java_dir_pattern)$version"
+  local javaDirPattern
+  javaDirPattern="$(java_dir_pattern)$version"
   for file in $(list_java_installations "$javaDir"); do
-    local foundJava=$(echo "$file" | grep -Eo "$javaDirPattern")
+    local foundJava
+    foundJava=$(echo "$file" | grep -Eo "$javaDirPattern")
     if [[ -n "$foundJava" ]]; then
       echo "$file"
       exit
