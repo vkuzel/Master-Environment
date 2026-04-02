@@ -466,7 +466,10 @@ class UI:
 
     @staticmethod
     def enter_device_id() -> str:
-        return input(f"Select device: ")
+        try:
+            return input(f"Select device: ")
+        except KeyboardInterrupt:
+            return ""
 
     @staticmethod
     def render_device_menu_action(msg: str):
