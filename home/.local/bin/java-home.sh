@@ -11,16 +11,34 @@ print_usage_and_exit() {
 	echo "When VERSION is set, it tries to find Java home directory for the specified version in $globalJavaDir or $userJavaDir"
 	echo "Otherwise prints the JAVA_HOME environment variable"
 	echo "Prints error with this message if above options fails"
+	echo
+	echo "Available Java installations:"
+	list_java_installations "$globalJavaDir" | sed 's/^/  /'
+	list_java_installations "$userJavaDir" | sed 's/^/  /'
 	exit 1
+}
+
+java_dir_pattern() {
+  echo "(java|corretto|jdk)-"
+}
+
+list_java_installations() {
+  local javaDir="$1"
+
+  local javaDirPattern=$(java_dir_pattern)
+  for file in "$javaDir"/*; do
+    if echo "$file" | grep -Eq "$javaDirPattern"; then
+      echo "$file"
+    fi
+  done
 }
 
 find_java() {
   local version=$1
   local javaDir="$2"
 
-  local javaDirPattern="(java|corretto|jdk)-$version"
-  for file in "$javaDir"/*
-  do
+  local javaDirPattern="$(java_dir_pattern)$version"
+  for file in $(list_java_installations "$javaDir"); do
     local foundJava=$(echo "$file" | grep -Eo "$javaDirPattern")
     if [[ -n "$foundJava" ]]; then
       echo "$file"
