@@ -12,7 +12,7 @@ fail() {
 }
 
 check_os() {
-  local distroName="Ubuntu 24.04"
+	local distroName="Ubuntu 24.04"
 	if ! grep -q "$distroName" /etc/os-release; then
 		fail "Run this script on $distroName!"
 	fi
@@ -34,41 +34,41 @@ configure_timezone() {
 }
 
 uninstall_cloud_init() {
-  info "=== Uninstall Cloud Init ==="
-  # Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
-  if [[ ! -e "/etc/cloud/" ]]; then
+	info "=== Uninstall Cloud Init ==="
+	# Details: https://gist.github.com/zoilomora/f862f76335f5f53644a1b8e55fe98320
+	if [[ ! -e "/etc/cloud/" ]]; then
 		info "Already uninstalled"
-  else
+	else
 		info 'Disable all services except "none" and then press Enter'
 		read -r
 		sudo dpkg-reconfigure cloud-init
 		sudo apt purge --yes cloud-init
 		sudo rm -r /etc/cloud/ /var/lib/cloud/ /etc/netplan/*cloud-init.yaml
-  fi
+	fi
 }
 
 configure_network_manager() {
-  info "=== Configure Network Manager ==="
-  if [[ ! -e "/etc/systemd/system/dbus-org.freedesktop.network1.service" ]]; then
+	info "=== Configure Network Manager ==="
+	if [[ ! -e "/etc/systemd/system/dbus-org.freedesktop.network1.service" ]]; then
 		info "Already configured"
-  else
+	else
 		info "Disable systemd-networkd"
 		sudo systemctl disable systemd-networkd systemd-networkd.socket
 		sudo apt purge -- yes networkd-dispatcher
 		info "Restart NetworkManager"
 		sudo systemctl restart NetworkManager
-  fi
+	fi
 }
 
 configure_dark_mode() {
-  info "=== Configure dark mode ==="
-  local colorScheme=$(gsettings get org.gnome.desktop.interface color-scheme)
-  if [[ "$colorScheme" == "'prefer-dark'" ]]; then
-    info "Already configured"
-  else
-    info "Set gsettings color scheme"
-    gsettings set org.gnome.desktop.interface color-scheme prefer-dark
-  fi
+	info "=== Configure dark mode ==="
+	local colorScheme=$(gsettings get org.gnome.desktop.interface color-scheme)
+	if [[ "$colorScheme" == "'prefer-dark'" ]]; then
+		info "Already configured"
+	else
+		info "Set gsettings color scheme"
+		gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+	fi
 }
 
 install_nerd_fonts() {
@@ -90,11 +90,11 @@ install_nerd_fonts() {
 }
 
 configure_mozilla_apt_repository() {
-  info "=== Configure Mozilla APT repository ==="
-  if [[ -e "/etc/apt/preferences.d/mozillateamppa" ]]; then
+	info "=== Configure Mozilla APT repository ==="
+	if [[ -e "/etc/apt/preferences.d/mozillateamppa" ]]; then
 		info "Already configured"
-  else
-    sudo add-apt-repository ppa:mozillateam/ppa
+	else
+		sudo add-apt-repository ppa:mozillateam/ppa
 		# Due to a bug, after installing and pinning the Mozilla's package, we have
 		# to decrease priority of Ubuntu's Firefox meta-package to prevent
 		# overriding the previous one: https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/1999308
@@ -116,29 +116,29 @@ Pin: release o=Ubuntu*
 Pin-Priority: -1
 EOF
 		sudo apt update
-  fi
+	fi
 }
 
 add_current_user_into_group() {
-  local group=$1
+	local group=$1
 
-  info "=== Add user $USER into group $group ==="
-  if id -nG "$USER" | grep -qw "$group"; then
-	  info "$USER is already in $group"
-  else
-	  sudo usermod -aG "$group" "$USER"
-  fi
+	info "=== Add user $USER into group $group ==="
+	if id -nG "$USER" | grep -qw "$group"; then
+		info "$USER is already in $group"
+	else
+		sudo usermod -aG "$group" "$USER"
+	fi
 }
 
 enable_systemctl_service() {
-  local service=$1
+	local service=$1
 
-  info "=== Enable $service service ==="
-  if systemctl is-enabled --quiet "$service"; then
-	  info "Service is already enabled"
-  else
-	  sudo enable --now "$service"
-  fi
+	info "=== Enable $service service ==="
+	if systemctl is-enabled --quiet "$service"; then
+		info "Service is already enabled"
+	else
+		sudo enable --now "$service"
+	fi
 }
 
 install_apt_package() {
@@ -222,12 +222,12 @@ normalpath() {
 
 create_links() {
 	info "=== Create links ==="
-  local srcDir=$1
-  local dstDir=$2
+	local srcDir=$1
+	local dstDir=$2
 
-  pushd "$srcDir" > /dev/null
+	pushd "$srcDir" > /dev/null
 
-  for filePath in $(find . -mindepth 1 -type f); do
+	for filePath in $(find . -mindepth 1 -type f); do
 		local srcPath=$(realpath "$filePath")
 		local dstPath=$(normalpath "$dstDir/$filePath" | sed 's/\.py$//')
 		if [ -h "$dstPath" ]; then
@@ -238,16 +238,16 @@ create_links() {
 		  info "Create $dstPath"
 			ln -s "$srcPath" "$dstPath"
 		fi
-  done
+	done
 
-  popd > /dev/null
+	popd > /dev/null
 }
 
 chsh_zsh() {
-  info "=== ChSh to ZSH ==="
-  if [ "$SHELL" != "/bin/zsh" ]; then
-	chsh "$USER" -s /bin/zsh
-  fi
+	info "=== ChSh to ZSH ==="
+	if [ "$SHELL" != "/bin/zsh" ]; then
+		chsh "$USER" -s /bin/zsh
+	fi
 }
 
 check_os
