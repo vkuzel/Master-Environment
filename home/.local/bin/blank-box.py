@@ -22,7 +22,7 @@ def main():
 
     canvas = tk.Canvas(root, bg="#00201e", highlightthickness=0)
     canvas.pack(fill="both", expand=True)
-    canvas.bind("<Configure>", lambda e: render_stripes(canvas))
+    canvas.bind("<Configure>", lambda e: render_stripes(e.widget))
 
     root.bind('<Escape>', lambda e: root.quit())
     root.bind('q', lambda e: root.quit())
