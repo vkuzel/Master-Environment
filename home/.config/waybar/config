@@ -93,6 +93,8 @@
     },
     "battery": {
         "states": {
+            "full": 100,
+            "normal": 98,
             "warning": 30,
             "critical": 15
         },
