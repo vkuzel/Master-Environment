@@ -3,7 +3,7 @@
 import tkinter as tk
 from dataclasses import dataclass
 from pathlib import Path
-from tkinter import Canvas
+from tkinter import Canvas, Event
 
 from PIL import Image, ImageTk
 
@@ -29,9 +29,12 @@ class ImageFilesScanner:
 
         return image_files
 
+
 @dataclass
 class UI:
     image_files: list[ImageFile]
+
+    _scroll_offset = 0
 
     _photo_images = {}
 
@@ -43,10 +46,22 @@ class UI:
         canvas.pack(fill="both", expand=True)
         canvas.bind("<Configure>", lambda e: self._render(canvas))
 
+        canvas.bind("<MouseWheel>", lambda e: self._scroll_render(e, canvas))  # Windows / macOS
+        canvas.bind("<Button-4>", lambda e: self._scroll_render(e, canvas))
+        canvas.bind("<Button-5>", lambda e: self._scroll_render(e, canvas))
+
         root.bind('<Escape>', lambda e: root.quit())
         root.bind('q', lambda e: root.quit())
 
         root.mainloop()
+
+    def _scroll_render(self, event: Event, canvas: Canvas):
+        scroll_speed = 50
+        if event.num == 4:
+            self._scroll_offset += scroll_speed
+        elif event.num == 5:
+            self._scroll_offset -= scroll_speed
+        self._render(canvas)
 
     def _render(self, canvas: Canvas):
         canvas_width = canvas.winfo_width()
@@ -60,7 +75,7 @@ class UI:
         canvas.delete("all")
 
         x = 0
-        y = 0
+        y = self._scroll_offset
         for i in range(0, len(self.image_files)):
             image_file = self.image_files[i]
 
