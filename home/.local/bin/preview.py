@@ -13,6 +13,13 @@ class ImageFile:
     name: str
 
 
+@dataclass(frozen=True)
+class ImageDimensions:
+    name: str
+    width: int
+    height: int
+
+
 class ImageFilesScanner:
     @staticmethod
     def scan() -> list[ImageFile]:
@@ -35,6 +42,7 @@ class UI:
     image_files: list[ImageFile]
 
     _scroll_offset = 0
+    _image_size = 100
 
     _photo_images = {}
 
@@ -50,6 +58,10 @@ class UI:
         canvas.bind("<Button-4>", lambda e: self._scroll_render(e, canvas))
         canvas.bind("<Button-5>", lambda e: self._scroll_render(e, canvas))
 
+        canvas.bind("<Control-MouseWheel>", lambda e: self._zoom_render(e, canvas))
+        canvas.bind("<Control-Button-4>", lambda e: self._zoom_render(e, canvas))
+        canvas.bind("<Control-Button-5>", lambda e: self._zoom_render(e, canvas))
+
         root.bind('<Escape>', lambda e: root.quit())
         root.bind('q', lambda e: root.quit())
 
@@ -63,12 +75,20 @@ class UI:
             self._scroll_offset -= scroll_speed
         self._render(canvas)
 
+    def _zoom_render(self, event: Event, canvas: Canvas):
+        zoom_speed = 3
+        if event.num == 4:
+            self._image_size += zoom_speed
+        elif event.num == 5:
+            self._image_size = max(self._image_size - zoom_speed, 1)
+        self._render(canvas)
+
     def _render(self, canvas: Canvas):
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
 
-        box_width = 100
-        box_height = 100
+        box_width = self._image_size
+        box_height = self._image_size
 
         margin = 5
 
@@ -104,14 +124,20 @@ class UI:
                 fill="white",
             )
 
-            if image_file in self._photo_images:
-                photo_image = self._photo_images[image_file]
+            image_dimensions = ImageDimensions(
+                name=image_file.name,
+                width=box_width,
+                height=box_height,
+            )
+
+            if image_dimensions in self._photo_images:
+                photo_image = self._photo_images[image_dimensions]
             else:
-                image = Image.open(image_file.name)
+                image = Image.open(image_dimensions.name)
                 image = image.resize((box_width, box_height))
 
                 photo_image = ImageTk.PhotoImage(image)
-                self._photo_images[image_file] = photo_image  # preserve reference on image
+                self._photo_images[image_dimensions] = photo_image  # preserve reference on image
 
             canvas.create_image(
                 x + margin,
