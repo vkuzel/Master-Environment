@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from queue import Queue
 from tkinter import Canvas, Event, PhotoImage
-from typing import Dict
+from typing import Dict, Optional
 
 from PIL import Image, ImageTk
 
@@ -66,14 +66,18 @@ class ImageProvider:
         self._loaded_images: Dict[ImageDimensions, LoadedImage] = {}
         self._loaded_photo_images: Dict[ImageDimensions, LoadedPhotoImage] = {}
 
-    def request_image(self, image_dimensions: ImageDimensions):
-        if image_dimensions in self._loaded_images:
+    def request_image(self, image_dimensions: ImageDimensions) -> Optional[LoadedPhotoImage]:
+        if image_dimensions in self._loaded_photo_images:
+            return self._loaded_photo_images[image_dimensions]
+        elif image_dimensions in self._loaded_images:
             loaded_image = self._loaded_images[image_dimensions]
             self._out_queue.put(loaded_image)
+            return None
         else:
             self._in_queue.put(image_dimensions)
+            return None
 
-    def get_images(self) -> list[LoadedPhotoImage]:
+    def get_loaded_photo_images(self) -> list[LoadedPhotoImage]:
         items = []
         while not self._out_queue.empty():
             try:
@@ -219,26 +223,31 @@ class UI:
             )
 
             self._requested_image_positions[image_dimensions] = image_position
-            self._image_provider.request_image(image_dimensions)
+            loaded_photo_image = self._image_provider.request_image(image_dimensions)
+            if loaded_photo_image:
+                self._render_loaded_photo_image(loaded_photo_image, canvas)
 
             x += box_width + 2 * margin
 
     def _render_images(self, root, canvas: Canvas):
-        loaded_images = self._image_provider.get_images()
-        for loaded_image in loaded_images:
-            image_dimensions = loaded_image.image_dimensions
-            image_position = self._requested_image_positions[image_dimensions]
-            if not image_position:
-                raise Exception(f"No image position for: {image_dimensions}")
-
-            canvas.create_image(
-                image_position.x,
-                image_position.y,
-                image=loaded_image.photo_image,
-                anchor="nw"
-            )
+        loaded_photo_images = self._image_provider.get_loaded_photo_images()
+        for loaded_photo_image in loaded_photo_images:
+            self._render_loaded_photo_image(loaded_photo_image, canvas)
 
         root.after(50, self._render_images, root, canvas)
+
+    def _render_loaded_photo_image(self, loaded_photo_image: LoadedPhotoImage, canvas: Canvas):
+        image_dimensions = loaded_photo_image.image_dimensions
+        image_position = self._requested_image_positions[image_dimensions]
+        if not image_position:
+            raise Exception(f"No image position for: {image_dimensions}")
+
+        canvas.create_image(
+            image_position.x,
+            image_position.y,
+            image=loaded_photo_image.photo_image,
+            anchor="nw"
+        )
 
 
 def main():
