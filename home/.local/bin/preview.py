@@ -4,6 +4,7 @@ import tkinter as tk
 from dataclasses import dataclass
 from pathlib import Path
 from tkinter import Canvas, Event
+from typing import Dict
 
 from PIL import Image, ImageTk
 
@@ -37,14 +38,22 @@ class ImageFilesScanner:
         return image_files
 
 
+class ImageProvider:
+    def request_image(self, image_dimensions: ImageDimensions) -> tk.Image:
+        image = Image.open(image_dimensions.name)
+        image = image.resize((image_dimensions.width, image_dimensions.height))
+        return image
+
+
 class UI:
-    def __init__(self, image_files: list[ImageFile]):
+    def __init__(self, image_provider: ImageProvider, image_files: list[ImageFile]):
+        self._image_provider = image_provider
         self._image_files = image_files
 
         self._scroll_offset = 0
         self._image_size = 100
 
-        self._photo_images = {}
+        self._photo_images: Dict[ImageDimensions, ImageTk.PhotoImage] = {}
 
     def run(self):
         root = tk.Tk()
@@ -140,11 +149,9 @@ class UI:
             if image_dimensions in self._photo_images:
                 photo_image = self._photo_images[image_dimensions]
             else:
-                image = Image.open(image_dimensions.name)
-                image = image.resize((box_width, box_height))
-
+                image = self._image_provider.request_image(image_dimensions)
                 photo_image = ImageTk.PhotoImage(image)
-                self._photo_images[image_dimensions] = photo_image  # preserve reference on image
+                self._photo_images[image_dimensions] = photo_image
 
             canvas.create_image(
                 x + margin,
@@ -161,7 +168,8 @@ def main():
     if len(files) == 0:
         print("No images found")
         return
-    UI(files).run()
+    image_provider = ImageProvider()
+    UI(image_provider, files).run()
 
 
 if __name__ == '__main__':
