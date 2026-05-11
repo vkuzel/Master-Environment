@@ -3,7 +3,7 @@
 import tkinter as tk
 from dataclasses import dataclass
 from pathlib import Path
-from tkinter import Canvas, Event
+from tkinter import Canvas, Event, PhotoImage
 from typing import Dict
 
 from PIL import Image, ImageTk
@@ -39,10 +39,19 @@ class ImageFilesScanner:
 
 
 class ImageProvider:
-    def request_image(self, image_dimensions: ImageDimensions) -> tk.Image:
+    def __init__(self):
+        self._photo_images: Dict[ImageDimensions, ImageTk.PhotoImage] = {}
+
+    def request_image(self, image_dimensions: ImageDimensions) -> ImageTk.PhotoImage:
+        if image_dimensions in self._photo_images:
+            return self._photo_images[image_dimensions]
+
         image = Image.open(image_dimensions.name)
         image = image.resize((image_dimensions.width, image_dimensions.height))
-        return image
+
+        photo_image = ImageTk.PhotoImage(image)
+        self._photo_images[image_dimensions] = photo_image
+        return photo_image
 
 
 class UI:
@@ -52,8 +61,6 @@ class UI:
 
         self._scroll_offset = 0
         self._image_size = 100
-
-        self._photo_images: Dict[ImageDimensions, ImageTk.PhotoImage] = {}
 
     def run(self):
         root = tk.Tk()
@@ -145,13 +152,7 @@ class UI:
                 width=box_width,
                 height=box_height,
             )
-
-            if image_dimensions in self._photo_images:
-                photo_image = self._photo_images[image_dimensions]
-            else:
-                image = self._image_provider.request_image(image_dimensions)
-                photo_image = ImageTk.PhotoImage(image)
-                self._photo_images[image_dimensions] = photo_image
+            photo_image = self._image_provider.request_image(image_dimensions)
 
             canvas.create_image(
                 x + margin,
