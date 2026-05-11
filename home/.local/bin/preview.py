@@ -19,8 +19,7 @@ class ImageFile:
 @dataclass(frozen=True)
 class ImageDimensions:
     name: str
-    width: int
-    height: int
+    size: int
 
 
 @dataclass(frozen=True)
@@ -121,7 +120,7 @@ class ImageProvider:
                 image_dimensions = self._in_queue.get()
 
                 image = Image.open(image_dimensions.name)
-                image = image.resize((image_dimensions.width, image_dimensions.height))
+                image = image.resize((image_dimensions.size, image_dimensions.size))
 
                 loaded_image = LoadedImage(
                     image_dimensions=image_dimensions,
@@ -190,9 +189,6 @@ class UI:
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
 
-        box_width = self._image_size
-        box_height = self._image_size
-
         margin = 5
 
         canvas.delete("all")
@@ -202,9 +198,9 @@ class UI:
         for i in range(0, len(self._image_files)):
             image_file = self._image_files[i]
 
-            if (x + box_width + 2 * margin) > canvas_width:
+            if (x + self._image_size + 2 * margin) > canvas_width:
                 x = 0
-                y += box_height + margin
+                y += self._image_size + margin
 
             if y > canvas_height:
                 break
@@ -212,15 +208,15 @@ class UI:
             canvas.create_rectangle(
                 x + margin,
                 y + margin,
-                x + margin + box_width,
-                y + margin + box_height,
+                x + margin + self._image_size,
+                y + margin + self._image_size,
                 width=2,
                 fill="#01302f",
             )
 
             canvas.create_text(
-                x + margin + box_width / 2,
-                y + margin + box_height / 2,
+                x + margin + self._image_size / 2,
+                y + margin + self._image_size / 2,
                 text=image_file.name,
                 anchor="center",
                 font=("Arial", 12),
@@ -229,8 +225,7 @@ class UI:
 
             image_dimensions = ImageDimensions(
                 name=image_file.name,
-                width=box_width,
-                height=box_height,
+                size=self._image_size,
             )
             image_position = ImagePosition(
                 x=x + margin,
@@ -242,7 +237,7 @@ class UI:
             if loaded_photo_image:
                 self._render_loaded_photo_image(loaded_photo_image, canvas)
 
-            x += box_width + 2 * margin
+            x += self._image_size + 2 * margin
 
     def _render_images(self, root, canvas: Canvas):
         loaded_photo_images = self._image_provider.poll_loaded_photo_images()
