@@ -55,6 +55,8 @@ class UI:
 
         margin = 5
 
+        canvas.delete("all")
+
         x = 0
         y = 0
         for i in range(0, len(image_files)):
