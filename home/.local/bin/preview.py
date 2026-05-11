@@ -135,6 +135,8 @@ class UI:
         self._image_provider = image_provider
         self._image_files = image_files
 
+        self._margin = 5
+
         self._first_render = True
         self._scroll_offset = 0
         self._image_size = 100
@@ -190,11 +192,9 @@ class UI:
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
 
-        margin = 5
-
         if self._first_render:
             self._first_render = False
-            image_width = self._image_size + 2 * margin
+            image_width = self._image_size + 2 * self._margin
             line_images_count = floor(canvas_width / image_width)
             unused_margin = canvas_width - image_width * line_images_count
             self._image_size += floor(unused_margin / line_images_count)
@@ -206,25 +206,25 @@ class UI:
         for i in range(0, len(self._image_files)):
             image_file = self._image_files[i]
 
-            if (x + self._image_size + 2 * margin) > canvas_width:
+            if (x + self._image_size + 2 * self._margin) > canvas_width:
                 x = 0
-                y += self._image_size + margin
+                y += self._image_size + 2 * self._margin
 
             if y > canvas_height:
                 break
 
             canvas.create_rectangle(
-                x + margin,
-                y + margin,
-                x + margin + self._image_size,
-                y + margin + self._image_size,
+                x + self._margin,
+                y + self._margin,
+                x + self._margin + self._image_size,
+                y + self._margin + self._image_size,
                 width=2,
                 fill="#01302f",
             )
 
             canvas.create_text(
-                x + margin + self._image_size / 2,
-                y + margin + self._image_size / 2,
+                x + self._margin + self._image_size / 2,
+                y + self._margin + self._image_size / 2,
                 text=image_file.name,
                 anchor="center",
                 font=("Arial", 12),
@@ -236,8 +236,8 @@ class UI:
                 size=self._image_size,
             )
             image_position = ImagePosition(
-                x=x + margin,
-                y=y + margin,
+                x=x,
+                y=y,
             )
 
             self._requested_image_positions[image_dimensions] = image_position
@@ -245,7 +245,7 @@ class UI:
             if loaded_photo_image:
                 self._render_loaded_photo_image(loaded_photo_image, canvas)
 
-            x += self._image_size + 2 * margin
+            x += self._image_size + 2 * self._margin
 
     def _render_images(self, root, canvas: Canvas):
         loaded_photo_images = self._image_provider.poll_loaded_photo_images()
@@ -261,8 +261,8 @@ class UI:
             raise Exception(f"No image position for: {image_dimensions}")
 
         canvas.create_image(
-            image_position.x,
-            image_position.y,
+            image_position.x + self._margin,
+            image_position.y + self._margin,
             image=loaded_photo_image.photo_image,
             anchor="nw"
         )
