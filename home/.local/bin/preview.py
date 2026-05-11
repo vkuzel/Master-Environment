@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from tkinter import Canvas
 
-from rich import color
+from PIL import Image, ImageTk
 
 
 @dataclass(frozen=True)
@@ -31,6 +31,8 @@ class ImageFilesScanner:
 
 
 class UI:
+    _photo_images = {}
+
     def run(self, image_files: list[ImageFile]):
         root = tk.Tk()
         root.title("Blank Box")
@@ -44,8 +46,7 @@ class UI:
 
         root.mainloop()
 
-    @staticmethod
-    def _render_images(canvas: Canvas, image_files: list[ImageFile]):
+    def _render_images(self, canvas: Canvas, image_files: list[ImageFile]):
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
 
@@ -82,6 +83,22 @@ class UI:
                 anchor="center",
                 font=("Arial", 12),
                 fill="white",
+            )
+
+            if image_file in self._photo_images:
+                photo_image = self._photo_images[image_file]
+            else:
+                image = Image.open(image_file.name)
+                image = image.resize((box_width, box_height))
+
+                photo_image = ImageTk.PhotoImage(image)
+                self._photo_images[image_file] = photo_image  # preserve reference on image
+
+            canvas.create_image(
+                x + margin,
+                y + margin,
+                image=photo_image,
+                anchor="nw"
             )
 
             x += box_width + 2 * margin
