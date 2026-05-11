@@ -77,6 +77,20 @@ class ImageProvider:
             self._in_queue.put(image_dimensions)
             return None
 
+    def reset_loading(self):
+        self._loaded_images = {}
+        self._loaded_photo_images = {}
+        self._clear_queue(self._in_queue)
+        self._clear_queue(self._out_queue)
+
+    @staticmethod
+    def _clear_queue(q: Queue):
+        try:
+            while True:
+                q.get_nowait()
+        except queue.Empty:
+            pass
+
     def get_loaded_photo_images(self) -> list[LoadedPhotoImage]:
         items = []
         while not self._out_queue.empty():
@@ -169,6 +183,7 @@ class UI:
             self._image_size += zoom_speed
         elif event.num == 5:
             self._image_size = max(self._image_size - zoom_speed, 1)
+        self._image_provider.reset_loading()
         self._render(canvas)
 
     def _render(self, canvas: Canvas):
