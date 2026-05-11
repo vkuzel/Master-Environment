@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-
+import queue
+import threading
 import tkinter as tk
 from dataclasses import dataclass
 from pathlib import Path
+from queue import Queue
 from tkinter import Canvas, Event, PhotoImage
 from typing import Dict
 
@@ -19,6 +21,18 @@ class ImageDimensions:
     name: str
     width: int
     height: int
+
+
+@dataclass(frozen=True)
+class LoadedImage:
+    image_dimensions: ImageDimensions
+    photo_image: PhotoImage
+
+
+@dataclass(frozen=True)
+class ImagePosition:
+    x: int
+    y: int
 
 
 class ImageFilesScanner:
@@ -40,18 +54,38 @@ class ImageFilesScanner:
 
 class ImageProvider:
     def __init__(self):
+        self._out_queue = Queue()
         self._photo_images: Dict[ImageDimensions, ImageTk.PhotoImage] = {}
 
-    def request_image(self, image_dimensions: ImageDimensions) -> ImageTk.PhotoImage:
+    def request_image(self, image_dimensions: ImageDimensions):
         if image_dimensions in self._photo_images:
-            return self._photo_images[image_dimensions]
+            loaded_image = LoadedImage(
+                image_dimensions=image_dimensions,
+                photo_image=self._photo_images[image_dimensions],
+            )
+            self._out_queue.put(loaded_image)
+            return
 
         image = Image.open(image_dimensions.name)
         image = image.resize((image_dimensions.width, image_dimensions.height))
 
         photo_image = ImageTk.PhotoImage(image)
         self._photo_images[image_dimensions] = photo_image
-        return photo_image
+
+        loaded_image = LoadedImage(
+            image_dimensions=image_dimensions,
+            photo_image=photo_image,
+        )
+        self._out_queue.put(loaded_image)
+
+    def get_images(self) -> list[LoadedImage]:
+        items = []
+        while not self._out_queue.empty():
+            try:
+                items.append(self._out_queue.get_nowait())
+            except queue.Empty:
+                break
+        return items
 
 
 class UI:
@@ -61,6 +95,8 @@ class UI:
 
         self._scroll_offset = 0
         self._image_size = 100
+
+        self._requested_image_positions: Dict[ImageDimensions, ImagePosition] = {}
 
     def run(self):
         root = tk.Tk()
@@ -83,6 +119,7 @@ class UI:
         root.bind('<Escape>', lambda e: root.quit())
         root.bind('q', lambda e: root.quit())
 
+        root.after_idle(self._render_images, root, canvas)
         root.mainloop()
 
     def _scroll_start_render(self, canvas: Canvas):
@@ -152,16 +189,32 @@ class UI:
                 width=box_width,
                 height=box_height,
             )
-            photo_image = self._image_provider.request_image(image_dimensions)
+            image_position = ImagePosition(
+                x=x + margin,
+                y=y + margin,
+            )
+
+            self._requested_image_positions[image_dimensions] = image_position
+            self._image_provider.request_image(image_dimensions)
+
+            x += box_width + 2 * margin
+
+    def _render_images(self, root, canvas: Canvas):
+        loaded_images = self._image_provider.get_images()
+        for loaded_image in loaded_images:
+            image_dimensions = loaded_image.image_dimensions
+            image_position = self._requested_image_positions[image_dimensions]
+            if not image_position:
+                raise Exception(f"No image position for: {image_dimensions}")
 
             canvas.create_image(
-                x + margin,
-                y + margin,
-                image=photo_image,
+                image_position.x,
+                image_position.y,
+                image=loaded_image.photo_image,
                 anchor="nw"
             )
 
-            x += box_width + 2 * margin
+        root.after(50, self._render_images, root, canvas)
 
 
 def main():
