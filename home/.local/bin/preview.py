@@ -26,6 +26,12 @@ class ImageDimensions:
 @dataclass(frozen=True)
 class LoadedImage:
     image_dimensions: ImageDimensions
+    image: tk.Image
+
+
+@dataclass(frozen=True)
+class LoadedPhotoImage:
+    image_dimensions: ImageDimensions
     photo_image: PhotoImage
 
 
@@ -54,38 +60,50 @@ class ImageFilesScanner:
 
 class ImageProvider:
     def __init__(self):
-        self._out_queue = Queue()
-        self._photo_images: Dict[ImageDimensions, ImageTk.PhotoImage] = {}
+        self._in_queue: Queue[ImageDimensions] = Queue()
+        self._out_queue: Queue[LoadedImage] = Queue()
+        ImageProvider.Worker(self._in_queue, self._out_queue).start()
+        self._loaded_photo_images: Dict[ImageDimensions, LoadedPhotoImage] = {}
 
     def request_image(self, image_dimensions: ImageDimensions):
-        if image_dimensions in self._photo_images:
-            loaded_image = LoadedImage(
-                image_dimensions=image_dimensions,
-                photo_image=self._photo_images[image_dimensions],
-            )
-            self._out_queue.put(loaded_image)
-            return
+        self._in_queue.put(image_dimensions)
 
-        image = Image.open(image_dimensions.name)
-        image = image.resize((image_dimensions.width, image_dimensions.height))
-
-        photo_image = ImageTk.PhotoImage(image)
-        self._photo_images[image_dimensions] = photo_image
-
-        loaded_image = LoadedImage(
-            image_dimensions=image_dimensions,
-            photo_image=photo_image,
-        )
-        self._out_queue.put(loaded_image)
-
-    def get_images(self) -> list[LoadedImage]:
+    def get_images(self) -> list[LoadedPhotoImage]:
         items = []
         while not self._out_queue.empty():
             try:
-                items.append(self._out_queue.get_nowait())
+                loaded_image = self._out_queue.get_nowait()
+                photo_image = ImageTk.PhotoImage(loaded_image.image)
+
+                loaded_photo_image = LoadedPhotoImage(
+                    image_dimensions=loaded_image.image_dimensions,
+                    photo_image=photo_image,
+                )
+                self._loaded_photo_images[loaded_image.image_dimensions] = loaded_photo_image
+
+                items.append(loaded_photo_image)
             except queue.Empty:
                 break
         return items
+
+    class Worker(threading.Thread):
+        def __init__(self, in_queue: Queue[ImageDimensions], out_queue: Queue[LoadedImage]):
+            super().__init__(daemon=True)
+            self._in_queue = in_queue
+            self._out_queue = out_queue
+
+        def run(self):
+            while True:
+                image_dimensions = self._in_queue.get()
+
+                image = Image.open(image_dimensions.name)
+                image = image.resize((image_dimensions.width, image_dimensions.height))
+
+                loaded_image = LoadedImage(
+                    image_dimensions=image_dimensions,
+                    image=image,
+                )
+                self._out_queue.put(loaded_image)
 
 
 class UI:
