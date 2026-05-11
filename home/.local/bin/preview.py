@@ -141,6 +141,9 @@ class UI:
         self._scroll_offset = 0
         self._image_size = 100
 
+        self._mouse_x = 0
+        self._mouse_y = 0
+
         self._requested_image_positions: Dict[ImageDimensions, ImagePosition] = {}
 
     def run(self):
@@ -150,6 +153,8 @@ class UI:
         canvas = tk.Canvas(root, bg="#00201e", highlightthickness=0)
         canvas.pack(fill="both", expand=True)
         canvas.bind("<Configure>", lambda e: self._render(canvas))
+
+        canvas.bind('<Motion>', lambda e: self._mouse_move_render(e, canvas))
 
         canvas.bind("<MouseWheel>", lambda e: self._scroll_render(e, canvas))  # Windows / macOS
         canvas.bind("<Button-4>", lambda e: self._scroll_render(e, canvas))
@@ -166,6 +171,12 @@ class UI:
 
         root.after_idle(self._render_images, root, canvas)
         root.mainloop()
+
+    def _mouse_move_render(self, event: Event, canvas: Canvas):
+        self._mouse_x = event.x
+        self._mouse_y = event.y
+        # TODO Define view-model to avoid re-rendering of the whole screen
+        self._render(canvas)
 
     def _scroll_start_render(self, canvas: Canvas):
         self._scroll_offset = 0
@@ -213,6 +224,10 @@ class UI:
             if y > canvas_height:
                 break
 
+            outline = "black"
+            if x < self._mouse_x < x + self._image_size and y < self._mouse_y < y + self._image_size:
+                outline = "white"
+
             canvas.create_rectangle(
                 x + self._margin,
                 y + self._margin,
@@ -220,6 +235,7 @@ class UI:
                 y + self._margin + self._image_size,
                 width=2,
                 fill="#01302f",
+                outline=outline,
             )
 
             canvas.create_text(
