@@ -3,6 +3,7 @@ import queue
 import threading
 import tkinter as tk
 from dataclasses import dataclass
+from math import floor
 from pathlib import Path
 from queue import Queue
 from tkinter import Canvas, Event, PhotoImage
@@ -134,6 +135,7 @@ class UI:
         self._image_provider = image_provider
         self._image_files = image_files
 
+        self._first_render = True
         self._scroll_offset = 0
         self._image_size = 100
 
@@ -190,6 +192,13 @@ class UI:
         canvas_height = canvas.winfo_height()
 
         margin = 5
+
+        if self._first_render:
+            self._first_render = False
+            image_width = self._image_size + 2 * margin
+            line_images_count = floor(canvas_width / image_width)
+            unused_margin = canvas_width - image_width * line_images_count
+            self._image_size += floor(unused_margin / line_images_count)
 
         canvas.delete("all")
 
