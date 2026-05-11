@@ -91,7 +91,7 @@ class ImageProvider:
         except queue.Empty:
             pass
 
-    def get_loaded_photo_images(self) -> list[LoadedPhotoImage]:
+    def poll_loaded_photo_images(self) -> list[LoadedPhotoImage]:
         items = []
         while not self._out_queue.empty():
             try:
@@ -245,7 +245,7 @@ class UI:
             x += box_width + 2 * margin
 
     def _render_images(self, root, canvas: Canvas):
-        loaded_photo_images = self._image_provider.get_loaded_photo_images()
+        loaded_photo_images = self._image_provider.poll_loaded_photo_images()
         for loaded_photo_image in loaded_photo_images:
             self._render_loaded_photo_image(loaded_photo_image, canvas)
 
