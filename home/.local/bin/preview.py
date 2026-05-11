@@ -63,18 +63,24 @@ class ImageProvider:
         self._in_queue: Queue[ImageDimensions] = Queue()
         self._out_queue: Queue[LoadedImage] = Queue()
         ImageProvider.Worker(self._in_queue, self._out_queue).start()
+        self._loaded_images: Dict[ImageDimensions, LoadedImage] = {}
         self._loaded_photo_images: Dict[ImageDimensions, LoadedPhotoImage] = {}
 
     def request_image(self, image_dimensions: ImageDimensions):
-        self._in_queue.put(image_dimensions)
+        if image_dimensions in self._loaded_images:
+            loaded_image = self._loaded_images[image_dimensions]
+            self._out_queue.put(loaded_image)
+        else:
+            self._in_queue.put(image_dimensions)
 
     def get_images(self) -> list[LoadedPhotoImage]:
         items = []
         while not self._out_queue.empty():
             try:
                 loaded_image = self._out_queue.get_nowait()
-                photo_image = ImageTk.PhotoImage(loaded_image.image)
+                self._loaded_images[loaded_image.image_dimensions] = loaded_image
 
+                photo_image = ImageTk.PhotoImage(loaded_image.image)
                 loaded_photo_image = LoadedPhotoImage(
                     image_dimensions=loaded_image.image_dimensions,
                     photo_image=photo_image,
