@@ -29,24 +29,26 @@ class ImageFilesScanner:
 
         return image_files
 
-
+@dataclass
 class UI:
+    image_files: list[ImageFile]
+
     _photo_images = {}
 
-    def run(self, image_files: list[ImageFile]):
+    def run(self):
         root = tk.Tk()
         root.title("Blank Box")
 
         canvas = tk.Canvas(root, bg="#00201e", highlightthickness=0)
         canvas.pack(fill="both", expand=True)
-        canvas.bind("<Configure>", lambda e: self._render_images(canvas, image_files))
+        canvas.bind("<Configure>", lambda e: self._render(canvas))
 
         root.bind('<Escape>', lambda e: root.quit())
         root.bind('q', lambda e: root.quit())
 
         root.mainloop()
 
-    def _render_images(self, canvas: Canvas, image_files: list[ImageFile]):
+    def _render(self, canvas: Canvas):
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
 
@@ -59,8 +61,8 @@ class UI:
 
         x = 0
         y = 0
-        for i in range(0, len(image_files)):
-            image_file = image_files[i]
+        for i in range(0, len(self.image_files)):
+            image_file = self.image_files[i]
 
             if (x + box_width + 2 * margin) > canvas_width:
                 x = 0
@@ -111,7 +113,7 @@ def main():
     if len(files) == 0:
         print("No images found")
         return
-    UI().run(files)
+    UI(files).run()
 
 
 if __name__ == '__main__':
