@@ -166,7 +166,6 @@ class UI:
         root.mainloop()
 
     def _scroll_start_render(self, canvas: Canvas):
-        print("reset")
         self._scroll_offset = 0
         self._render(canvas)
 
