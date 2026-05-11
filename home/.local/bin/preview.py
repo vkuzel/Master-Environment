@@ -58,6 +58,8 @@ class UI:
         canvas.bind("<Button-4>", lambda e: self._scroll_render(e, canvas))
         canvas.bind("<Button-5>", lambda e: self._scroll_render(e, canvas))
 
+        root.bind('<Home>', lambda _: self._scroll_start_render(canvas))
+
         canvas.bind("<Control-MouseWheel>", lambda e: self._zoom_render(e, canvas))
         canvas.bind("<Control-Button-4>", lambda e: self._zoom_render(e, canvas))
         canvas.bind("<Control-Button-5>", lambda e: self._zoom_render(e, canvas))
@@ -66,6 +68,11 @@ class UI:
         root.bind('q', lambda e: root.quit())
 
         root.mainloop()
+
+    def _scroll_start_render(self, canvas: Canvas):
+        print("reset")
+        self._scroll_offset = 0
+        self._render(canvas)
 
     def _scroll_render(self, event: Event, canvas: Canvas):
         scroll_speed = 50
