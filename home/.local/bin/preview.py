@@ -37,14 +37,14 @@ class ImageFilesScanner:
         return image_files
 
 
-@dataclass
 class UI:
-    image_files: list[ImageFile]
+    def __init__(self, image_files: list[ImageFile]):
+        self._image_files = image_files
 
-    _scroll_offset = 0
-    _image_size = 100
+        self._scroll_offset = 0
+        self._image_size = 100
 
-    _photo_images = {}
+        self._photo_images = {}
 
     def run(self):
         root = tk.Tk()
@@ -103,8 +103,8 @@ class UI:
 
         x = 0
         y = self._scroll_offset
-        for i in range(0, len(self.image_files)):
-            image_file = self.image_files[i]
+        for i in range(0, len(self._image_files)):
+            image_file = self._image_files[i]
 
             if (x + box_width + 2 * margin) > canvas_width:
                 x = 0
