@@ -229,7 +229,7 @@ class Renderer:
             height=self._canvas.winfo_height(),
         )
 
-    def render(self, overview_model: OverviewModel):
+    def render_overview(self, overview_model: OverviewModel):
         self._canvas.delete("all")
 
         canvas_height = self._canvas.winfo_height()
@@ -259,11 +259,11 @@ class Renderer:
             )
 
             if isinstance(image, OverviewLoadedImage):
-                self.render_loaded_image(image)
+                self.render_overview_image(image)
 
-            self.render_image_highlight(image)
+            self.render_overview_image_highlight(image)
 
-    def render_loaded_image(self, image: OverviewLoadedImage):
+    def render_overview_image(self, image: OverviewLoadedImage):
         self._canvas.create_image(
             image.image_position.x + self._margin,
             image.image_position.y + self._margin,
@@ -271,7 +271,7 @@ class Renderer:
             anchor="nw"
         )
 
-    def render_image_highlight(self, image: OverviewImage):
+    def render_overview_image_highlight(self, image: OverviewImage):
         outline = "white" if image.selected else "black"
         self._canvas.create_rectangle(
             image.image_position.x + self._margin,
@@ -282,7 +282,7 @@ class Renderer:
             outline=outline,
         )
 
-    def render_detail_model(self, image: DetailModel):
+    def render_detail(self, image: DetailModel):
         self._canvas.delete("all")
         self._canvas.create_image(
             0,
@@ -318,10 +318,10 @@ class UI:
         for image in self._model.images:
             if image.selected and not image.contains_point(self._mouse_x, self._mouse_y):
                 image.selected = False
-                self._renderer.render_image_highlight(image)
+                self._renderer.render_overview_image_highlight(image)
             elif not image.selected and image.contains_point(self._mouse_x, self._mouse_y):
                 image.selected = True
-                self._renderer.render_image_highlight(image)
+                self._renderer.render_overview_image_highlight(image)
 
     def scroll_to_start(self):
         if self._selected_image:
@@ -329,7 +329,7 @@ class UI:
 
         self._scroll_offset = 0
         self._model = self._create_overview_model()
-        self._renderer.render(self._model)
+        self._renderer.render_overview(self._model)
 
     def scroll(self, event: Event):
         if self._selected_image:
@@ -341,7 +341,7 @@ class UI:
         elif event.num == 5:
             self._scroll_offset -= scroll_speed
         self._model = self._create_overview_model()
-        self._renderer.render(self._model)
+        self._renderer.render_overview(self._model)
 
     def zoom(self, event: Event):
         if self._selected_image:
@@ -354,7 +354,7 @@ class UI:
             self._image_size = max(self._image_size - zoom_speed, 1)
         self._image_loader.cancel()
         self._model = self._create_overview_model()
-        self._renderer.render(self._model)
+        self._renderer.render_overview(self._model)
 
     def toggle_preview(self):
         if self._selected_image:
@@ -366,10 +366,10 @@ class UI:
     def initialize(self):
         if self._selected_image:
             self._detail_model = self._create_detail_model()
-            self._renderer.render_detail_model(self._detail_model)
+            self._renderer.render_detail(self._detail_model)
         else:
             self._model = self._create_overview_model()
-            self._renderer.render(self._model)
+            self._renderer.render_overview(self._model)
 
     def process_loaded_images(self):
         loaded_images = self._image_loader.poll_loaded_images()
@@ -379,7 +379,7 @@ class UI:
 
             overview_loaded_image = self._model.create_loaded_image(loaded_image)
             if overview_loaded_image:
-                self._renderer.render_loaded_image(overview_loaded_image)
+                self._renderer.render_overview_image(overview_loaded_image)
 
     def _create_overview_model(self) -> OverviewModel:
         margin = 5
