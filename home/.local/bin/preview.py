@@ -273,10 +273,10 @@ class UI:
         self._mouse_x = event.x
         self._mouse_y = event.y
         for image in self._model.images:
-            if image.selected and not image.contains_point(event.x, event.y):
+            if image.selected and not image.contains_point(self._mouse_x, self._mouse_y):
                 image.selected = False
                 self._renderer.render_image_highlight(image)
-            elif not image.selected and image.contains_point(event.x, event.y):
+            elif not image.selected and image.contains_point(self._mouse_x, self._mouse_y):
                 image.selected = True
                 self._renderer.render_image_highlight(image)
 
@@ -354,15 +354,12 @@ class UI:
                 y=y,
             )
 
-            # TODO Move selection calculation elsewhere
-            selected = x < self._mouse_x < x + self._image_size and y < self._mouse_y < y + self._image_size
-
             loaded_image = self._image_provider.request_image(image_dimensions)
             if loaded_image:
                 view_image = ViewLoadedImage(
                     image_position=image_position,
                     image_dimensions=image_dimensions,
-                    selected=selected,
+                    selected=False,
                     photo_image=loaded_image.photo_image,
                 )
             else:
@@ -370,8 +367,9 @@ class UI:
                 view_image = ViewRequestedImage(
                     image_position=image_position,
                     image_dimensions=image_dimensions,
-                    selected=selected,
+                    selected=False,
                 )
+            view_image.selected = view_image.contains_point(self._mouse_x, self._mouse_y)
             view_images.append(view_image)
 
             x += self._image_size + 2 * self._margin
