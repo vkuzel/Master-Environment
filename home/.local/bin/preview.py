@@ -219,14 +219,17 @@ class ImageLoader:
             while True:
                 request = self._in_queue.get()
 
-                image = Image.open(request.image_file.name)
-                image = ImageLoader._resize_image(image, request.image_dimensions)
+                try:
+                    image = Image.open(request.image_file.name)
+                    image = ImageLoader._resize_image(image, request.image_dimensions)
 
-                loaded_image = ImageLoader._LoadedRawImage(
-                    request=request,
-                    image=image,
-                )
-                self._out_queue.put(loaded_image)
+                    loaded_image = ImageLoader._LoadedRawImage(
+                        request=request,
+                        image=image,
+                    )
+                    self._out_queue.put(loaded_image)
+                except:
+                    pass
 
 
 class Renderer:
