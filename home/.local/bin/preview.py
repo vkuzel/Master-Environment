@@ -69,6 +69,13 @@ class ViewLoadedImage(ViewImage):
 class ViewModel:
     images: list[ViewImage]
 
+    def find_selected_image(self) -> Optional[ViewImage]:
+        for image in self.images:
+            if image.selected:
+                return image
+        else:
+            return None
+
     def create_loaded_image(self, loaded_image: LoadedImage) -> Optional[ViewLoadedImage]:
         # Loop in a loop can be optimized
         for i in range(0, len(self.images)):
@@ -89,6 +96,13 @@ class ViewModel:
             return view_loaded_image
         else:
             return None
+
+
+@dataclass(frozen=True)
+class DetailImage:
+    image_file: ImageFile
+    image_dimensions: ImageDimensions
+    photo_image: PhotoImage
 
 
 class ImageFilesScanner:
@@ -157,6 +171,17 @@ class ImageLoader:
             except queue.Empty:
                 break
         return items
+
+    @staticmethod
+    def load_detail_image(image_file: ImageFile, image_dimensions: ImageDimensions) -> DetailImage:
+        image = Image.open(image_file.name)
+        image = image.resize((image_dimensions.size, image_dimensions.size))
+        photo_image = ImageTk.PhotoImage(image)
+        return DetailImage(
+            image_file=image_file,
+            image_dimensions=image_dimensions,
+            photo_image=photo_image,
+        )
 
     @staticmethod
     def _clear_queue(q: Queue):
@@ -250,6 +275,15 @@ class Renderer:
             outline=outline,
         )
 
+    def render_detail_image(self, image: DetailImage):
+        self._canvas.delete("all")
+        self._canvas.create_image(
+            0,
+            0,
+            image=image.photo_image,
+            anchor='nw',
+        )
+
 
 class UI:
     def __init__(self, image_provider: ImageLoader, image_files: list[ImageFile]):
@@ -265,6 +299,8 @@ class UI:
         self._mouse_y = 0
 
         self._model = ViewModel([])
+        self._selected_image: Optional[ViewImage] = None
+        self._detail_model: Optional[DetailImage] = None
 
     def run(self):
         root = tk.Tk()
@@ -288,6 +324,8 @@ class UI:
         canvas.bind("<Control-Button-4>", lambda e: self._zoom(e, canvas))
         canvas.bind("<Control-Button-5>", lambda e: self._zoom(e, canvas))
 
+        root.bind('<space>', lambda e: self._toggle_preview(canvas))
+
         root.bind('<Escape>', lambda e: root.quit())
         root.bind('q', lambda e: root.quit())
 
@@ -297,6 +335,9 @@ class UI:
     def _mouse_select(self, event: Event):
         self._mouse_x = event.x
         self._mouse_y = event.y
+        if self._selected_image:
+            return
+
         for image in self._model.images:
             if image.selected and not image.contains_point(self._mouse_x, self._mouse_y):
                 image.selected = False
@@ -306,11 +347,17 @@ class UI:
                 self._renderer.render_image_highlight(image)
 
     def _scroll_to_start(self, canvas: Canvas):
+        if self._selected_image:
+            return
+
         self._scroll_offset = 0
         self._model = self._create_view_model(canvas)
         if self._renderer: self._renderer.render(self._model)
 
     def _scroll(self, event: Event, canvas: Canvas):
+        if self._selected_image:
+            return
+
         scroll_speed = 75
         if event.num == 4:
             self._scroll_offset += scroll_speed
@@ -320,6 +367,9 @@ class UI:
         if self._renderer: self._renderer.render(self._model)
 
     def _zoom(self, event: Event, canvas: Canvas):
+        if self._selected_image:
+            return
+
         zoom_speed = 10
         if event.num == 4:
             self._image_size += zoom_speed
@@ -329,9 +379,20 @@ class UI:
         self._model = self._create_view_model(canvas)
         if self._renderer: self._renderer.render(self._model)
 
+    def _toggle_preview(self, canvas: Canvas):
+        if self._selected_image:
+            self._selected_image = None
+        else:
+            self._selected_image = self._model.find_selected_image()
+        self._initialize(canvas)
+
     def _initialize(self, canvas: Canvas):
-        self._model = self._create_view_model(canvas)
-        if self._renderer: self._renderer.render(self._model)
+        if self._selected_image:
+            self._detail_model = self._create_detail_model(canvas)
+            if self._renderer: self._renderer.render_detail_image(self._detail_model)
+        else:
+            self._model = self._create_view_model(canvas)
+            if self._renderer: self._renderer.render(self._model)
 
     def _process_loaded_images(self, root):
         loaded_images = self._image_provider.poll_loaded_images()
@@ -401,6 +462,12 @@ class UI:
             x += self._image_size + 2 * margin
 
         return ViewModel(view_images)
+
+    def _create_detail_model(self, canvas: Canvas) -> DetailImage:
+        image_dimensions = ImageDimensions(
+            size=min(canvas.winfo_width(), canvas.winfo_height())
+        )
+        return self._image_provider.load_detail_image(self._selected_image.image_file, image_dimensions)
 
 
 def main():
