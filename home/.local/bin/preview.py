@@ -7,7 +7,7 @@ from math import floor
 from pathlib import Path
 from queue import Queue
 from tkinter import Canvas, Event, PhotoImage
-from typing import Dict, Optional
+from typing import Dict, Optional, Set
 
 from PIL import Image, ImageTk
 
@@ -63,6 +63,8 @@ class ImageProvider:
         self._in_queue: Queue[ImageDimensions] = Queue()
         self._out_queue: Queue[LoadedImage] = Queue()
         ImageProvider.Worker(self._in_queue, self._out_queue).start()
+
+        self._requested_images: Set[ImageDimensions] = set()
         self._loaded_images: Dict[ImageDimensions, LoadedImage] = {}
         self._loaded_photo_images: Dict[ImageDimensions, LoadedPhotoImage] = {}
 
@@ -73,11 +75,15 @@ class ImageProvider:
             loaded_image = self._loaded_images[image_dimensions]
             self._out_queue.put(loaded_image)
             return None
-        else:
+        elif image_dimensions not in self._requested_images:
+            self._requested_images.add(image_dimensions)
             self._in_queue.put(image_dimensions)
+            return None
+        else:
             return None
 
     def reset_loading(self):
+        self._requested_images = set()
         self._loaded_images = {}
         self._loaded_photo_images = {}
         self._clear_queue(self._in_queue)
