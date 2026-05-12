@@ -153,13 +153,6 @@ class ImageLoader:
         else:
             return None
 
-    def cancel(self):
-        self._requested_images = set()
-        self._loaded_images = {}
-        self._loaded_photo_images = {}
-        self._clear_queue(self._in_queue)
-        self._clear_queue(self._out_queue)
-
     def poll_loaded_images(self) -> list[LoadedImage]:
         items = []
         while not self._out_queue.empty():
@@ -178,6 +171,13 @@ class ImageLoader:
             except queue.Empty:
                 break
         return items
+
+    def cancel(self):
+        self._requested_images = set()
+        self._loaded_images = {}
+        self._loaded_photo_images = {}
+        self._clear_queue(self._in_queue)
+        self._clear_queue(self._out_queue)
 
     @staticmethod
     def load_image(image_file: ImageFile, image_dimensions: ImageDimensions) -> ImageTk.PhotoImage:
