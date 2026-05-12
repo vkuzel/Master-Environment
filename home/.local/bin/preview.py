@@ -19,6 +19,7 @@ class ImageFile:
 
 @dataclass(frozen=True)
 class ImageDimensions:
+    # TODO Extract name from dimensions
     name: str
     size: int
 
@@ -61,6 +62,12 @@ class ViewRequestedImage(ViewImage):
 class ViewModel:
     images: list[ViewImage]
 
+    def find_requested_image(self, image_dimensions: ImageDimensions) -> Optional[ViewRequestedImage]:
+
+        for image in self.images:
+            if isinstance(image, ViewRequestedImage):
+                return image
+        return None
 
 class ImageFilesScanner:
     @staticmethod
@@ -239,8 +246,6 @@ class UI:
 
         self._model = ViewModel([])
 
-        self._requested_image_positions: Dict[ImageDimensions, ImagePosition] = {}
-
     def run(self):
         root = tk.Tk()
         root.title("Blank Box")
@@ -311,16 +316,24 @@ class UI:
     def _render_images(self, root):
         loaded_images = self._image_provider.poll_loaded_images()
         for loaded_image in loaded_images:
-            # TODO Move this map-mapping into the loader
-            image_position = self._requested_image_positions[loaded_image.image_dimensions]
-            # TODO Update in model - don't recreate whole model every time
-            view_loaded_image = ViewLoadedImage(
-                image_position=image_position,
-                image_dimensions=loaded_image.image_dimensions,
-                selected=False,  # TODO Selection should be taken from the ViewModel
-                photo_image=loaded_image.photo_image,
-            )
-            self._renderer.render_loaded_image(view_loaded_image)
+            if not self._model:
+                continue
+
+            for i in range(0, len(self._model.images)):
+                image = self._model.images[i]
+                if not isinstance(image, ViewRequestedImage):
+                    continue
+                if not image.image_dimensions == loaded_image.image_dimensions:
+                    continue
+
+                view_loaded_image = ViewLoadedImage(
+                    image_position=image.image_position,
+                    image_dimensions=image.image_dimensions,
+                    selected=image.selected,
+                    photo_image=loaded_image.photo_image,
+                )
+                self._model.images[i] = view_loaded_image
+                self._renderer.render_loaded_image(view_loaded_image)
 
         root.after(50, self._render_images, root)
 
@@ -363,7 +376,6 @@ class UI:
                     photo_image=loaded_image.photo_image,
                 )
             else:
-                self._requested_image_positions[image_dimensions] = image_position
                 view_image = ViewRequestedImage(
                     image_position=image_position,
                     image_dimensions=image_dimensions,
