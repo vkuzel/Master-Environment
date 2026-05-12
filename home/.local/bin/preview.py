@@ -10,6 +10,7 @@ from tkinter import Canvas, Event, PhotoImage
 from typing import Dict, Optional, Set
 
 from PIL import Image, ImageTk
+from PIL.Image import Resampling
 
 
 @dataclass(frozen=True)
@@ -181,7 +182,7 @@ class ImageLoader:
     @staticmethod
     def load_image(image_file: ImageFile, image_dimensions: ImageDimensions) -> ImageTk.PhotoImage:
         image = Image.open(image_file.name)
-        image = image.resize((image_dimensions.size, image_dimensions.size))
+        image = image.resize((image_dimensions.size, image_dimensions.size), resample=Resampling.NEAREST,)
         return ImageTk.PhotoImage(image)
 
     @staticmethod
