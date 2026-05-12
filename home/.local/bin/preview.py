@@ -76,12 +76,16 @@ class OverviewLoadedImage(OverviewImage):
 class OverviewModel:
     images: list[OverviewImage]
 
-    def find_selected_image(self) -> Optional[OverviewImage]:
-        for image in self.images:
+    def find_selected_image_index(self) -> Optional[int]:
+        for i, image in enumerate(self.images):
             if image.selected:
-                return image
+                return i
         else:
             return None
+
+    def find_selected_image(self) -> Optional[OverviewImage]:
+        index = self.find_selected_image_index()
+        return self.images[index] if index is not None else None
 
     def create_loaded_image(self, loaded_image: LoadedImage) -> Optional[OverviewLoadedImage]:
         # Loop in a loop can be optimized
@@ -358,6 +362,68 @@ class UI:
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
+    def select_previous(self):
+        if self._selected_image:
+            return
+        else:
+            index = self._model.find_selected_image_index()
+            if index is not None and index > 0:
+                self._model.images[index].selected = False
+                self._renderer.render_overview_image_highlight(self._model.images[index])
+                self._model.images[index - 1].selected = True
+                self._renderer.render_overview_image_highlight(self._model.images[index - 1])
+
+    def select_next(self):
+        if self._selected_image:
+            return
+        else:
+            index = self._model.find_selected_image_index()
+            if index is not None and index < len(self._model.images) - 1:
+                self._model.images[index].selected = False
+                self._renderer.render_overview_image_highlight(self._model.images[index])
+                self._model.images[index + 1].selected = True
+                self._renderer.render_overview_image_highlight(self._model.images[index + 1])
+
+    def select_above(self):
+        if self._selected_image:
+            return
+
+        index = self._model.find_selected_image_index()
+        if index is None:
+            return
+
+        selected_image = self._model.images[index]
+        for i in range(index - 1, -1, -1):
+            image = self._model.images[i]
+            if image.image_position.x != selected_image.image_position.x:
+                continue
+
+            selected_image.selected = False
+            self._renderer.render_overview_image_highlight(selected_image)
+            image.selected = True
+            self._renderer.render_overview_image_highlight(image)
+            break
+
+    def select_below(self):
+        if self._selected_image:
+            return
+
+        index = self._model.find_selected_image_index()
+        if index is None:
+            return
+
+        selected_image = self._model.images[index]
+        for i in range(index + 1, len(self._model.images)):
+            image = self._model.images[i]
+            if image.image_position.x != selected_image.image_position.x:
+                continue
+
+            selected_image.selected = False
+            self._renderer.render_overview_image_highlight(selected_image)
+            image.selected = True
+            self._renderer.render_overview_image_highlight(image)
+            break
+
     def toggle_preview(self):
         if self._selected_image:
             self._selected_image = None
@@ -484,6 +550,11 @@ def main():
     canvas.bind("<Control-Button-5>", lambda e: ui.zoom(e))
 
     root.bind('<Home>', lambda _: ui.scroll_to_start())
+
+    root.bind('<Left>', lambda _: ui.select_previous())
+    root.bind('<Right>', lambda _: ui.select_next())
+    root.bind('<Up>', lambda _: ui.select_above())
+    root.bind('<Down>', lambda _: ui.select_below())
 
     root.bind('<space>', lambda e: ui.toggle_preview())
 
