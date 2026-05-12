@@ -253,27 +253,27 @@ class UI:
         self._renderer = Renderer(canvas)
 
         canvas.pack(fill="both", expand=True)
-        canvas.bind("<Configure>", lambda e: self._render(canvas))
+        canvas.bind("<Configure>", lambda e: self._initialize(canvas))
 
-        canvas.bind('<Motion>', lambda e: self._mouse_move_render(e))
+        canvas.bind('<Motion>', lambda e: self._mouse_select(e))
 
-        canvas.bind("<MouseWheel>", lambda e: self._scroll_render(e, canvas))  # Windows / macOS
-        canvas.bind("<Button-4>", lambda e: self._scroll_render(e, canvas))
-        canvas.bind("<Button-5>", lambda e: self._scroll_render(e, canvas))
+        canvas.bind("<MouseWheel>", lambda e: self._scroll(e, canvas))  # Windows / macOS
+        canvas.bind("<Button-4>", lambda e: self._scroll(e, canvas))
+        canvas.bind("<Button-5>", lambda e: self._scroll(e, canvas))
 
-        root.bind('<Home>', lambda _: self._scroll_start_render(canvas))
+        root.bind('<Home>', lambda _: self._scroll_to_start(canvas))
 
-        canvas.bind("<Control-MouseWheel>", lambda e: self._zoom_render(e, canvas))
-        canvas.bind("<Control-Button-4>", lambda e: self._zoom_render(e, canvas))
-        canvas.bind("<Control-Button-5>", lambda e: self._zoom_render(e, canvas))
+        canvas.bind("<Control-MouseWheel>", lambda e: self._zoom(e, canvas))
+        canvas.bind("<Control-Button-4>", lambda e: self._zoom(e, canvas))
+        canvas.bind("<Control-Button-5>", lambda e: self._zoom(e, canvas))
 
         root.bind('<Escape>', lambda e: root.quit())
         root.bind('q', lambda e: root.quit())
 
-        root.after_idle(self._render_images, root)
+        root.after_idle(self._process_loaded_images, root)
         root.mainloop()
 
-    def _mouse_move_render(self, event: Event):
+    def _mouse_select(self, event: Event):
         self._mouse_x = event.x
         self._mouse_y = event.y
         for image in self._model.images:
@@ -284,12 +284,12 @@ class UI:
                 image.selected = True
                 self._renderer.render_image_highlight(image)
 
-    def _scroll_start_render(self, canvas: Canvas):
+    def _scroll_to_start(self, canvas: Canvas):
         self._scroll_offset = 0
         self._model = self._create_view_model(canvas)
         if self._renderer: self._renderer.render(self._model)
 
-    def _scroll_render(self, event: Event, canvas: Canvas):
+    def _scroll(self, event: Event, canvas: Canvas):
         scroll_speed = 75
         if event.num == 4:
             self._scroll_offset += scroll_speed
@@ -298,7 +298,7 @@ class UI:
         self._model = self._create_view_model(canvas)
         if self._renderer: self._renderer.render(self._model)
 
-    def _zoom_render(self, event: Event, canvas: Canvas):
+    def _zoom(self, event: Event, canvas: Canvas):
         zoom_speed = 10
         if event.num == 4:
             self._image_size += zoom_speed
@@ -308,11 +308,11 @@ class UI:
         self._model = self._create_view_model(canvas)
         if self._renderer: self._renderer.render(self._model)
 
-    def _render(self, canvas: Canvas):
+    def _initialize(self, canvas: Canvas):
         self._model = self._create_view_model(canvas)
         if self._renderer: self._renderer.render(self._model)
 
-    def _render_images(self, root):
+    def _process_loaded_images(self, root):
         loaded_images = self._image_provider.poll_loaded_images()
         for loaded_image in loaded_images:
             if not self._model:
@@ -335,7 +335,7 @@ class UI:
                 self._model.images[i] = view_loaded_image
                 self._renderer.render_loaded_image(view_loaded_image)
 
-        root.after(50, self._render_images, root)
+        root.after(50, self._process_loaded_images, root)
 
     def _create_view_model(self, canvas: Canvas) -> ViewModel:
         margin = 5
