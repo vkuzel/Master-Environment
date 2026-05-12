@@ -37,8 +37,8 @@ class ImagePosition:
 
 @dataclass
 class ViewImage:
-    image_dimensions: ImageDimensions
     image_position: ImagePosition
+    image_dimensions: ImageDimensions
     selected: bool
 
     def contains_point(self, x: int, y: int) -> bool:
@@ -315,8 +315,8 @@ class UI:
             image_position = self._requested_image_positions[loaded_image.image_dimensions]
             # TODO Update in model - don't recreate whole model every time
             view_loaded_image = ViewLoadedImage(
-                image_dimensions=loaded_image.image_dimensions,
                 image_position=image_position,
+                image_dimensions=loaded_image.image_dimensions,
                 selected=False,  # TODO Selection should be taken from the ViewModel
                 photo_image=loaded_image.photo_image,
             )
@@ -360,16 +360,16 @@ class UI:
             loaded_image = self._image_provider.request_image(image_dimensions)
             if loaded_image:
                 view_image = ViewLoadedImage(
-                    image_dimensions=image_dimensions,
                     image_position=image_position,
+                    image_dimensions=image_dimensions,
                     selected=selected,
                     photo_image=loaded_image.photo_image,
                 )
             else:
                 self._requested_image_positions[image_dimensions] = image_position
                 view_image = ViewRequestedImage(
-                    image_dimensions=image_dimensions,
                     image_position=image_position,
+                    image_dimensions=image_dimensions,
                     selected=selected,
                 )
             view_images.append(view_image)
