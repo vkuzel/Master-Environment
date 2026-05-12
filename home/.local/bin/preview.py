@@ -24,12 +24,6 @@ class ImageDimensions:
 
 
 @dataclass(frozen=True)
-class LoadedImage:
-    image_dimensions: ImageDimensions
-    image: tk.Image
-
-
-@dataclass(frozen=True)
 class LoadedPhotoImage:
     image_dimensions: ImageDimensions
     photo_image: PhotoImage
@@ -61,11 +55,11 @@ class ImageFilesScanner:
 class ImageProvider:
     def __init__(self):
         self._in_queue: Queue[ImageDimensions] = Queue()
-        self._out_queue: Queue[LoadedImage] = Queue()
+        self._out_queue: Queue[ImageProvider._LoadedImage] = Queue()
         ImageProvider.Worker(self._in_queue, self._out_queue).start()
 
         self._requested_images: Set[ImageDimensions] = set()
-        self._loaded_images: Dict[ImageDimensions, LoadedImage] = {}
+        self._loaded_images: Dict[ImageDimensions, ImageProvider._LoadedImage] = {}
         self._loaded_photo_images: Dict[ImageDimensions, LoadedPhotoImage] = {}
 
     def request_image(self, image_dimensions: ImageDimensions) -> Optional[LoadedPhotoImage]:
@@ -117,7 +111,7 @@ class ImageProvider:
         return items
 
     class Worker(threading.Thread):
-        def __init__(self, in_queue: Queue[ImageDimensions], out_queue: Queue[LoadedImage]):
+        def __init__(self, in_queue: Queue[ImageDimensions], out_queue: Queue['ImageProvider._LoadedImage']):
             super().__init__(daemon=True)
             self._in_queue = in_queue
             self._out_queue = out_queue
@@ -129,11 +123,16 @@ class ImageProvider:
                 image = Image.open(image_dimensions.name)
                 image = image.resize((image_dimensions.size, image_dimensions.size))
 
-                loaded_image = LoadedImage(
+                loaded_image = ImageProvider._LoadedImage(
                     image_dimensions=image_dimensions,
                     image=image,
                 )
                 self._out_queue.put(loaded_image)
+
+    @dataclass(frozen=True)
+    class _LoadedImage:
+        image_dimensions: ImageDimensions
+        image: tk.Image
 
 
 class UI:
