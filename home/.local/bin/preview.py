@@ -24,7 +24,7 @@ class ImageDimensions:
 
 
 @dataclass(frozen=True)
-class LoadedPhotoImage:
+class LoadedImage:
     image_dimensions: ImageDimensions
     photo_image: PhotoImage
 
@@ -52,17 +52,17 @@ class ImageFilesScanner:
         return image_files
 
 
-class ImageProvider:
+class ImageLoader:
     def __init__(self):
         self._in_queue: Queue[ImageDimensions] = Queue()
-        self._out_queue: Queue[ImageProvider._LoadedImage] = Queue()
-        ImageProvider._Worker(self._in_queue, self._out_queue).start()
+        self._out_queue: Queue[ImageLoader._LoadedRawImage] = Queue()
+        ImageLoader._Worker(self._in_queue, self._out_queue).start()
 
         self._requested_images: Set[ImageDimensions] = set()
-        self._loaded_images: Dict[ImageDimensions, ImageProvider._LoadedImage] = {}
-        self._loaded_photo_images: Dict[ImageDimensions, LoadedPhotoImage] = {}
+        self._loaded_images: Dict[ImageDimensions, ImageLoader._LoadedRawImage] = {}
+        self._loaded_photo_images: Dict[ImageDimensions, LoadedImage] = {}
 
-    def request_image(self, image_dimensions: ImageDimensions) -> Optional[LoadedPhotoImage]:
+    def request_image(self, image_dimensions: ImageDimensions) -> Optional[LoadedImage]:
         if image_dimensions in self._loaded_photo_images:
             return self._loaded_photo_images[image_dimensions]
         elif image_dimensions in self._loaded_images:
@@ -76,22 +76,14 @@ class ImageProvider:
         else:
             return None
 
-    def reset_loading(self):
+    def cancel(self):
         self._requested_images = set()
         self._loaded_images = {}
         self._loaded_photo_images = {}
         self._clear_queue(self._in_queue)
         self._clear_queue(self._out_queue)
 
-    @staticmethod
-    def _clear_queue(q: Queue):
-        try:
-            while True:
-                q.get_nowait()
-        except queue.Empty:
-            pass
-
-    def poll_loaded_photo_images(self) -> list[LoadedPhotoImage]:
+    def poll_loaded_photo_images(self) -> list[LoadedImage]:
         items = []
         while not self._out_queue.empty():
             try:
@@ -99,7 +91,7 @@ class ImageProvider:
                 self._loaded_images[loaded_image.image_dimensions] = loaded_image
 
                 photo_image = ImageTk.PhotoImage(loaded_image.image)
-                loaded_photo_image = LoadedPhotoImage(
+                loaded_photo_image = LoadedImage(
                     image_dimensions=loaded_image.image_dimensions,
                     photo_image=photo_image,
                 )
@@ -110,8 +102,21 @@ class ImageProvider:
                 break
         return items
 
+    @staticmethod
+    def _clear_queue(q: Queue):
+        try:
+            while True:
+                q.get_nowait()
+        except queue.Empty:
+            pass
+
+    @dataclass(frozen=True)
+    class _LoadedRawImage:
+        image_dimensions: ImageDimensions
+        image: tk.Image
+
     class _Worker(threading.Thread):
-        def __init__(self, in_queue: Queue[ImageDimensions], out_queue: Queue['ImageProvider._LoadedImage']):
+        def __init__(self, in_queue: Queue[ImageDimensions], out_queue: Queue['ImageLoader._LoadedRawImage']):
             super().__init__(daemon=True)
             self._in_queue = in_queue
             self._out_queue = out_queue
@@ -123,20 +128,15 @@ class ImageProvider:
                 image = Image.open(image_dimensions.name)
                 image = image.resize((image_dimensions.size, image_dimensions.size))
 
-                loaded_image = ImageProvider._LoadedImage(
+                loaded_image = ImageLoader._LoadedRawImage(
                     image_dimensions=image_dimensions,
                     image=image,
                 )
                 self._out_queue.put(loaded_image)
 
-    @dataclass(frozen=True)
-    class _LoadedImage:
-        image_dimensions: ImageDimensions
-        image: tk.Image
-
 
 class UI:
-    def __init__(self, image_provider: ImageProvider, image_files: list[ImageFile]):
+    def __init__(self, image_provider: ImageLoader, image_files: list[ImageFile]):
         self._image_provider = image_provider
         self._image_files = image_files
 
@@ -201,7 +201,7 @@ class UI:
             self._image_size += zoom_speed
         elif event.num == 5:
             self._image_size = max(self._image_size - zoom_speed, 1)
-        self._image_provider.reset_loading()
+        self._image_provider.cancel()
         self._render(canvas)
 
     def _render(self, canvas: Canvas):
@@ -275,7 +275,7 @@ class UI:
 
         root.after(50, self._render_images, root, canvas)
 
-    def _render_loaded_photo_image(self, loaded_photo_image: LoadedPhotoImage, canvas: Canvas):
+    def _render_loaded_photo_image(self, loaded_photo_image: LoadedImage, canvas: Canvas):
         image_dimensions = loaded_photo_image.image_dimensions
         image_position = self._requested_image_positions[image_dimensions]
         if not image_position:
@@ -294,7 +294,7 @@ def main():
     if len(files) == 0:
         print("No images found")
         return
-    image_provider = ImageProvider()
+    image_provider = ImageLoader()
     UI(image_provider, files).run()
 
 
