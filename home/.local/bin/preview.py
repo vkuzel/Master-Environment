@@ -56,7 +56,7 @@ class ImageProvider:
     def __init__(self):
         self._in_queue: Queue[ImageDimensions] = Queue()
         self._out_queue: Queue[ImageProvider._LoadedImage] = Queue()
-        ImageProvider.Worker(self._in_queue, self._out_queue).start()
+        ImageProvider._Worker(self._in_queue, self._out_queue).start()
 
         self._requested_images: Set[ImageDimensions] = set()
         self._loaded_images: Dict[ImageDimensions, ImageProvider._LoadedImage] = {}
@@ -110,7 +110,7 @@ class ImageProvider:
                 break
         return items
 
-    class Worker(threading.Thread):
+    class _Worker(threading.Thread):
         def __init__(self, in_queue: Queue[ImageDimensions], out_queue: Queue['ImageProvider._LoadedImage']):
             super().__init__(daemon=True)
             self._in_queue = in_queue
