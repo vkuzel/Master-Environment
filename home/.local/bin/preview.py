@@ -477,15 +477,13 @@ def main():
 
     canvas.bind('<Motion>', lambda e: ui.mouse_select(e))
 
-    canvas.bind("<MouseWheel>", lambda e: ui.scroll(e))  # Windows / macOS
     canvas.bind("<Button-4>", lambda e: ui.scroll(e))
     canvas.bind("<Button-5>", lambda e: ui.scroll(e))
 
-    root.bind('<Home>', lambda _: ui.scroll_to_start())
-
-    canvas.bind("<Control-MouseWheel>", lambda e: ui.zoom(e))
     canvas.bind("<Control-Button-4>", lambda e: ui.zoom(e))
     canvas.bind("<Control-Button-5>", lambda e: ui.zoom(e))
+
+    root.bind('<Home>', lambda _: ui.scroll_to_start())
 
     root.bind('<space>', lambda e: ui.toggle_preview())
 
