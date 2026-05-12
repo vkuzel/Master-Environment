@@ -276,9 +276,11 @@ class Renderer:
             self.render_overview_image_highlight(image)
 
     def render_overview_image(self, image: OverviewLoadedImage):
+        x_offset = int((image.image_dimensions.size - image.photo_image.width()) / 2)
+        y_offset = int((image.image_dimensions.size - image.photo_image.height()) / 2)
         self._canvas.create_image(
-            image.image_position.x + self._margin,
-            image.image_position.y + self._margin,
+            image.image_position.x + self._margin + x_offset,
+            image.image_position.y + self._margin + y_offset,
             image=image.photo_image,
             anchor="nw"
         )
