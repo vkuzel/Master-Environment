@@ -99,7 +99,7 @@ class ViewModel:
 
 
 @dataclass(frozen=True)
-class DetailImage:
+class DetailModel:
     image_file: ImageFile
     image_dimensions: ImageDimensions
     photo_image: PhotoImage
@@ -173,15 +173,10 @@ class ImageLoader:
         return items
 
     @staticmethod
-    def load_detail_image(image_file: ImageFile, image_dimensions: ImageDimensions) -> DetailImage:
+    def load_image(image_file: ImageFile, image_dimensions: ImageDimensions) -> ImageTk.PhotoImage:
         image = Image.open(image_file.name)
         image = image.resize((image_dimensions.size, image_dimensions.size))
-        photo_image = ImageTk.PhotoImage(image)
-        return DetailImage(
-            image_file=image_file,
-            image_dimensions=image_dimensions,
-            photo_image=photo_image,
-        )
+        return ImageTk.PhotoImage(image)
 
     @staticmethod
     def _clear_queue(q: Queue):
@@ -275,7 +270,7 @@ class Renderer:
             outline=outline,
         )
 
-    def render_detail_image(self, image: DetailImage):
+    def render_detail_model(self, image: DetailModel):
         self._canvas.delete("all")
         self._canvas.create_image(
             0,
@@ -300,7 +295,7 @@ class UI:
 
         self._model = ViewModel([])
         self._selected_image: Optional[ViewImage] = None
-        self._detail_model: Optional[DetailImage] = None
+        self._detail_model: Optional[DetailModel] = None
 
     def run(self):
         root = tk.Tk()
@@ -389,7 +384,7 @@ class UI:
     def _initialize(self, canvas: Canvas):
         if self._selected_image:
             self._detail_model = self._create_detail_model(canvas)
-            if self._renderer: self._renderer.render_detail_image(self._detail_model)
+            if self._renderer: self._renderer.render_detail_model(self._detail_model)
         else:
             self._model = self._create_view_model(canvas)
             if self._renderer: self._renderer.render(self._model)
@@ -463,11 +458,16 @@ class UI:
 
         return ViewModel(view_images)
 
-    def _create_detail_model(self, canvas: Canvas) -> DetailImage:
+    def _create_detail_model(self, canvas: Canvas) -> DetailModel:
         image_dimensions = ImageDimensions(
             size=min(canvas.winfo_width(), canvas.winfo_height())
         )
-        return self._image_provider.load_detail_image(self._selected_image.image_file, image_dimensions)
+        photo_image = self._image_provider.load_image(self._selected_image.image_file, image_dimensions)
+        return DetailModel(
+            image_file=self._selected_image.image_file,
+            image_dimensions=image_dimensions,
+            photo_image=photo_image,
+        )
 
 
 def main():
