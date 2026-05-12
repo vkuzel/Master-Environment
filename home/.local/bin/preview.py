@@ -41,6 +41,11 @@ class ViewImage:
     image_position: ImagePosition
     selected: bool
 
+    def contains_point(self, x: int, y: int) -> bool:
+        x1, y1 = self.image_position.x, self.image_position.y
+        x2, y2 = x1 + self.image_dimensions.size, y1 + self.image_dimensions.size
+        return x1 <= x <= x2 and y1 <= y <= y2
+
 
 @dataclass
 class ViewLoadedImage(ViewImage):
@@ -213,7 +218,6 @@ class Renderer:
             image.image_position.x + self._margin + image.image_dimensions.size,
             image.image_position.y + self._margin + image.image_dimensions.size,
             width=2,
-            # fill="#01302f",
             outline=outline,
         )
 
@@ -233,6 +237,8 @@ class UI:
         self._mouse_x = 0
         self._mouse_y = 0
 
+        self._model = ViewModel([])
+
         self._requested_image_positions: Dict[ImageDimensions, ImagePosition] = {}
 
     def run(self):
@@ -245,7 +251,7 @@ class UI:
         canvas.pack(fill="both", expand=True)
         canvas.bind("<Configure>", lambda e: self._render(canvas))
 
-        canvas.bind('<Motion>', lambda e: self._mouse_move_render(e, canvas))
+        canvas.bind('<Motion>', lambda e: self._mouse_move_render(e))
 
         canvas.bind("<MouseWheel>", lambda e: self._scroll_render(e, canvas))  # Windows / macOS
         canvas.bind("<Button-4>", lambda e: self._scroll_render(e, canvas))
@@ -263,17 +269,21 @@ class UI:
         root.after_idle(self._render_images, root, canvas)
         root.mainloop()
 
-    def _mouse_move_render(self, event: Event, canvas: Canvas):
+    def _mouse_move_render(self, event: Event):
         self._mouse_x = event.x
         self._mouse_y = event.y
-        # TODO Avoid re-rendering of the whole model
-        model = self._create_view_model(canvas)
-        if self._renderer: self._renderer.render(model)
+        for image in self._model.images:
+            if image.selected and not image.contains_point(event.x, event.y):
+                image.selected = False
+                self._renderer.render_image_highlight(image)
+            elif not image.selected and image.contains_point(event.x, event.y):
+                image.selected = True
+                self._renderer.render_image_highlight(image)
 
     def _scroll_start_render(self, canvas: Canvas):
         self._scroll_offset = 0
-        model = self._create_view_model(canvas)
-        if self._renderer: self._renderer.render(model)
+        self._model = self._create_view_model(canvas)
+        if self._renderer: self._renderer.render(self._model)
 
     def _scroll_render(self, event: Event, canvas: Canvas):
         scroll_speed = 75
@@ -281,8 +291,8 @@ class UI:
             self._scroll_offset += scroll_speed
         elif event.num == 5:
             self._scroll_offset -= scroll_speed
-        model = self._create_view_model(canvas)
-        if self._renderer: self._renderer.render(model)
+        self._model = self._create_view_model(canvas)
+        if self._renderer: self._renderer.render(self._model)
 
     def _zoom_render(self, event: Event, canvas: Canvas):
         zoom_speed = 10
@@ -291,12 +301,12 @@ class UI:
         elif event.num == 5:
             self._image_size = max(self._image_size - zoom_speed, 1)
         self._image_provider.cancel()
-        model = self._create_view_model(canvas)
-        if self._renderer: self._renderer.render(model)
+        self._model = self._create_view_model(canvas)
+        if self._renderer: self._renderer.render(self._model)
 
     def _render(self, canvas: Canvas):
-        model = self._create_view_model(canvas)
-        if self._renderer: self._renderer.render(model)
+        self._model = self._create_view_model(canvas)
+        if self._renderer: self._renderer.render(self._model)
 
     def _render_images(self, root, canvas: Canvas):
         loaded_images = self._image_provider.poll_loaded_images()
