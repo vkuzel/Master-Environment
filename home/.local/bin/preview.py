@@ -236,8 +236,6 @@ class UI:
         self._image_files = image_files
         self._renderer: Optional[Renderer] = None
 
-        self._margin = 5
-
         self._first_render = True
         self._scroll_offset = 0
         self._image_size = 100
@@ -340,11 +338,12 @@ class UI:
         root.after(50, self._render_images, root)
 
     def _create_view_model(self, canvas: Canvas) -> ViewModel:
+        margin = 5
         canvas_width = canvas.winfo_width()
 
         if self._first_render:
             self._first_render = False
-            image_width = self._image_size + 2 * self._margin
+            image_width = self._image_size + 2 * margin
             line_images_count = floor(canvas_width / image_width)
             unused_margin = canvas_width - image_width * line_images_count
             self._image_size += floor(unused_margin / line_images_count)
@@ -356,9 +355,9 @@ class UI:
         for i in range(0, len(self._image_files)):
             image_file = self._image_files[i]
 
-            if (x + self._image_size + 2 * self._margin) > canvas_width:
+            if (x + self._image_size + 2 * margin) > canvas_width:
                 x = 0
-                y += self._image_size + 2 * self._margin
+                y += self._image_size + 2 * margin
 
             image_dimensions = ImageDimensions(
                 size=self._image_size,
@@ -391,7 +390,7 @@ class UI:
             view_image.selected = view_image.contains_point(self._mouse_x, self._mouse_y)
             view_images.append(view_image)
 
-            x += self._image_size + 2 * self._margin
+            x += self._image_size + 2 * margin
 
         return ViewModel(view_images)
 
