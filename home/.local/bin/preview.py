@@ -19,15 +19,7 @@ class ImageFile:
 
 @dataclass(frozen=True)
 class ImageDimensions:
-    # TODO Extract name from dimensions
-    name: str
     size: int
-
-
-@dataclass(frozen=True)
-class LoadedImage:
-    image_dimensions: ImageDimensions
-    photo_image: PhotoImage
 
 
 @dataclass(frozen=True)
@@ -36,8 +28,21 @@ class ImagePosition:
     y: int
 
 
+@dataclass(frozen=True)
+class LoadImageRequest:
+    image_file: ImageFile
+    image_dimensions: ImageDimensions
+
+
+@dataclass(frozen=True)
+class LoadedImage:
+    request: LoadImageRequest
+    photo_image: PhotoImage
+
+
 @dataclass
 class ViewImage:
+    image_file: ImageFile
     image_position: ImagePosition
     image_dimensions: ImageDimensions
     selected: bool
@@ -49,25 +54,21 @@ class ViewImage:
 
 
 @dataclass
-class ViewLoadedImage(ViewImage):
-    photo_image: PhotoImage
+class ViewRequestedImage(ViewImage):
+    def is_for_loaded_image(self, loaded_image: LoadedImage) -> bool:
+        request = loaded_image.request
+        return self.image_file == request.image_file and self.image_dimensions == request.image_dimensions
 
 
 @dataclass
-class ViewRequestedImage(ViewImage):
-    pass
+class ViewLoadedImage(ViewImage):
+    photo_image: PhotoImage
 
 
 @dataclass(frozen=True)
 class ViewModel:
     images: list[ViewImage]
 
-    def find_requested_image(self, image_dimensions: ImageDimensions) -> Optional[ViewRequestedImage]:
-
-        for image in self.images:
-            if isinstance(image, ViewRequestedImage):
-                return image
-        return None
 
 class ImageFilesScanner:
     @staticmethod
@@ -88,24 +89,24 @@ class ImageFilesScanner:
 
 class ImageLoader:
     def __init__(self):
-        self._in_queue: Queue[ImageDimensions] = Queue()
+        self._in_queue: Queue[LoadImageRequest] = Queue()
         self._out_queue: Queue[ImageLoader._LoadedRawImage] = Queue()
         ImageLoader._Worker(self._in_queue, self._out_queue).start()
 
-        self._requested_images: Set[ImageDimensions] = set()
-        self._loaded_images: Dict[ImageDimensions, ImageLoader._LoadedRawImage] = {}
-        self._loaded_photo_images: Dict[ImageDimensions, LoadedImage] = {}
+        self._requested_images: Set[LoadImageRequest] = set()
+        self._loaded_images: Dict[LoadImageRequest, ImageLoader._LoadedRawImage] = {}
+        self._loaded_photo_images: Dict[LoadImageRequest, LoadedImage] = {}
 
-    def request_image(self, image_dimensions: ImageDimensions) -> Optional[LoadedImage]:
-        if image_dimensions in self._loaded_photo_images:
-            return self._loaded_photo_images[image_dimensions]
-        elif image_dimensions in self._loaded_images:
-            loaded_image = self._loaded_images[image_dimensions]
+    def request_image(self, request: LoadImageRequest) -> Optional[LoadedImage]:
+        if request in self._loaded_photo_images:
+            return self._loaded_photo_images[request]
+        elif request in self._loaded_images:
+            loaded_image = self._loaded_images[request]
             self._out_queue.put(loaded_image)
             return None
-        elif image_dimensions not in self._requested_images:
-            self._requested_images.add(image_dimensions)
-            self._in_queue.put(image_dimensions)
+        elif request not in self._requested_images:
+            self._requested_images.add(request)
+            self._in_queue.put(request)
             return None
         else:
             return None
@@ -122,14 +123,14 @@ class ImageLoader:
         while not self._out_queue.empty():
             try:
                 loaded_image = self._out_queue.get_nowait()
-                self._loaded_images[loaded_image.image_dimensions] = loaded_image
+                self._loaded_images[loaded_image.request] = loaded_image
 
                 photo_image = ImageTk.PhotoImage(loaded_image.image)
                 loaded_photo_image = LoadedImage(
-                    image_dimensions=loaded_image.image_dimensions,
+                    request=loaded_image.request,
                     photo_image=photo_image,
                 )
-                self._loaded_photo_images[loaded_image.image_dimensions] = loaded_photo_image
+                self._loaded_photo_images[loaded_image.request] = loaded_photo_image
 
                 items.append(loaded_photo_image)
             except queue.Empty:
@@ -146,24 +147,24 @@ class ImageLoader:
 
     @dataclass(frozen=True)
     class _LoadedRawImage:
-        image_dimensions: ImageDimensions
+        request: LoadImageRequest
         image: tk.Image
 
     class _Worker(threading.Thread):
-        def __init__(self, in_queue: Queue[ImageDimensions], out_queue: Queue['ImageLoader._LoadedRawImage']):
+        def __init__(self, in_queue: Queue[LoadImageRequest], out_queue: Queue['ImageLoader._LoadedRawImage']):
             super().__init__(daemon=True)
             self._in_queue = in_queue
             self._out_queue = out_queue
 
         def run(self):
             while True:
-                image_dimensions = self._in_queue.get()
+                request = self._in_queue.get()
 
-                image = Image.open(image_dimensions.name)
-                image = image.resize((image_dimensions.size, image_dimensions.size))
+                image = Image.open(request.image_file.name)
+                image = image.resize((request.image_dimensions.size, request.image_dimensions.size))
 
                 loaded_image = ImageLoader._LoadedRawImage(
-                    image_dimensions=image_dimensions,
+                    request=request,
                     image=image,
                 )
                 self._out_queue.put(loaded_image)
@@ -198,7 +199,7 @@ class Renderer:
             self._canvas.create_text(
                 image.image_position.x + self._margin + image.image_dimensions.size / 2,
                 image.image_position.y + self._margin + image.image_dimensions.size / 2,
-                text=image.image_dimensions.name,
+                text=image.image_file.name,
                 anchor="center",
                 font=("Arial", 12),
                 fill="white",
@@ -323,10 +324,11 @@ class UI:
                 image = self._model.images[i]
                 if not isinstance(image, ViewRequestedImage):
                     continue
-                if not image.image_dimensions == loaded_image.image_dimensions:
+                if not image.is_for_loaded_image(loaded_image):
                     continue
 
                 view_loaded_image = ViewLoadedImage(
+                    image_file=image.image_file,
                     image_position=image.image_position,
                     image_dimensions=image.image_dimensions,
                     selected=image.selected,
@@ -359,7 +361,6 @@ class UI:
                 y += self._image_size + 2 * self._margin
 
             image_dimensions = ImageDimensions(
-                name=image_file.name,
                 size=self._image_size,
             )
             image_position = ImagePosition(
@@ -367,9 +368,14 @@ class UI:
                 y=y,
             )
 
-            loaded_image = self._image_provider.request_image(image_dimensions)
+            request = LoadImageRequest(
+                image_file=image_file,
+                image_dimensions=image_dimensions,
+            )
+            loaded_image = self._image_provider.request_image(request)
             if loaded_image:
                 view_image = ViewLoadedImage(
+                    image_file=image_file,
                     image_position=image_position,
                     image_dimensions=image_dimensions,
                     selected=False,
@@ -377,6 +383,7 @@ class UI:
                 )
             else:
                 view_image = ViewRequestedImage(
+                    image_file=image_file,
                     image_position=image_position,
                     image_dimensions=image_dimensions,
                     selected=False,
