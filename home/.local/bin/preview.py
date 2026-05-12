@@ -285,9 +285,10 @@ class Renderer:
 
     def render_detail(self, image: DetailModel):
         self._canvas.delete("all")
+        viewport = self.viewport()
         self._canvas.create_image(
-            0,
-            0,
+            floor((viewport.width - image.photo_image.width()) / 2),
+            floor((viewport.height - image.photo_image.height()) / 2),
             image=image.photo_image,
             anchor='nw',
         )
