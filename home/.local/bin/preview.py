@@ -489,8 +489,8 @@ def main():
     def poll_loaded_images(_):
         ui.process_loaded_images()
         root.after(50, poll_loaded_images, root)
-
     root.after_idle(poll_loaded_images, root)
+
     root.mainloop()
 
 
