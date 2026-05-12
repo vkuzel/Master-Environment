@@ -266,7 +266,7 @@ class UI:
         root.bind('<Escape>', lambda e: root.quit())
         root.bind('q', lambda e: root.quit())
 
-        root.after_idle(self._render_images, root, canvas)
+        root.after_idle(self._render_images, root)
         root.mainloop()
 
     def _mouse_move_render(self, event: Event):
@@ -308,7 +308,7 @@ class UI:
         self._model = self._create_view_model(canvas)
         if self._renderer: self._renderer.render(self._model)
 
-    def _render_images(self, root, canvas: Canvas):
+    def _render_images(self, root):
         loaded_images = self._image_provider.poll_loaded_images()
         for loaded_image in loaded_images:
             # TODO Move this map-mapping into the loader
@@ -322,7 +322,7 @@ class UI:
             )
             self._renderer.render_loaded_image(view_loaded_image)
 
-        root.after(50, self._render_images, root, canvas)
+        root.after(50, self._render_images, root)
 
     def _create_view_model(self, canvas: Canvas) -> ViewModel:
         canvas_width = canvas.winfo_width()
