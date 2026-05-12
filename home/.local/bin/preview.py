@@ -367,8 +367,9 @@ class UI:
 
     def initialize(self):
         if self._selected_image:
-            self._detail_model = self._create_detail_model()
-            self._renderer.render_detail(self._detail_model)
+            detail_model = self._create_detail_model()
+            self._detail_model = detail_model
+            self._renderer.render_detail(detail_model)
         else:
             self._model = self._create_overview_model()
             self._renderer.render_overview(self._model)
