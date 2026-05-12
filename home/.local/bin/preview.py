@@ -40,6 +40,12 @@ class LoadedImage:
     photo_image: PhotoImage
 
 
+@dataclass(frozen=True)
+class Viewport:
+    width: int
+    height: int
+
+
 @dataclass
 class OverviewImage:
     image_file: ImageFile
@@ -217,6 +223,12 @@ class Renderer:
 
         self._margin = 5
 
+    def viewport(self) -> Viewport:
+        return Viewport(
+            width=self._canvas.winfo_width(),
+            height=self._canvas.winfo_height(),
+        )
+
     def render(self, overview_model: OverviewModel):
         self._canvas.delete("all")
 
@@ -281,9 +293,8 @@ class Renderer:
 
 
 class UI:
-    def __init__(self, image_loader: ImageLoader, canvas: Canvas, renderer: Renderer, image_files: list[ImageFile]):
+    def __init__(self, image_loader: ImageLoader, renderer: Renderer, image_files: list[ImageFile]):
         self._image_loader = image_loader
-        self._canvas = canvas
         self._renderer = renderer
         self._image_files = image_files
 
@@ -372,7 +383,7 @@ class UI:
 
     def _create_overview_model(self) -> OverviewModel:
         margin = 5
-        canvas_width = self._canvas.winfo_width()
+        canvas_width = self._renderer.viewport().width
 
         if self._first_render:
             self._first_render = False
@@ -428,8 +439,9 @@ class UI:
         return OverviewModel(overview_images)
 
     def _create_detail_model(self) -> DetailModel:
+        viewport = self._renderer.viewport()
         image_dimensions = ImageDimensions(
-            size=min(self._canvas.winfo_width(), self._canvas.winfo_height())
+            size=min(viewport.width, viewport.height)
         )
         photo_image = self._image_loader.load_image(self._selected_image.image_file, image_dimensions)
         return DetailModel(
@@ -453,7 +465,7 @@ def main():
 
     image_loader = ImageLoader()
     renderer = Renderer(canvas)
-    ui = UI(image_loader, canvas, renderer, files)
+    ui = UI(image_loader, renderer, files)
 
     canvas.bind("<Configure>", lambda e: ui.initialize())
 
