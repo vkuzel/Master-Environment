@@ -284,7 +284,12 @@ class UI:
     def __init__(self, image_provider: ImageLoader, image_files: list[ImageFile]):
         self._image_provider = image_provider
         self._image_files = image_files
-        self._renderer: Optional[Renderer] = None
+
+        root = tk.Tk()
+        root.title("Blank Box")
+
+        self._canvas = tk.Canvas(root, bg="#00201e", highlightthickness=0)
+        self._renderer = Renderer(self._canvas)
 
         self._first_render = True
         self._scroll_offset = 0
@@ -297,29 +302,22 @@ class UI:
         self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
 
-    def run(self):
-        root = tk.Tk()
-        root.title("Blank Box")
+        self._canvas.pack(fill="both", expand=True)
+        self._canvas.bind("<Configure>", lambda e: self._initialize())
 
-        canvas = tk.Canvas(root, bg="#00201e", highlightthickness=0)
-        self._renderer = Renderer(canvas)
+        self._canvas.bind('<Motion>', lambda e: self._mouse_select(e))
 
-        canvas.pack(fill="both", expand=True)
-        canvas.bind("<Configure>", lambda e: self._initialize(canvas))
+        self._canvas.bind("<MouseWheel>", lambda e: self._scroll(e))  # Windows / macOS
+        self._canvas.bind("<Button-4>", lambda e: self._scroll(e))
+        self._canvas.bind("<Button-5>", lambda e: self._scroll(e))
 
-        canvas.bind('<Motion>', lambda e: self._mouse_select(e))
+        root.bind('<Home>', lambda _: self._scroll_to_start())
 
-        canvas.bind("<MouseWheel>", lambda e: self._scroll(e, canvas))  # Windows / macOS
-        canvas.bind("<Button-4>", lambda e: self._scroll(e, canvas))
-        canvas.bind("<Button-5>", lambda e: self._scroll(e, canvas))
+        self._canvas.bind("<Control-MouseWheel>", lambda e: self._zoom(e))
+        self._canvas.bind("<Control-Button-4>", lambda e: self._zoom(e))
+        self._canvas.bind("<Control-Button-5>", lambda e: self._zoom(e))
 
-        root.bind('<Home>', lambda _: self._scroll_to_start(canvas))
-
-        canvas.bind("<Control-MouseWheel>", lambda e: self._zoom(e, canvas))
-        canvas.bind("<Control-Button-4>", lambda e: self._zoom(e, canvas))
-        canvas.bind("<Control-Button-5>", lambda e: self._zoom(e, canvas))
-
-        root.bind('<space>', lambda e: self._toggle_preview(canvas))
+        root.bind('<space>', lambda e: self._toggle_preview())
 
         root.bind('<Escape>', lambda e: root.quit())
         root.bind('q', lambda e: root.quit())
@@ -341,15 +339,15 @@ class UI:
                 image.selected = True
                 self._renderer.render_image_highlight(image)
 
-    def _scroll_to_start(self, canvas: Canvas):
+    def _scroll_to_start(self):
         if self._selected_image:
             return
 
         self._scroll_offset = 0
-        self._model = self._create_overview_model(canvas)
-        if self._renderer: self._renderer.render(self._model)
+        self._model = self._create_overview_model()
+        self._renderer.render(self._model)
 
-    def _scroll(self, event: Event, canvas: Canvas):
+    def _scroll(self, event: Event):
         if self._selected_image:
             return
 
@@ -358,10 +356,10 @@ class UI:
             self._scroll_offset += scroll_speed
         elif event.num == 5:
             self._scroll_offset -= scroll_speed
-        self._model = self._create_overview_model(canvas)
-        if self._renderer: self._renderer.render(self._model)
+        self._model = self._create_overview_model()
+        self._renderer.render(self._model)
 
-    def _zoom(self, event: Event, canvas: Canvas):
+    def _zoom(self, event: Event):
         if self._selected_image:
             return
 
@@ -371,23 +369,23 @@ class UI:
         elif event.num == 5:
             self._image_size = max(self._image_size - zoom_speed, 1)
         self._image_provider.cancel()
-        self._model = self._create_overview_model(canvas)
-        if self._renderer: self._renderer.render(self._model)
+        self._model = self._create_overview_model()
+        self._renderer.render(self._model)
 
-    def _toggle_preview(self, canvas: Canvas):
+    def _toggle_preview(self):
         if self._selected_image:
             self._selected_image = None
         else:
             self._selected_image = self._model.find_selected_image()
-        self._initialize(canvas)
+        self._initialize()
 
-    def _initialize(self, canvas: Canvas):
+    def _initialize(self):
         if self._selected_image:
-            self._detail_model = self._create_detail_model(canvas)
-            if self._renderer: self._renderer.render_detail_model(self._detail_model)
+            self._detail_model = self._create_detail_model()
+            self._renderer.render_detail_model(self._detail_model)
         else:
-            self._model = self._create_overview_model(canvas)
-            if self._renderer: self._renderer.render(self._model)
+            self._model = self._create_overview_model()
+            self._renderer.render(self._model)
 
     def _process_loaded_images(self, root):
         loaded_images = self._image_provider.poll_loaded_images()
@@ -401,9 +399,9 @@ class UI:
 
         root.after(50, self._process_loaded_images, root)
 
-    def _create_overview_model(self, canvas: Canvas) -> OverviewModel:
+    def _create_overview_model(self) -> OverviewModel:
         margin = 5
-        canvas_width = canvas.winfo_width()
+        canvas_width = self._canvas.winfo_width()
 
         if self._first_render:
             self._first_render = False
@@ -458,9 +456,9 @@ class UI:
 
         return OverviewModel(overview_images)
 
-    def _create_detail_model(self, canvas: Canvas) -> DetailModel:
+    def _create_detail_model(self) -> DetailModel:
         image_dimensions = ImageDimensions(
-            size=min(canvas.winfo_width(), canvas.winfo_height())
+            size=min(self._canvas.winfo_width(), self._canvas.winfo_height())
         )
         photo_image = self._image_provider.load_image(self._selected_image.image_file, image_dimensions)
         return DetailModel(
@@ -476,7 +474,7 @@ def main():
         print("No images found")
         return
     image_provider = ImageLoader()
-    UI(image_provider, files).run()
+    UI(image_provider, files)
 
 
 if __name__ == '__main__':
