@@ -41,7 +41,7 @@ class LoadedImage:
 
 
 @dataclass
-class ViewImage:
+class OverviewImage:
     image_file: ImageFile
     image_position: ImagePosition
     image_dimensions: ImageDimensions
@@ -54,46 +54,46 @@ class ViewImage:
 
 
 @dataclass
-class ViewRequestedImage(ViewImage):
+class OverviewRequestedImage(OverviewImage):
     def is_for_loaded_image(self, loaded_image: LoadedImage) -> bool:
         request = loaded_image.request
         return self.image_file == request.image_file and self.image_dimensions == request.image_dimensions
 
 
 @dataclass
-class ViewLoadedImage(ViewImage):
+class OverviewLoadedImage(OverviewImage):
     photo_image: PhotoImage
 
 
 @dataclass(frozen=True)
-class ViewModel:
-    images: list[ViewImage]
+class OverviewModel:
+    images: list[OverviewImage]
 
-    def find_selected_image(self) -> Optional[ViewImage]:
+    def find_selected_image(self) -> Optional[OverviewImage]:
         for image in self.images:
             if image.selected:
                 return image
         else:
             return None
 
-    def create_loaded_image(self, loaded_image: LoadedImage) -> Optional[ViewLoadedImage]:
+    def create_loaded_image(self, loaded_image: LoadedImage) -> Optional[OverviewLoadedImage]:
         # Loop in a loop can be optimized
         for i in range(0, len(self.images)):
             image = self.images[i]
-            if not isinstance(image, ViewRequestedImage):
+            if not isinstance(image, OverviewRequestedImage):
                 continue
             if not image.is_for_loaded_image(loaded_image):
                 continue
 
-            view_loaded_image = ViewLoadedImage(
+            loaded_image = OverviewLoadedImage(
                 image_file=image.image_file,
                 image_position=image.image_position,
                 image_dimensions=image.image_dimensions,
                 selected=image.selected,
                 photo_image=loaded_image.photo_image,
             )
-            self.images[i] = view_loaded_image
-            return view_loaded_image
+            self.images[i] = loaded_image
+            return loaded_image
         else:
             return None
 
@@ -217,12 +217,12 @@ class Renderer:
 
         self._margin = 5
 
-    def render(self, view_model: ViewModel):
+    def render(self, overview_model: OverviewModel):
         self._canvas.delete("all")
 
         canvas_height = self._canvas.winfo_height()
 
-        for image in view_model.images:
+        for image in overview_model.images:
             if image.image_position.y + image.image_dimensions.size + 2 * self._margin < 0:
                 continue
             if image.image_position.y > canvas_height:
@@ -246,12 +246,12 @@ class Renderer:
                 fill="white",
             )
 
-            if isinstance(image, ViewLoadedImage):
+            if isinstance(image, OverviewLoadedImage):
                 self.render_loaded_image(image)
 
             self.render_image_highlight(image)
 
-    def render_loaded_image(self, image: ViewLoadedImage):
+    def render_loaded_image(self, image: OverviewLoadedImage):
         self._canvas.create_image(
             image.image_position.x + self._margin,
             image.image_position.y + self._margin,
@@ -259,7 +259,7 @@ class Renderer:
             anchor="nw"
         )
 
-    def render_image_highlight(self, image: ViewImage):
+    def render_image_highlight(self, image: OverviewImage):
         outline = "white" if image.selected else "black"
         self._canvas.create_rectangle(
             image.image_position.x + self._margin,
@@ -293,8 +293,8 @@ class UI:
         self._mouse_x = 0
         self._mouse_y = 0
 
-        self._model = ViewModel([])
-        self._selected_image: Optional[ViewImage] = None
+        self._model = OverviewModel([])
+        self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
 
     def run(self):
@@ -346,7 +346,7 @@ class UI:
             return
 
         self._scroll_offset = 0
-        self._model = self._create_view_model(canvas)
+        self._model = self._create_overview_model(canvas)
         if self._renderer: self._renderer.render(self._model)
 
     def _scroll(self, event: Event, canvas: Canvas):
@@ -358,7 +358,7 @@ class UI:
             self._scroll_offset += scroll_speed
         elif event.num == 5:
             self._scroll_offset -= scroll_speed
-        self._model = self._create_view_model(canvas)
+        self._model = self._create_overview_model(canvas)
         if self._renderer: self._renderer.render(self._model)
 
     def _zoom(self, event: Event, canvas: Canvas):
@@ -371,7 +371,7 @@ class UI:
         elif event.num == 5:
             self._image_size = max(self._image_size - zoom_speed, 1)
         self._image_provider.cancel()
-        self._model = self._create_view_model(canvas)
+        self._model = self._create_overview_model(canvas)
         if self._renderer: self._renderer.render(self._model)
 
     def _toggle_preview(self, canvas: Canvas):
@@ -386,7 +386,7 @@ class UI:
             self._detail_model = self._create_detail_model(canvas)
             if self._renderer: self._renderer.render_detail_model(self._detail_model)
         else:
-            self._model = self._create_view_model(canvas)
+            self._model = self._create_overview_model(canvas)
             if self._renderer: self._renderer.render(self._model)
 
     def _process_loaded_images(self, root):
@@ -395,13 +395,13 @@ class UI:
             if not self._model:
                 continue
 
-            view_loaded_image = self._model.create_loaded_image(loaded_image)
-            if view_loaded_image:
-                self._renderer.render_loaded_image(view_loaded_image)
+            overview_loaded_image = self._model.create_loaded_image(loaded_image)
+            if overview_loaded_image:
+                self._renderer.render_loaded_image(overview_loaded_image)
 
         root.after(50, self._process_loaded_images, root)
 
-    def _create_view_model(self, canvas: Canvas) -> ViewModel:
+    def _create_overview_model(self, canvas: Canvas) -> OverviewModel:
         margin = 5
         canvas_width = canvas.winfo_width()
 
@@ -412,7 +412,7 @@ class UI:
             unused_margin = canvas_width - image_width * line_images_count
             self._image_size += floor(unused_margin / line_images_count)
 
-        view_images: list[ViewImage] = []
+        overview_images: list[OverviewImage] = []
 
         x = 0
         y = self._scroll_offset
@@ -437,7 +437,7 @@ class UI:
             )
             loaded_image = self._image_provider.request_image(request)
             if loaded_image:
-                view_image = ViewLoadedImage(
+                overview_image = OverviewLoadedImage(
                     image_file=image_file,
                     image_position=image_position,
                     image_dimensions=image_dimensions,
@@ -445,18 +445,18 @@ class UI:
                     photo_image=loaded_image.photo_image,
                 )
             else:
-                view_image = ViewRequestedImage(
+                overview_image = OverviewRequestedImage(
                     image_file=image_file,
                     image_position=image_position,
                     image_dimensions=image_dimensions,
                     selected=False,
                 )
-            view_image.selected = view_image.contains_point(self._mouse_x, self._mouse_y)
-            view_images.append(view_image)
+            overview_image.selected = overview_image.contains_point(self._mouse_x, self._mouse_y)
+            overview_images.append(overview_image)
 
             x += self._image_size + 2 * margin
 
-        return ViewModel(view_images)
+        return OverviewModel(overview_images)
 
     def _create_detail_model(self, canvas: Canvas) -> DetailModel:
         image_dimensions = ImageDimensions(
