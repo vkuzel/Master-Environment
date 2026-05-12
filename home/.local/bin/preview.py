@@ -188,7 +188,7 @@ class UI:
         self._render(canvas)
 
     def _scroll_render(self, event: Event, canvas: Canvas):
-        scroll_speed = 50
+        scroll_speed = 75
         if event.num == 4:
             self._scroll_offset += scroll_speed
         elif event.num == 5:
@@ -196,7 +196,7 @@ class UI:
         self._render(canvas)
 
     def _zoom_render(self, event: Event, canvas: Canvas):
-        zoom_speed = 3
+        zoom_speed = 10
         if event.num == 4:
             self._image_size += zoom_speed
         elif event.num == 5:
