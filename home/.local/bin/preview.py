@@ -363,26 +363,34 @@ class UI:
         self._renderer.render_overview(self._model)
 
     def select_previous(self):
-        if self._selected_image:
+        index = self._model.find_selected_image_index()
+        if index is None or index == 0:
             return
+
+        self._model.images[index].selected = False
+        self._model.images[index - 1].selected = True
+
+        if self._selected_image:
+            self._selected_image = self._model.images[index - 1]
+            self.initialize()
         else:
-            index = self._model.find_selected_image_index()
-            if index is not None and index > 0:
-                self._model.images[index].selected = False
-                self._renderer.render_overview_image_highlight(self._model.images[index])
-                self._model.images[index - 1].selected = True
-                self._renderer.render_overview_image_highlight(self._model.images[index - 1])
+            self._renderer.render_overview_image_highlight(self._model.images[index])
+            self._renderer.render_overview_image_highlight(self._model.images[index - 1])
 
     def select_next(self):
-        if self._selected_image:
+        index = self._model.find_selected_image_index()
+        if index is None or index == len(self._model.images) - 1:
             return
+
+        self._model.images[index].selected = False
+        self._model.images[index + 1].selected = True
+
+        if self._selected_image:
+            self._selected_image = self._model.images[index + 1]
+            self.initialize()
         else:
-            index = self._model.find_selected_image_index()
-            if index is not None and index < len(self._model.images) - 1:
-                self._model.images[index].selected = False
-                self._renderer.render_overview_image_highlight(self._model.images[index])
-                self._model.images[index + 1].selected = True
-                self._renderer.render_overview_image_highlight(self._model.images[index + 1])
+            self._renderer.render_overview_image_highlight(self._model.images[index])
+            self._renderer.render_overview_image_highlight(self._model.images[index + 1])
 
     def select_above(self):
         if self._selected_image:
