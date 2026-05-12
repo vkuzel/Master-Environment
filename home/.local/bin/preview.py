@@ -281,15 +281,11 @@ class Renderer:
 
 
 class UI:
-    def __init__(self, image_provider: ImageLoader, image_files: list[ImageFile]):
-        self._image_provider = image_provider
+    def __init__(self, image_loader: ImageLoader, canvas: Canvas, renderer: Renderer, image_files: list[ImageFile]):
+        self._image_loader = image_loader
+        self._canvas = canvas
+        self._renderer = renderer
         self._image_files = image_files
-
-        root = tk.Tk()
-        root.title("Blank Box")
-
-        self._canvas = tk.Canvas(root, bg="#00201e", highlightthickness=0)
-        self._renderer = Renderer(self._canvas)
 
         self._first_render = True
         self._scroll_offset = 0
@@ -302,30 +298,7 @@ class UI:
         self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
 
-        self._canvas.pack(fill="both", expand=True)
-        self._canvas.bind("<Configure>", lambda e: self._initialize())
-
-        self._canvas.bind('<Motion>', lambda e: self._mouse_select(e))
-
-        self._canvas.bind("<MouseWheel>", lambda e: self._scroll(e))  # Windows / macOS
-        self._canvas.bind("<Button-4>", lambda e: self._scroll(e))
-        self._canvas.bind("<Button-5>", lambda e: self._scroll(e))
-
-        root.bind('<Home>', lambda _: self._scroll_to_start())
-
-        self._canvas.bind("<Control-MouseWheel>", lambda e: self._zoom(e))
-        self._canvas.bind("<Control-Button-4>", lambda e: self._zoom(e))
-        self._canvas.bind("<Control-Button-5>", lambda e: self._zoom(e))
-
-        root.bind('<space>', lambda e: self._toggle_preview())
-
-        root.bind('<Escape>', lambda e: root.quit())
-        root.bind('q', lambda e: root.quit())
-
-        root.after_idle(self._process_loaded_images, root)
-        root.mainloop()
-
-    def _mouse_select(self, event: Event):
+    def mouse_select(self, event: Event):
         self._mouse_x = event.x
         self._mouse_y = event.y
         if self._selected_image:
@@ -339,7 +312,7 @@ class UI:
                 image.selected = True
                 self._renderer.render_image_highlight(image)
 
-    def _scroll_to_start(self):
+    def scroll_to_start(self):
         if self._selected_image:
             return
 
@@ -347,7 +320,7 @@ class UI:
         self._model = self._create_overview_model()
         self._renderer.render(self._model)
 
-    def _scroll(self, event: Event):
+    def scroll(self, event: Event):
         if self._selected_image:
             return
 
@@ -359,7 +332,7 @@ class UI:
         self._model = self._create_overview_model()
         self._renderer.render(self._model)
 
-    def _zoom(self, event: Event):
+    def zoom(self, event: Event):
         if self._selected_image:
             return
 
@@ -368,18 +341,18 @@ class UI:
             self._image_size += zoom_speed
         elif event.num == 5:
             self._image_size = max(self._image_size - zoom_speed, 1)
-        self._image_provider.cancel()
+        self._image_loader.cancel()
         self._model = self._create_overview_model()
         self._renderer.render(self._model)
 
-    def _toggle_preview(self):
+    def toggle_preview(self):
         if self._selected_image:
             self._selected_image = None
         else:
             self._selected_image = self._model.find_selected_image()
-        self._initialize()
+        self.initialize()
 
-    def _initialize(self):
+    def initialize(self):
         if self._selected_image:
             self._detail_model = self._create_detail_model()
             self._renderer.render_detail_model(self._detail_model)
@@ -387,8 +360,8 @@ class UI:
             self._model = self._create_overview_model()
             self._renderer.render(self._model)
 
-    def _process_loaded_images(self, root):
-        loaded_images = self._image_provider.poll_loaded_images()
+    def process_loaded_images(self):
+        loaded_images = self._image_loader.poll_loaded_images()
         for loaded_image in loaded_images:
             if not self._model:
                 continue
@@ -396,8 +369,6 @@ class UI:
             overview_loaded_image = self._model.create_loaded_image(loaded_image)
             if overview_loaded_image:
                 self._renderer.render_loaded_image(overview_loaded_image)
-
-        root.after(50, self._process_loaded_images, root)
 
     def _create_overview_model(self) -> OverviewModel:
         margin = 5
@@ -433,7 +404,7 @@ class UI:
                 image_file=image_file,
                 image_dimensions=image_dimensions,
             )
-            loaded_image = self._image_provider.request_image(request)
+            loaded_image = self._image_loader.request_image(request)
             if loaded_image:
                 overview_image = OverviewLoadedImage(
                     image_file=image_file,
@@ -460,7 +431,7 @@ class UI:
         image_dimensions = ImageDimensions(
             size=min(self._canvas.winfo_width(), self._canvas.winfo_height())
         )
-        photo_image = self._image_provider.load_image(self._selected_image.image_file, image_dimensions)
+        photo_image = self._image_loader.load_image(self._selected_image.image_file, image_dimensions)
         return DetailModel(
             image_file=self._selected_image.image_file,
             image_dimensions=image_dimensions,
@@ -473,8 +444,42 @@ def main():
     if len(files) == 0:
         print("No images found")
         return
-    image_provider = ImageLoader()
-    UI(image_provider, files)
+
+    root = tk.Tk()
+    root.title("Blank Box")
+
+    canvas = tk.Canvas(root, bg="#00201e", highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    image_loader = ImageLoader()
+    renderer = Renderer(canvas)
+    ui = UI(image_loader, canvas, renderer, files)
+
+    canvas.bind("<Configure>", lambda e: ui.initialize())
+
+    canvas.bind('<Motion>', lambda e: ui.mouse_select(e))
+
+    canvas.bind("<MouseWheel>", lambda e: ui.scroll(e))  # Windows / macOS
+    canvas.bind("<Button-4>", lambda e: ui.scroll(e))
+    canvas.bind("<Button-5>", lambda e: ui.scroll(e))
+
+    root.bind('<Home>', lambda _: ui.scroll_to_start())
+
+    canvas.bind("<Control-MouseWheel>", lambda e: ui.zoom(e))
+    canvas.bind("<Control-Button-4>", lambda e: ui.zoom(e))
+    canvas.bind("<Control-Button-5>", lambda e: ui.zoom(e))
+
+    root.bind('<space>', lambda e: ui.toggle_preview())
+
+    root.bind('<Escape>', lambda e: root.quit())
+    root.bind('q', lambda e: root.quit())
+
+    def poll_loaded_images(_):
+        ui.process_loaded_images()
+        root.after(50, poll_loaded_images, root)
+
+    root.after_idle(poll_loaded_images, root)
+    root.mainloop()
 
 
 if __name__ == '__main__':
