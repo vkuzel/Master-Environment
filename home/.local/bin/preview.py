@@ -69,6 +69,27 @@ class ViewLoadedImage(ViewImage):
 class ViewModel:
     images: list[ViewImage]
 
+    def create_loaded_image(self, loaded_image: LoadedImage) -> Optional[ViewLoadedImage]:
+        # Loop in a loop can be optimized
+        for i in range(0, len(self.images)):
+            image = self.images[i]
+            if not isinstance(image, ViewRequestedImage):
+                continue
+            if not image.is_for_loaded_image(loaded_image):
+                continue
+
+            view_loaded_image = ViewLoadedImage(
+                image_file=image.image_file,
+                image_position=image.image_position,
+                image_dimensions=image.image_dimensions,
+                selected=image.selected,
+                photo_image=loaded_image.photo_image,
+            )
+            self.images[i] = view_loaded_image
+            return view_loaded_image
+        else:
+            return None
+
 
 class ImageFilesScanner:
     @staticmethod
@@ -318,21 +339,8 @@ class UI:
             if not self._model:
                 continue
 
-            for i in range(0, len(self._model.images)):
-                image = self._model.images[i]
-                if not isinstance(image, ViewRequestedImage):
-                    continue
-                if not image.is_for_loaded_image(loaded_image):
-                    continue
-
-                view_loaded_image = ViewLoadedImage(
-                    image_file=image.image_file,
-                    image_position=image.image_position,
-                    image_dimensions=image.image_dimensions,
-                    selected=image.selected,
-                    photo_image=loaded_image.photo_image,
-                )
-                self._model.images[i] = view_loaded_image
+            view_loaded_image = self._model.create_loaded_image(loaded_image)
+            if view_loaded_image:
                 self._renderer.render_loaded_image(view_loaded_image)
 
         root.after(50, self._process_loaded_images, root)
