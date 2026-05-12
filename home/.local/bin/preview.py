@@ -35,6 +35,28 @@ class ImagePosition:
     y: int
 
 
+@dataclass
+class ViewImage:
+    image_dimensions: ImageDimensions
+    image_position: ImagePosition
+    selected: bool
+
+
+@dataclass
+class ViewLoadedImage(ViewImage):
+    photo_image: PhotoImage
+
+
+@dataclass
+class ViewRequestedImage(ViewImage):
+    pass
+
+
+@dataclass(frozen=True)
+class ViewModel:
+    images: list[ViewImage]
+
+
 class ImageFilesScanner:
     @staticmethod
     def scan() -> list[ImageFile]:
@@ -83,7 +105,7 @@ class ImageLoader:
         self._clear_queue(self._in_queue)
         self._clear_queue(self._out_queue)
 
-    def poll_loaded_photo_images(self) -> list[LoadedImage]:
+    def poll_loaded_images(self) -> list[LoadedImage]:
         items = []
         while not self._out_queue.empty():
             try:
@@ -135,10 +157,72 @@ class ImageLoader:
                 self._out_queue.put(loaded_image)
 
 
+class Renderer:
+    def __init__(self, canvas: Canvas):
+        self._canvas = canvas
+
+        self._margin = 5
+
+    def render(self, view_model: ViewModel):
+        self._canvas.delete("all")
+
+        canvas_height = self._canvas.winfo_height()
+
+        for image in view_model.images:
+            if image.image_position.y + image.image_dimensions.size + 2 * self._margin < 0:
+                continue
+            if image.image_position.y > canvas_height:
+                continue
+
+            self._canvas.create_rectangle(
+                image.image_position.x + self._margin,
+                image.image_position.y + self._margin,
+                image.image_position.x + self._margin + image.image_dimensions.size,
+                image.image_position.y + self._margin + image.image_dimensions.size,
+                width=2,
+                fill="#01302f",
+            )
+
+            self._canvas.create_text(
+                image.image_position.x + self._margin + image.image_dimensions.size / 2,
+                image.image_position.y + self._margin + image.image_dimensions.size / 2,
+                text=image.image_dimensions.name,
+                anchor="center",
+                font=("Arial", 12),
+                fill="white",
+            )
+
+            if isinstance(image, ViewLoadedImage):
+                self.render_loaded_image(image)
+
+            self.render_image_highlight(image)
+
+    def render_loaded_image(self, image: ViewLoadedImage):
+        self._canvas.create_image(
+            image.image_position.x + self._margin,
+            image.image_position.y + self._margin,
+            image=image.photo_image,
+            anchor="nw"
+        )
+
+    def render_image_highlight(self, image: ViewImage):
+        outline = "white" if image.selected else "black"
+        self._canvas.create_rectangle(
+            image.image_position.x + self._margin,
+            image.image_position.y + self._margin,
+            image.image_position.x + self._margin + image.image_dimensions.size,
+            image.image_position.y + self._margin + image.image_dimensions.size,
+            width=2,
+            # fill="#01302f",
+            outline=outline,
+        )
+
+
 class UI:
     def __init__(self, image_provider: ImageLoader, image_files: list[ImageFile]):
         self._image_provider = image_provider
         self._image_files = image_files
+        self._renderer: Optional[Renderer] = None
 
         self._margin = 5
 
@@ -156,6 +240,8 @@ class UI:
         root.title("Blank Box")
 
         canvas = tk.Canvas(root, bg="#00201e", highlightthickness=0)
+        self._renderer = Renderer(canvas)
+
         canvas.pack(fill="both", expand=True)
         canvas.bind("<Configure>", lambda e: self._render(canvas))
 
@@ -180,12 +266,14 @@ class UI:
     def _mouse_move_render(self, event: Event, canvas: Canvas):
         self._mouse_x = event.x
         self._mouse_y = event.y
-        # TODO Define view-model to avoid re-rendering of the whole screen
-        self._render(canvas)
+        # TODO Avoid re-rendering of the whole model
+        model = self._create_view_model(canvas)
+        if self._renderer: self._renderer.render(model)
 
     def _scroll_start_render(self, canvas: Canvas):
         self._scroll_offset = 0
-        self._render(canvas)
+        model = self._create_view_model(canvas)
+        if self._renderer: self._renderer.render(model)
 
     def _scroll_render(self, event: Event, canvas: Canvas):
         scroll_speed = 75
@@ -193,7 +281,8 @@ class UI:
             self._scroll_offset += scroll_speed
         elif event.num == 5:
             self._scroll_offset -= scroll_speed
-        self._render(canvas)
+        model = self._create_view_model(canvas)
+        if self._renderer: self._renderer.render(model)
 
     def _zoom_render(self, event: Event, canvas: Canvas):
         zoom_speed = 10
@@ -202,11 +291,31 @@ class UI:
         elif event.num == 5:
             self._image_size = max(self._image_size - zoom_speed, 1)
         self._image_provider.cancel()
-        self._render(canvas)
+        model = self._create_view_model(canvas)
+        if self._renderer: self._renderer.render(model)
 
     def _render(self, canvas: Canvas):
+        model = self._create_view_model(canvas)
+        if self._renderer: self._renderer.render(model)
+
+    def _render_images(self, root, canvas: Canvas):
+        loaded_images = self._image_provider.poll_loaded_images()
+        for loaded_image in loaded_images:
+            # TODO Move this map-mapping into the loader
+            image_position = self._requested_image_positions[loaded_image.image_dimensions]
+            # TODO Update in model - don't recreate whole model every time
+            view_loaded_image = ViewLoadedImage(
+                image_dimensions=loaded_image.image_dimensions,
+                image_position=image_position,
+                selected=False,  # TODO Selection should be taken from the ViewModel
+                photo_image=loaded_image.photo_image,
+            )
+            self._renderer.render_loaded_image(view_loaded_image)
+
+        root.after(50, self._render_images, root, canvas)
+
+    def _create_view_model(self, canvas: Canvas) -> ViewModel:
         canvas_width = canvas.winfo_width()
-        canvas_height = canvas.winfo_height()
 
         if self._first_render:
             self._first_render = False
@@ -215,7 +324,7 @@ class UI:
             unused_margin = canvas_width - image_width * line_images_count
             self._image_size += floor(unused_margin / line_images_count)
 
-        canvas.delete("all")
+        view_images: list[ViewImage] = []
 
         x = 0
         y = self._scroll_offset
@@ -226,32 +335,6 @@ class UI:
                 x = 0
                 y += self._image_size + 2 * self._margin
 
-            if y > canvas_height:
-                break
-
-            outline = "black"
-            if x < self._mouse_x < x + self._image_size and y < self._mouse_y < y + self._image_size:
-                outline = "white"
-
-            canvas.create_rectangle(
-                x + self._margin,
-                y + self._margin,
-                x + self._margin + self._image_size,
-                y + self._margin + self._image_size,
-                width=2,
-                fill="#01302f",
-                outline=outline,
-            )
-
-            canvas.create_text(
-                x + self._margin + self._image_size / 2,
-                y + self._margin + self._image_size / 2,
-                text=image_file.name,
-                anchor="center",
-                font=("Arial", 12),
-                fill="white",
-            )
-
             image_dimensions = ImageDimensions(
                 name=image_file.name,
                 size=self._image_size,
@@ -261,32 +344,29 @@ class UI:
                 y=y,
             )
 
-            self._requested_image_positions[image_dimensions] = image_position
-            loaded_photo_image = self._image_provider.request_image(image_dimensions)
-            if loaded_photo_image:
-                self._render_loaded_photo_image(loaded_photo_image, canvas)
+            # TODO Move selection calculation elsewhere
+            selected = x < self._mouse_x < x + self._image_size and y < self._mouse_y < y + self._image_size
+
+            loaded_image = self._image_provider.request_image(image_dimensions)
+            if loaded_image:
+                view_image = ViewLoadedImage(
+                    image_dimensions=image_dimensions,
+                    image_position=image_position,
+                    selected=selected,
+                    photo_image=loaded_image.photo_image,
+                )
+            else:
+                self._requested_image_positions[image_dimensions] = image_position
+                view_image = ViewRequestedImage(
+                    image_dimensions=image_dimensions,
+                    image_position=image_position,
+                    selected=selected,
+                )
+            view_images.append(view_image)
 
             x += self._image_size + 2 * self._margin
 
-    def _render_images(self, root, canvas: Canvas):
-        loaded_photo_images = self._image_provider.poll_loaded_photo_images()
-        for loaded_photo_image in loaded_photo_images:
-            self._render_loaded_photo_image(loaded_photo_image, canvas)
-
-        root.after(50, self._render_images, root, canvas)
-
-    def _render_loaded_photo_image(self, loaded_photo_image: LoadedImage, canvas: Canvas):
-        image_dimensions = loaded_photo_image.image_dimensions
-        image_position = self._requested_image_positions[image_dimensions]
-        if not image_position:
-            raise Exception(f"No image position for: {image_dimensions}")
-
-        canvas.create_image(
-            image_position.x + self._margin,
-            image_position.y + self._margin,
-            image=loaded_photo_image.photo_image,
-            anchor="nw"
-        )
+        return ViewModel(view_images)
 
 
 def main():
