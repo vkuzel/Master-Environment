@@ -182,7 +182,7 @@ class ImageLoader:
     @staticmethod
     def load_image(image_file: ImageFile, image_dimensions: ImageDimensions) -> ImageTk.PhotoImage:
         image = Image.open(image_file.name)
-        image = image.resize((image_dimensions.size, image_dimensions.size), resample=Resampling.NEAREST,)
+        image = image.resize((image_dimensions.size, image_dimensions.size), resample=Resampling.NEAREST, )
         return ImageTk.PhotoImage(image)
 
     @staticmethod
@@ -374,9 +374,12 @@ class UI:
             self._renderer.render_overview(self._model)
 
     def process_loaded_images(self):
+        if self._selected_image:
+            return
+
         loaded_images = self._image_loader.poll_loaded_images()
         for loaded_image in loaded_images:
-            if not self._model:
+            if self._selected_image:
                 continue
 
             overview_loaded_image = self._model.create_loaded_image(loaded_image)
@@ -491,6 +494,7 @@ def main():
     def poll_loaded_images(_):
         ui.process_loaded_images()
         root.after(50, poll_loaded_images, root)
+
     root.after_idle(poll_loaded_images, root)
 
     root.mainloop()
