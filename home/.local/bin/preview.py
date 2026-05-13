@@ -527,8 +527,7 @@ class UI:
             unused_margin = canvas_width - image_width * line_images_count
             self._image_size += floor(unused_margin / line_images_count)
 
-
-        image_positions = []
+        meta_images: list[UI._MetaImage] = []
 
         x = 0
         y = self._scroll_offset
@@ -537,38 +536,40 @@ class UI:
                 x = 0
                 y += self._image_size + 2 * MARGIN
 
-            image_position = ImagePosition(
-                x=x,
-                y=y,
-            )
-            image_dimensions = ImageDimensions(
-                width=self._image_size,
-                height=self._image_size,
-            )
-            image_positions.append((image_file, image_position, image_dimensions))
+            meta_images.append(UI._MetaImage(
+                file=image_file,
+                position=ImagePosition(
+                    x=x,
+                    y=y,
+                ),
+                dimensions=ImageDimensions(
+                    width=self._image_size,
+                    height=self._image_size,
+                ),
+            ))
 
             x += self._image_size + 2 * MARGIN
 
         overview_images: list[OverviewImage] = []
-        for (image_file, image_position, image_dimensions) in image_positions:
+        for meta_image in meta_images:
             request = LoadImageRequest(
-                image_file=image_file,
-                image_dimensions=image_dimensions,
+                image_file=meta_image.file,
+                image_dimensions=meta_image.dimensions,
             )
             loaded_image = self._image_loader.request_image(request)
             if loaded_image:
                 overview_image = OverviewLoadedImage(
-                    image_file=image_file,
-                    image_position=image_position,
-                    image_dimensions=image_dimensions,
+                    image_file=meta_image.file,
+                    image_position=meta_image.position,
+                    image_dimensions=meta_image.dimensions,
                     selected=False,
                     photo_image=loaded_image.photo_image,
                 )
             else:
                 overview_image = OverviewRequestedImage(
-                    image_file=image_file,
-                    image_position=image_position,
-                    image_dimensions=image_dimensions,
+                    image_file=meta_image.file,
+                    image_position=meta_image.position,
+                    image_dimensions=meta_image.dimensions,
                     selected=False,
                 )
             overview_image.selected = overview_image.contains_point(self._mouse_x, self._mouse_y)
@@ -588,6 +589,12 @@ class UI:
             image_dimensions=image_dimensions,
             photo_image=photo_image,
         )
+
+    @dataclass(frozen=True)
+    class _MetaImage:
+        file: ImageFile
+        position: ImagePosition
+        dimensions: ImageDimensions
 
 
 def main():
