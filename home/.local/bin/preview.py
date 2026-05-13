@@ -15,6 +15,7 @@ from typing import Dict, Optional, Set, Tuple
 from PIL import Image, ImageTk
 from PIL.Image import Resampling
 from PIL.ImageTk import PhotoImage
+from uaclient.files import files
 
 MARGIN = 5
 
@@ -179,6 +180,8 @@ class ImageFilesScanner:
             if not file.is_file() or file.suffix.lower() not in image_suffixes:
                 continue
             image_files.append(ImageFile(file.name))
+
+        image_files.sort(key=lambda f: f.name)
 
         return image_files
 
