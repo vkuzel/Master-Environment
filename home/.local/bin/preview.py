@@ -220,6 +220,17 @@ class ImageLoader:
                 break
         return items
 
+    def get_low_quality_image(self, request: LoadImageRequest) -> Optional[LoadedImage]:
+        if request.image_file in self._loaded_images:
+            loaded_image = self._loaded_images[request.image_file]
+            image = self._resize_image(loaded_image.image, request.image_dimensions)
+            return LoadedImage(
+                request=request,
+                photo_image=ImageTk.PhotoImage(image),
+            )
+        else:
+            return None
+
     def cancel(self):
         self._requested_images = set()
         self._loaded_photo_images = {}
@@ -563,12 +574,15 @@ class UI:
         meta_images.sort(key=lambda mi: mi.distance_to(self._mouse_x, self._mouse_y))
 
         overview_images: list[OverviewImage] = []
-        for meta_image in meta_images:
+        for i, meta_image in enumerate(meta_images):
             request = LoadImageRequest(
                 image_file=meta_image.file,
                 image_dimensions=meta_image.dimensions,
             )
             loaded_image = self._image_loader.request_image(request)
+            if not loaded_image and i == 0:
+                loaded_image = self._image_loader.get_low_quality_image(request)
+
             if loaded_image:
                 overview_image = OverviewLoadedImage(
                     image_file=meta_image.file,
