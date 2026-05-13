@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-- TODO Title changes on selected image
 - TODO End, PageUp, PageDown shortcuts
 """
 import queue
@@ -356,9 +355,25 @@ class Renderer:
             anchor='nw',
         )
 
+class WindowManager:
+    def __init__(self, root: Tk):
+        self._root = root
+
+    def set_title(self, title: str):
+        self._root.title(f"Preview {title}")
+
+    def reset_title(self):
+        self._root.title(f"Preview {Path.cwd()}")
 
 class UI:
-    def __init__(self, image_loader: ImageLoader, renderer: Renderer, image_files: list[ImageFile]):
+    def __init__(
+            self,
+            window_manager: WindowManager,
+            image_loader: ImageLoader,
+            renderer: Renderer,
+            image_files: list[ImageFile]
+    ):
+        self._window_manager = window_manager
         self._image_loader = image_loader
         self._renderer = renderer
         self._image_files = image_files
@@ -495,10 +510,12 @@ class UI:
 
     def initialize(self):
         if self._selected_image:
+            self._window_manager.set_title(self._selected_image.image_file.name)
             detail_model = self._create_detail_model()
             self._detail_model = detail_model
             self._renderer.render_detail(detail_model)
         else:
+            self._window_manager.reset_title()
             self._model = self._create_overview_model()
             self._renderer.render_overview(self._model)
 
@@ -609,14 +626,13 @@ def main():
         return
 
     root = Tk()
-    root.title(f"Preview {Path.cwd()}")
-
     canvas = Canvas(root, bg="#00201e", highlightthickness=0)
     canvas.pack(fill="both", expand=True)
 
+    window_manager = WindowManager(root)
     image_loader = ImageLoader()
     renderer = Renderer(canvas)
-    ui = UI(image_loader, renderer, files)
+    ui = UI(window_manager, image_loader, renderer, files)
 
     canvas.bind("<Configure>", lambda e: ui.initialize())
 
