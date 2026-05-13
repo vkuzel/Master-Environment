@@ -19,6 +19,8 @@ from typing import Dict, Optional, Set, Tuple
 from PIL import Image, ImageTk
 from PIL.Image import Resampling
 
+MARGIN = 5
+
 
 @dataclass(frozen=True)
 class ImageFile:
@@ -287,8 +289,6 @@ class Renderer:
     def __init__(self, canvas: Canvas):
         self._canvas = canvas
 
-        self._margin = 5
-
     def viewport(self) -> Viewport:
         return Viewport(
             width=self._canvas.winfo_width(),
@@ -301,23 +301,23 @@ class Renderer:
         canvas_height = self._canvas.winfo_height()
 
         for image in overview_model.images:
-            if image.image_position.y + image.image_dimensions.height + 2 * self._margin < 0:
+            if image.image_position.y + image.image_dimensions.height + 2 * MARGIN < 0:
                 continue
             if image.image_position.y > canvas_height:
                 continue
 
             self._canvas.create_rectangle(
-                image.image_position.x + self._margin,
-                image.image_position.y + self._margin,
-                image.image_position.x + self._margin + image.image_dimensions.width,
-                image.image_position.y + self._margin + image.image_dimensions.height,
+                image.image_position.x + MARGIN,
+                image.image_position.y + MARGIN,
+                image.image_position.x + MARGIN + image.image_dimensions.width,
+                image.image_position.y + MARGIN + image.image_dimensions.height,
                 width=2,
                 fill="#01302f",
             )
 
             self._canvas.create_text(
-                image.image_position.x + self._margin + image.image_dimensions.width / 2,
-                image.image_position.y + self._margin + image.image_dimensions.height / 2,
+                image.image_position.x + MARGIN + image.image_dimensions.width / 2,
+                image.image_position.y + MARGIN + image.image_dimensions.height / 2,
                 text=image.image_file.name,
                 anchor="center",
                 font=("Arial", 12),
@@ -333,8 +333,8 @@ class Renderer:
         x_offset = int((image.image_dimensions.width - image.photo_image.width()) / 2)
         y_offset = int((image.image_dimensions.height - image.photo_image.height()) / 2)
         self._canvas.create_image(
-            image.image_position.x + self._margin + x_offset,
-            image.image_position.y + self._margin + y_offset,
+            image.image_position.x + MARGIN + x_offset,
+            image.image_position.y + MARGIN + y_offset,
             image=image.photo_image,
             anchor="nw"
         )
@@ -342,10 +342,10 @@ class Renderer:
     def render_overview_image_highlight(self, image: OverviewImage):
         outline = "white" if image.selected else "black"
         self._canvas.create_rectangle(
-            image.image_position.x + self._margin,
-            image.image_position.y + self._margin,
-            image.image_position.x + self._margin + image.image_dimensions.width,
-            image.image_position.y + self._margin + image.image_dimensions.height,
+            image.image_position.x + MARGIN,
+            image.image_position.y + MARGIN,
+            image.image_position.x + MARGIN + image.image_dimensions.width,
+            image.image_position.y + MARGIN + image.image_dimensions.height,
             width=2,
             outline=outline,
         )
@@ -513,12 +513,11 @@ class UI:
                 self._renderer.render_overview_image(overview_loaded_image)
 
     def _create_overview_model(self) -> OverviewModel:
-        margin = 5
         canvas_width = self._renderer.viewport().width
 
         if self._first_render:
             self._first_render = False
-            image_width = self._image_size + 2 * margin
+            image_width = self._image_size + 2 * MARGIN
             line_images_count = floor(canvas_width / image_width)
             unused_margin = canvas_width - image_width * line_images_count
             self._image_size += floor(unused_margin / line_images_count)
@@ -528,9 +527,9 @@ class UI:
         x = 0
         y = self._scroll_offset
         for image_file in self._image_files:
-            if (x + self._image_size + 2 * margin) > canvas_width:
+            if (x + self._image_size + 2 * MARGIN) > canvas_width:
                 x = 0
-                y += self._image_size + 2 * margin
+                y += self._image_size + 2 * MARGIN
 
             image_dimensions = ImageDimensions(
                 width=self._image_size,
@@ -564,7 +563,7 @@ class UI:
             overview_image.selected = overview_image.contains_point(self._mouse_x, self._mouse_y)
             overview_images.append(overview_image)
 
-            x += self._image_size + 2 * margin
+            x += self._image_size + 2 * MARGIN
 
         return OverviewModel(overview_images)
 
