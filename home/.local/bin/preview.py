@@ -9,13 +9,12 @@ from dataclasses import dataclass
 from math import floor
 from pathlib import Path
 from queue import Queue
-import tkinter as tk
 from tkinter import Canvas, Event, Tk
 from typing import Dict, Optional, Set, Tuple
 
 from PIL import Image, ImageTk
-from PIL.ImageTk import PhotoImage
 from PIL.Image import Resampling
+from PIL.ImageTk import PhotoImage
 
 MARGIN = 5
 
