@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 - TODO Title changes on selected image
-- TODO Image loading starts from selected image, and continues to closes images
 - TODO End, PageUp, PageDown shortcuts
 """
 import queue
@@ -550,6 +549,8 @@ class UI:
 
             x += self._image_size + 2 * MARGIN
 
+        meta_images.sort(key=lambda mi: mi.distance_to(self._mouse_x, self._mouse_y))
+
         overview_images: list[OverviewImage] = []
         for meta_image in meta_images:
             request = LoadImageRequest(
@@ -595,6 +596,11 @@ class UI:
         file: ImageFile
         position: ImagePosition
         dimensions: ImageDimensions
+
+        def distance_to(self, x: int, y: int) -> int:
+            center_x = int(self.position.x + self.dimensions.width / 2)
+            center_y = int(self.position.y + self.dimensions.height / 2)
+            return (x - center_x) ** 2 + (y - center_y) ** 2
 
 
 def main():
