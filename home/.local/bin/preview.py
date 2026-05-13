@@ -20,7 +20,8 @@ class ImageFile:
 
 @dataclass(frozen=True)
 class ImageDimensions:
-    size: int
+    width: int
+    height: int
 
 
 @dataclass(frozen=True)
@@ -56,7 +57,7 @@ class OverviewImage:
 
     def contains_point(self, x: int, y: int) -> bool:
         x1, y1 = self.image_position.x, self.image_position.y
-        x2, y2 = x1 + self.image_dimensions.size, y1 + self.image_dimensions.size
+        x2, y2 = x1 + self.image_dimensions.width, y1 + self.image_dimensions.height
         return x1 <= x <= x2 and y1 <= y <= y2
 
 
@@ -190,7 +191,7 @@ class ImageLoader:
 
     @staticmethod
     def _resize_image(image, image_dimensions: ImageDimensions):
-        scale = min(image_dimensions.size / image.width, image_dimensions.size / image.height)
+        scale = min(image_dimensions.width / image.width, image_dimensions.height / image.height)
         new_width = int(image.width * scale)
         new_height = int(image.height * scale)
         return image.resize((new_width, new_height), resample=Resampling.NEAREST)
@@ -249,7 +250,7 @@ class Renderer:
         canvas_height = self._canvas.winfo_height()
 
         for image in overview_model.images:
-            if image.image_position.y + image.image_dimensions.size + 2 * self._margin < 0:
+            if image.image_position.y + image.image_dimensions.height + 2 * self._margin < 0:
                 continue
             if image.image_position.y > canvas_height:
                 continue
@@ -257,15 +258,15 @@ class Renderer:
             self._canvas.create_rectangle(
                 image.image_position.x + self._margin,
                 image.image_position.y + self._margin,
-                image.image_position.x + self._margin + image.image_dimensions.size,
-                image.image_position.y + self._margin + image.image_dimensions.size,
+                image.image_position.x + self._margin + image.image_dimensions.width,
+                image.image_position.y + self._margin + image.image_dimensions.height,
                 width=2,
                 fill="#01302f",
             )
 
             self._canvas.create_text(
-                image.image_position.x + self._margin + image.image_dimensions.size / 2,
-                image.image_position.y + self._margin + image.image_dimensions.size / 2,
+                image.image_position.x + self._margin + image.image_dimensions.width / 2,
+                image.image_position.y + self._margin + image.image_dimensions.height / 2,
                 text=image.image_file.name,
                 anchor="center",
                 font=("Arial", 12),
@@ -278,8 +279,8 @@ class Renderer:
             self.render_overview_image_highlight(image)
 
     def render_overview_image(self, image: OverviewLoadedImage):
-        x_offset = int((image.image_dimensions.size - image.photo_image.width()) / 2)
-        y_offset = int((image.image_dimensions.size - image.photo_image.height()) / 2)
+        x_offset = int((image.image_dimensions.width - image.photo_image.width()) / 2)
+        y_offset = int((image.image_dimensions.height - image.photo_image.height()) / 2)
         self._canvas.create_image(
             image.image_position.x + self._margin + x_offset,
             image.image_position.y + self._margin + y_offset,
@@ -292,8 +293,8 @@ class Renderer:
         self._canvas.create_rectangle(
             image.image_position.x + self._margin,
             image.image_position.y + self._margin,
-            image.image_position.x + self._margin + image.image_dimensions.size,
-            image.image_position.y + self._margin + image.image_dimensions.size,
+            image.image_position.x + self._margin + image.image_dimensions.width,
+            image.image_position.y + self._margin + image.image_dimensions.height,
             width=2,
             outline=outline,
         )
@@ -493,7 +494,8 @@ class UI:
                 y += self._image_size + 2 * margin
 
             image_dimensions = ImageDimensions(
-                size=self._image_size,
+                width=self._image_size,
+                height=self._image_size,
             )
             image_position = ImagePosition(
                 x=x,
@@ -530,7 +532,8 @@ class UI:
     def _create_detail_model(self) -> DetailModel:
         viewport = self._renderer.viewport()
         image_dimensions = ImageDimensions(
-            size=min(viewport.width, viewport.height)
+            width=viewport.width,
+            height=viewport.height,
         )
         photo_image = self._image_loader.load_image(self._selected_image.image_file, image_dimensions)
         return DetailModel(
