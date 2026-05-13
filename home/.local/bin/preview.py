@@ -89,8 +89,7 @@ class OverviewModel:
 
     def create_loaded_image(self, loaded_image: LoadedImage) -> Optional[OverviewLoadedImage]:
         # Loop in a loop can be optimized
-        for i in range(0, len(self.images)):
-            image = self.images[i]
+        for i, image in enumerate(self.images):
             if not isinstance(image, OverviewRequestedImage):
                 continue
             if not image.is_for_loaded_image(loaded_image):
@@ -488,9 +487,7 @@ class UI:
 
         x = 0
         y = self._scroll_offset
-        for i in range(0, len(self._image_files)):
-            image_file = self._image_files[i]
-
+        for i, image_file in enumerate(self._image_files):
             if (x + self._image_size + 2 * margin) > canvas_width:
                 x = 0
                 y += self._image_size + 2 * margin
