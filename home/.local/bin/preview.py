@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-- TODO End, PageUp, PageDown shortcuts
+- TODO Don't allow to scroll past last image
 """
 import io
 import queue
@@ -441,6 +441,24 @@ class UI:
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
+    def scroll_page_up(self):
+        if self._selected_image:
+            return
+
+        viewport_height = self._renderer.viewport().height
+        self._scroll_offset += viewport_height
+        self._model = self._create_overview_model()
+        self._renderer.render_overview(self._model)
+
+    def scroll_page_down(self):
+        if self._selected_image:
+            return
+
+        viewport_height = self._renderer.viewport().height
+        self._scroll_offset -= viewport_height
+        self._model = self._create_overview_model()
+        self._renderer.render_overview(self._model)
+
     def scroll(self, event: Event):
         if self._selected_image:
             return
@@ -673,6 +691,8 @@ def main():
 
     root.bind('<Home>', lambda _: ui.scroll_to_start())
     root.bind('<End>', lambda _: ui.scroll_to_end())
+    root.bind('<Prior>', lambda _: ui.scroll_page_up())
+    root.bind('<Next>', lambda _: ui.scroll_page_down())
 
     root.bind('<Left>', lambda _: ui.select_previous())
     root.bind('<Right>', lambda _: ui.select_next())
