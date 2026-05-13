@@ -550,7 +550,7 @@ def main():
         return
 
     root = tk.Tk()
-    root.title("Blank Box")
+    root.title(f"Preview {Path.cwd()}")
 
     canvas = tk.Canvas(root, bg="#00201e", highlightthickness=0)
     canvas.pack(fill="both", expand=True)
