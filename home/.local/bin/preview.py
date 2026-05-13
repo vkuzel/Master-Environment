@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""
+- TODO Zoom centered on selected image
+- TODO Maximum zoom to window width
+- TODO Title changes on selected image
+- TODO Image loading starts from selected image, and continues to closes images
+- TODO End, PageUp, PageDown shortcuts
+"""
 import queue
 import threading
 import tkinter as tk
