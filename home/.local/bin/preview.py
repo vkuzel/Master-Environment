@@ -527,7 +527,7 @@ class UI:
 
         x = 0
         y = self._scroll_offset
-        for i, image_file in enumerate(self._image_files):
+        for image_file in self._image_files:
             if (x + self._image_size + 2 * margin) > canvas_width:
                 x = 0
                 y += self._image_size + 2 * margin
