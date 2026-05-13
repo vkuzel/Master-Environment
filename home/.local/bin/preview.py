@@ -7,7 +7,7 @@ from math import floor
 from pathlib import Path
 from queue import Queue
 from tkinter import Canvas, Event, PhotoImage
-from typing import Dict, Optional, Set
+from typing import Dict, Optional, Set, Tuple
 
 from PIL import Image, ImageTk
 from PIL.Image import Resampling
@@ -77,16 +77,60 @@ class OverviewLoadedImage(OverviewImage):
 class OverviewModel:
     images: list[OverviewImage]
 
-    def find_selected_image_index(self) -> Optional[int]:
+    def find_selected_image(self) -> Optional[OverviewImage]:
+        index = self._find_selected_image_index()
+        return self.images[index] if index is not None else None
+
+    def find_selected_image_and_previous(self) -> Tuple[Optional[OverviewImage], Optional[OverviewImage]]:
+        index = self._find_selected_image_index()
+        if index is None:
+            return None, None
+        elif index == 0:
+            return self.images[index], None
+        else:
+            return self.images[index], self.images[index - 1]
+
+    def find_selected_image_and_next(self) -> Tuple[Optional[OverviewImage], Optional[OverviewImage]]:
+        index = self._find_selected_image_index()
+        if index is None:
+            return None, None
+        elif index == len(self.images) - 1:
+            return self.images[index], None
+        else:
+            return self.images[index], self.images[index + 1]
+
+    def find_selected_image_and_above(self) -> Tuple[Optional[OverviewImage], Optional[OverviewImage]]:
+        index = self._find_selected_image_index()
+        if index is None:
+            return None, None
+
+        selected_image = self.images[index]
+        for index in range(index - 1, -1, -1):
+            image = self.images[index]
+            if image.image_position.x == selected_image.image_position.x:
+                return selected_image, image
+        else:
+            return selected_image, None
+
+    def find_selected_image_and_bellow(self) -> Tuple[Optional[OverviewImage], Optional[OverviewImage]]:
+        index = self._find_selected_image_index()
+        if index is None:
+            return None, None
+
+        selected_image = self.images[index]
+        for index in range(index + 1, len(self.images)):
+            image = self.images[index]
+            if image.image_position.x == selected_image.image_position.x:
+                return selected_image, image
+        else:
+            return selected_image, None
+
+    def _find_selected_image_index(self) -> Optional[int]:
         for i, image in enumerate(self.images):
             if image.selected:
                 return i
         else:
             return None
-
-    def find_selected_image(self) -> Optional[OverviewImage]:
-        index = self.find_selected_image_index()
-        return self.images[index] if index is not None else None
 
     def create_loaded_image(self, loaded_image: LoadedImage) -> Optional[OverviewLoadedImage]:
         # Loop in a loop can be optimized
@@ -375,74 +419,62 @@ class UI:
         self._renderer.render_overview(self._model)
 
     def select_previous(self):
-        index = self._model.find_selected_image_index()
-        if index is None or index == 0:
+        selected_image, previous_image = self._model.find_selected_image_and_previous()
+        if selected_image is None or previous_image is None:
             return
 
-        self._model.images[index].selected = False
-        self._model.images[index - 1].selected = True
+        selected_image.selected = False
+        previous_image.selected = True
 
         if self._selected_image:
-            self._selected_image = self._model.images[index - 1]
+            self._selected_image = previous_image
             self.initialize()
         else:
-            self._renderer.render_overview_image_highlight(self._model.images[index])
-            self._renderer.render_overview_image_highlight(self._model.images[index - 1])
+            self._renderer.render_overview_image_highlight(selected_image)
+            self._renderer.render_overview_image_highlight(previous_image)
 
     def select_next(self):
-        index = self._model.find_selected_image_index()
-        if index is None or index == len(self._model.images) - 1:
+        selected_image, next_image = self._model.find_selected_image_and_next()
+        if selected_image is None or next_image is None:
             return
 
-        self._model.images[index].selected = False
-        self._model.images[index + 1].selected = True
+        selected_image.selected = False
+        next_image.selected = True
 
         if self._selected_image:
-            self._selected_image = self._model.images[index + 1]
+            self._selected_image = next_image
             self.initialize()
         else:
-            self._renderer.render_overview_image_highlight(self._model.images[index])
-            self._renderer.render_overview_image_highlight(self._model.images[index + 1])
+            self._renderer.render_overview_image_highlight(selected_image)
+            self._renderer.render_overview_image_highlight(next_image)
 
     def select_above(self):
         if self._selected_image:
             return
 
-        index = self._model.find_selected_image_index()
-        if index is None:
+        selected_image, above_image = self._model.find_selected_image_and_above()
+        if selected_image is None or above_image is None:
             return
 
-        selected_image = self._model.images[index]
-        for i in range(index - 1, -1, -1):
-            image = self._model.images[i]
-            if image.image_position.x != selected_image.image_position.x:
-                continue
+        selected_image.selected = False
+        above_image.selected = True
 
-            selected_image.selected = False
-            self._renderer.render_overview_image_highlight(selected_image)
-            image.selected = True
-            self._renderer.render_overview_image_highlight(image)
-            break
+        self._renderer.render_overview_image_highlight(selected_image)
+        self._renderer.render_overview_image_highlight(above_image)
 
     def select_below(self):
         if self._selected_image:
             return
 
-        index = self._model.find_selected_image_index()
-        if index is None:
+        selected_image, bellow_image = self._model.find_selected_image_and_bellow()
+        if selected_image is None or bellow_image is None:
             return
 
-        selected_image = self._model.images[index]
-        for i in range(index + 1, len(self._model.images)):
-            image = self._model.images[i]
-            if image.image_position.x != selected_image.image_position.x:
-                continue
+        selected_image.selected = False
+        bellow_image.selected = True
 
-            selected_image.selected = False
-            self._renderer.render_overview_image_highlight(selected_image)
-            image.selected = True
-            self._renderer.render_overview_image_highlight(image)
-            break
+        self._renderer.render_overview_image_highlight(selected_image)
+        self._renderer.render_overview_image_highlight(bellow_image)
 
     def toggle_preview(self):
         if self._selected_image:
