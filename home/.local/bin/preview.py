@@ -2,16 +2,19 @@
 """
 - TODO End, PageUp, PageDown shortcuts
 """
+import io
 import queue
 import threading
 from dataclasses import dataclass
 from math import floor
 from pathlib import Path
 from queue import Queue
-from tkinter import Canvas, Event, Image, PhotoImage, Tk
+import tkinter as tk
+from tkinter import Canvas, Event, Tk
 from typing import Dict, Optional, Set, Tuple
 
 from PIL import Image, ImageTk
+from PIL.ImageTk import PhotoImage
 from PIL.Image import Resampling
 
 MARGIN = 5
@@ -208,10 +211,9 @@ class ImageLoader:
                 loaded_image = self._out_queue.get_nowait()
                 self._loaded_images[loaded_image.request.image_file] = loaded_image
 
-                photo_image = ImageTk.PhotoImage(loaded_image.image)
                 loaded_photo_image = LoadedImage(
                     request=loaded_image.request,
-                    photo_image=photo_image,
+                    photo_image=loaded_image.to_photo_image(),
                 )
                 self._loaded_photo_images[loaded_image.request] = loaded_photo_image
 
@@ -223,7 +225,11 @@ class ImageLoader:
     def get_low_quality_image(self, request: LoadImageRequest) -> Optional[LoadedImage]:
         if request.image_file in self._loaded_images:
             loaded_image = self._loaded_images[request.image_file]
-            image = self._resize_image(loaded_image.image, request.image_dimensions)
+
+            image = Image.open(io.BytesIO(loaded_image.image_data))
+            image.load()
+
+            image = self._resize_image(image, request.image_dimensions)
             return LoadedImage(
                 request=request,
                 photo_image=ImageTk.PhotoImage(image),
@@ -244,7 +250,7 @@ class ImageLoader:
         return ImageTk.PhotoImage(image)
 
     @staticmethod
-    def _resize_image(image, image_dimensions: ImageDimensions):
+    def _resize_image(image: Image.Image, image_dimensions: ImageDimensions) -> Image.Image:
         scale = min(image_dimensions.width / image.width, image_dimensions.height / image.height)
         new_width = int(image.width * scale)
         new_height = int(image.height * scale)
@@ -261,7 +267,10 @@ class ImageLoader:
     @dataclass(frozen=True)
     class _LoadedRawImage:
         request: LoadImageRequest
-        image: Image
+        image_data: bytes
+
+        def to_photo_image(self) -> ImageTk.PhotoImage:
+            return ImageTk.PhotoImage(data=self.image_data)
 
     class _Worker(threading.Thread):
         def __init__(self, in_queue: Queue[LoadImageRequest], out_queue: Queue['ImageLoader._LoadedRawImage']):
@@ -277,9 +286,13 @@ class ImageLoader:
                     image = Image.open(request.image_file.name)
                     image = ImageLoader._resize_image(image, request.image_dimensions)
 
+                    buf = io.BytesIO()
+                    buf.write(f"P6\n{image.width} {image.height}\n255\n".encode())
+                    buf.write(image.convert("RGB").tobytes())
+
                     loaded_image = ImageLoader._LoadedRawImage(
                         request=request,
-                        image=image,
+                        image_data=buf.getvalue(),
                     )
                     self._out_queue.put(loaded_image)
                 except:
