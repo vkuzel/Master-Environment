@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """
-- TODO Zoom centered on selected image
-- TODO Maximum zoom to window width
 - TODO Title changes on selected image
 - TODO Image loading starts from selected image, and continues to closes images
 - TODO End, PageUp, PageDown shortcuts
@@ -416,11 +414,17 @@ class UI:
         if self._selected_image:
             return
 
+        old_tile_size = self._image_size + 2 * MARGIN
+
         zoom_speed = 10
         if event.num == 4:
             self._image_size = min(self._image_size + zoom_speed, self._renderer.viewport().width - 2 * MARGIN)
         elif event.num == 5:
             self._image_size = max(self._image_size - zoom_speed, 1)
+
+        new_tile_size = self._image_size + 2 * MARGIN
+        content_y = self._mouse_y - self._scroll_offset
+        self._scroll_offset = round(self._mouse_y - content_y * new_tile_size / old_tile_size)
 
         self._image_loader.cancel()
         self._model = self._create_overview_model()
