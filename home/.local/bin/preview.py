@@ -5,12 +5,11 @@
 """
 import queue
 import threading
-import tkinter as tk
 from dataclasses import dataclass
 from math import floor
 from pathlib import Path
 from queue import Queue
-from tkinter import Canvas, Event, PhotoImage
+from tkinter import Canvas, Event, Image, PhotoImage, Tk
 from typing import Dict, Optional, Set, Tuple
 
 from PIL import Image, ImageTk
@@ -257,7 +256,7 @@ class ImageLoader:
     @dataclass(frozen=True)
     class _LoadedRawImage:
         request: LoadImageRequest
-        image: tk.Image
+        image: Image
 
     class _Worker(threading.Thread):
         def __init__(self, in_queue: Queue[LoadImageRequest], out_queue: Queue['ImageLoader._LoadedRawImage']):
@@ -609,10 +608,10 @@ def main():
         print("No images found")
         return
 
-    root = tk.Tk()
+    root = Tk()
     root.title(f"Preview {Path.cwd()}")
 
-    canvas = tk.Canvas(root, bg="#00201e", highlightthickness=0)
+    canvas = Canvas(root, bg="#00201e", highlightthickness=0)
     canvas.pack(fill="both", expand=True)
 
     image_loader = ImageLoader()
