@@ -361,6 +361,7 @@ class Renderer:
             anchor='nw',
         )
 
+
 class WindowManager:
     def __init__(self, root: Tk):
         self._root = root
@@ -370,6 +371,7 @@ class WindowManager:
 
     def reset_title(self):
         self._root.title(f"Preview {Path.cwd()}")
+
 
 class UI:
     def __init__(
