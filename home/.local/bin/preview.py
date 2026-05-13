@@ -430,6 +430,17 @@ class UI:
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
+    def scroll_to_end(self):
+        if self._selected_image:
+            return
+
+        viewport_height = self._renderer.viewport().height
+        last_index = len(self._model.images) - 1
+        images_height = self._calculate_image_position(last_index).y + self._image_size + 2 * MARGIN
+        self._scroll_offset = viewport_height - images_height
+        self._model = self._create_overview_model()
+        self._renderer.render_overview(self._model)
+
     def scroll(self, event: Event):
         if self._selected_image:
             return
@@ -661,6 +672,7 @@ def main():
     canvas.bind("<Control-Button-5>", lambda e: ui.zoom(e))
 
     root.bind('<Home>', lambda _: ui.scroll_to_start())
+    root.bind('<End>', lambda _: ui.scroll_to_end())
 
     root.bind('<Left>', lambda _: ui.select_previous())
     root.bind('<Right>', lambda _: ui.select_next())
