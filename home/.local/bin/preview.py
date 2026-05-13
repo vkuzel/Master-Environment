@@ -563,27 +563,19 @@ class UI:
             self._image_size += floor(unused_margin / line_images_count)
 
         meta_images: list[UI._MetaImage] = []
-
-        x = 0
-        y = self._scroll_offset
-        for image_file in self._image_files:
-            if (x + self._image_size + 2 * MARGIN) > canvas_width:
-                x = 0
-                y += self._image_size + 2 * MARGIN
-
+        for i, image_file in enumerate(self._image_files):
+            image_position = self._calculate_image_position(i)
             meta_images.append(UI._MetaImage(
                 file=image_file,
                 position=ImagePosition(
-                    x=x,
-                    y=y,
+                    x=image_position.x,
+                    y=image_position.y + self._scroll_offset,
                 ),
                 dimensions=ImageDimensions(
                     width=self._image_size,
                     height=self._image_size,
                 ),
             ))
-
-            x += self._image_size + 2 * MARGIN
 
         meta_images.sort(key=lambda mi: mi.distance_to(self._mouse_x, self._mouse_y))
 
@@ -616,6 +608,17 @@ class UI:
             overview_images.append(overview_image)
 
         return OverviewModel(overview_images)
+
+    def _calculate_image_position(self, index: int) -> ImagePosition:
+        canvas_width = self._renderer.viewport().width
+        image_width = self._image_size + 2 * MARGIN
+        image_height = self._image_size + 2 * MARGIN
+
+        columns = max(1, canvas_width // image_width)
+        return ImagePosition(
+            x=(index % columns) * image_width,
+            y=(index // columns) * image_height,
+        )
 
     def _create_detail_model(self) -> DetailModel:
         viewport = self._renderer.viewport()
