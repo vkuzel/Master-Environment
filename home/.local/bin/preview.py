@@ -527,7 +527,8 @@ class UI:
             unused_margin = canvas_width - image_width * line_images_count
             self._image_size += floor(unused_margin / line_images_count)
 
-        overview_images: list[OverviewImage] = []
+
+        image_positions = []
 
         x = 0
         y = self._scroll_offset
@@ -536,15 +537,20 @@ class UI:
                 x = 0
                 y += self._image_size + 2 * MARGIN
 
-            image_dimensions = ImageDimensions(
-                width=self._image_size,
-                height=self._image_size,
-            )
             image_position = ImagePosition(
                 x=x,
                 y=y,
             )
+            image_dimensions = ImageDimensions(
+                width=self._image_size,
+                height=self._image_size,
+            )
+            image_positions.append((image_file, image_position, image_dimensions))
 
+            x += self._image_size + 2 * MARGIN
+
+        overview_images: list[OverviewImage] = []
+        for (image_file, image_position, image_dimensions) in image_positions:
             request = LoadImageRequest(
                 image_file=image_file,
                 image_dimensions=image_dimensions,
@@ -567,8 +573,6 @@ class UI:
                 )
             overview_image.selected = overview_image.contains_point(self._mouse_x, self._mouse_y)
             overview_images.append(overview_image)
-
-            x += self._image_size + 2 * MARGIN
 
         return OverviewModel(overview_images)
 
