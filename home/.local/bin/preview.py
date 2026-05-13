@@ -398,7 +398,6 @@ class UI:
         self._renderer = renderer
         self._image_files = image_files
 
-        self._first_render = True
         self._scroll_offset = 0
         self._image_size = 100
 
@@ -553,15 +552,6 @@ class UI:
                 self._renderer.render_overview_image(overview_loaded_image)
 
     def _create_overview_model(self) -> OverviewModel:
-        canvas_width = self._renderer.viewport().width
-
-        if self._first_render:
-            self._first_render = False
-            image_width = self._image_size + 2 * MARGIN
-            line_images_count = floor(canvas_width / image_width)
-            unused_margin = canvas_width - image_width * line_images_count
-            self._image_size += floor(unused_margin / line_images_count)
-
         meta_images: list[UI._MetaImage] = []
         for i, image_file in enumerate(self._image_files):
             image_position = self._calculate_image_position(i)
