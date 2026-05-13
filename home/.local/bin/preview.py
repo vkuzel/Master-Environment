@@ -188,16 +188,12 @@ class ImageLoader:
         ImageLoader._Worker(self._in_queue, self._out_queue).start()
 
         self._requested_images: Set[LoadImageRequest] = set()
-        self._loaded_images: Dict[LoadImageRequest, ImageLoader._LoadedRawImage] = {}
+        self._loaded_images: Dict[ImageFile, ImageLoader._LoadedRawImage] = {}
         self._loaded_photo_images: Dict[LoadImageRequest, LoadedImage] = {}
 
     def request_image(self, request: LoadImageRequest) -> Optional[LoadedImage]:
         if request in self._loaded_photo_images:
             return self._loaded_photo_images[request]
-        elif request in self._loaded_images:
-            loaded_image = self._loaded_images[request]
-            self._out_queue.put(loaded_image)
-            return None
         elif request not in self._requested_images:
             self._requested_images.add(request)
             self._in_queue.put(request)
@@ -210,7 +206,7 @@ class ImageLoader:
         while not self._out_queue.empty():
             try:
                 loaded_image = self._out_queue.get_nowait()
-                self._loaded_images[loaded_image.request] = loaded_image
+                self._loaded_images[loaded_image.request.image_file] = loaded_image
 
                 photo_image = ImageTk.PhotoImage(loaded_image.image)
                 loaded_photo_image = LoadedImage(
@@ -226,7 +222,6 @@ class ImageLoader:
 
     def cancel(self):
         self._requested_images = set()
-        self._loaded_images = {}
         self._loaded_photo_images = {}
         self._clear_queue(self._in_queue)
         self._clear_queue(self._out_queue)
