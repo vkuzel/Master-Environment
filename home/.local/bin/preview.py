@@ -628,25 +628,15 @@ class UI:
         self._overview_model.set_scroll_offset(self._scroll_offset)
         self._renderer.render_overview(self._overview_model)
 
-    def scroll_page_up(self):
+    def scroll_page(self, up: bool):
         if self._selected_image:
             return
 
         viewport_height = self._renderer.viewport().height
-        new_offset = min(self._scroll_offset + viewport_height, self._min_scroll_offset)
-        if self._scroll_offset == new_offset:
-            return
-
-        self._scroll_offset = new_offset
-        self._overview_model.set_scroll_offset(self._scroll_offset)
-        self._renderer.render_overview(self._overview_model)
-
-    def scroll_page_down(self):
-        if self._selected_image:
-            return
-
-        viewport_height = self._renderer.viewport().height
-        new_offset = max(self._scroll_offset - viewport_height, self._max_scroll_offset)
+        if up:
+            new_offset = min(self._scroll_offset + viewport_height, self._min_scroll_offset)
+        else:
+            new_offset = max(self._scroll_offset - viewport_height, self._max_scroll_offset)
         if self._scroll_offset == new_offset:
             return
 
@@ -853,8 +843,8 @@ def main():
 
     root.bind('<Home>', lambda _: ui.scroll_to_start())
     root.bind('<End>', lambda _: ui.scroll_to_end())
-    root.bind('<Prior>', lambda _: ui.scroll_page_up())
-    root.bind('<Next>', lambda _: ui.scroll_page_down())
+    root.bind('<Prior>', lambda _: ui.scroll_page(True))
+    root.bind('<Next>', lambda _: ui.scroll_page(False))
 
     root.bind('<Left>', lambda _: ui.select_previous())
     root.bind('<Right>', lambda _: ui.select_next())
