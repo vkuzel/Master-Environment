@@ -636,6 +636,21 @@ class UI:
         self._renderer.render_overview(self._overview_model)
         self._set_window_title()
 
+    def toggle_stretch_to_viewport(self):
+        if self._is_detail_mode:
+            return
+
+        max_image_size = self._renderer.viewport().width - 2 * OverviewModel.MARGIN
+        if self._overview_model.image_size == max_image_size:
+            image_size = min(self._START_IMAGE_SIZE, max_image_size)
+        else:
+            image_size = max_image_size
+
+        self._image_loader.cancel()
+        self._overview_model.set_image_size(image_size, self._mouse_position, self._image_loader)
+        self._renderer.render_overview(self._overview_model)
+        self._set_window_title()
+
     def scroll_to(self, event: Event):
         if self._is_detail_mode:
             return
@@ -852,6 +867,8 @@ def main():
 
     canvas.bind("<Control-Button-4>", lambda e: ui.mouse_zoom(e))
     canvas.bind("<Control-Button-5>", lambda e: ui.mouse_zoom(e))
+
+    root.bind('f', lambda _: ui.toggle_stretch_to_viewport())
 
     root.bind('<Home>', lambda e: ui.scroll_to(e))
     root.bind('<End>', lambda e: ui.scroll_to(e))
