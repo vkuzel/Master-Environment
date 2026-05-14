@@ -515,8 +515,7 @@ class UI:
 
         self._mouse_position = Position(0, 0)
 
-        # TODO Rename to self._overview_model
-        self._model = self._create_overview_model()
+        self._overview_model = self._create_overview_model()
         self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
 
@@ -531,7 +530,7 @@ class UI:
     @property
     def _max_scroll_offset(self) -> int:
         viewport_height = self._renderer.viewport().height
-        last_index = len(self._model.images) - 1
+        last_index = len(self._overview_model.images) - 1
         images_height = self._calculate_image_position(last_index).y + self._image_outer_size
         return viewport_height - images_height
 
@@ -541,7 +540,7 @@ class UI:
         if self._selected_image:
             return
 
-        for image in self._model.images:
+        for image in self._overview_model.images:
             if image.selected and not image.contains_position(self._mouse_position):
                 image.selected = False
                 self._renderer.render_overview_image_highlight(image)
@@ -558,8 +557,8 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model.set_scroll_offset(self._scroll_offset)
-        self._renderer.render_overview(self._model)
+        self._overview_model.set_scroll_offset(self._scroll_offset)
+        self._renderer.render_overview(self._overview_model)
 
     def scroll_to_end(self):
         if self._selected_image:
@@ -570,8 +569,8 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model.set_scroll_offset(self._scroll_offset)
-        self._renderer.render_overview(self._model)
+        self._overview_model.set_scroll_offset(self._scroll_offset)
+        self._renderer.render_overview(self._overview_model)
 
     def scroll_page_up(self):
         if self._selected_image:
@@ -583,8 +582,8 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model.set_scroll_offset(self._scroll_offset)
-        self._renderer.render_overview(self._model)
+        self._overview_model.set_scroll_offset(self._scroll_offset)
+        self._renderer.render_overview(self._overview_model)
 
     def scroll_page_down(self):
         if self._selected_image:
@@ -596,8 +595,8 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model.set_scroll_offset(self._scroll_offset)
-        self._renderer.render_overview(self._model)
+        self._overview_model.set_scroll_offset(self._scroll_offset)
+        self._renderer.render_overview(self._overview_model)
 
     def scroll(self, event: Event):
         if self._selected_image:
@@ -614,8 +613,8 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model.set_scroll_offset(self._scroll_offset)
-        self._renderer.render_overview(self._model)
+        self._overview_model.set_scroll_offset(self._scroll_offset)
+        self._renderer.render_overview(self._overview_model)
 
     def zoom(self, event: Event):
         if self._selected_image:
@@ -638,12 +637,12 @@ class UI:
         self._scroll_offset = round(self._mouse_position.y - content_y * new_tile_size / old_tile_size)
 
         self._image_loader.cancel()
-        self._model.set_image_size(self._image_size, self._scroll_offset)
-        self._model = self._create_overview_model()
-        self._renderer.render_overview(self._model)
+        self._overview_model.set_image_size(self._image_size, self._scroll_offset)
+        self._overview_model = self._create_overview_model()
+        self._renderer.render_overview(self._overview_model)
 
     def select_previous(self):
-        selected_image, previous_image = self._model.find_selected_image_and_previous()
+        selected_image, previous_image = self._overview_model.find_selected_image_and_previous()
         if selected_image is None or previous_image is None:
             return
 
@@ -659,7 +658,7 @@ class UI:
             self._renderer.render_overview_image_highlight(previous_image)
 
     def select_next(self):
-        selected_image, next_image = self._model.find_selected_image_and_next()
+        selected_image, next_image = self._overview_model.find_selected_image_and_next()
         if selected_image is None or next_image is None:
             return
 
@@ -678,7 +677,7 @@ class UI:
         if self._selected_image:
             return
 
-        selected_image, above_image = self._model.find_selected_image_and_above()
+        selected_image, above_image = self._overview_model.find_selected_image_and_above()
         if selected_image is None or above_image is None:
             return
 
@@ -692,7 +691,7 @@ class UI:
         if self._selected_image:
             return
 
-        selected_image, bellow_image = self._model.find_selected_image_and_bellow()
+        selected_image, bellow_image = self._overview_model.find_selected_image_and_bellow()
         if selected_image is None or bellow_image is None:
             return
 
@@ -705,9 +704,9 @@ class UI:
     def toggle_preview(self):
         if self._selected_image:
             self._selected_image = None
-            self._renderer.render_overview(self._model)
+            self._renderer.render_overview(self._overview_model)
         else:
-            self._selected_image = self._model.find_selected_image()
+            self._selected_image = self._overview_model.find_selected_image()
             self._detail_model = self._create_detail_model()
             self._renderer.render_detail(self._detail_model)
 
@@ -719,8 +718,8 @@ class UI:
             self._renderer.render_detail(detail_model)
         else:
             self._window_manager.reset_title()
-            self._model.set_viewport(self._renderer.viewport())
-            self._renderer.render_overview(self._model)
+            self._overview_model.set_viewport(self._renderer.viewport())
+            self._renderer.render_overview(self._overview_model)
 
     def process_loaded_images(self):
         if self._selected_image:
@@ -731,7 +730,7 @@ class UI:
             if self._selected_image:
                 continue
 
-            overview_loaded_image = self._model.create_loaded_image(loaded_image)
+            overview_loaded_image = self._overview_model.create_loaded_image(loaded_image)
             if overview_loaded_image:
                 self._renderer.render_overview_image(overview_loaded_image)
 
