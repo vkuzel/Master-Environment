@@ -708,9 +708,11 @@ class UI:
     def toggle_preview(self):
         if self._selected_image:
             self._selected_image = None
+            self._renderer.render_overview(self._model)
         else:
             self._selected_image = self._model.find_selected_image()
-        self.initialize()
+            self._detail_model = self._create_detail_model()
+            self._renderer.render_detail(self._detail_model)
 
     def initialize(self):
         if self._selected_image:
