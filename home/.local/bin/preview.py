@@ -599,21 +599,6 @@ class UI:
                 self._renderer.render_overview_image_highlight(image)
         self._set_window_title()
 
-    def scroll_to(self, start: bool):
-        if self._is_detail_mode:
-            return
-
-        if start:
-            new_offset = self._overview_model.min_scroll_offset
-        else:
-            new_offset = self._overview_model.max_scroll_offset
-
-        if self._overview_model.scroll_offset == new_offset:
-            return
-
-        self._overview_model.set_scroll_offset(new_offset)
-        self._renderer.render_overview(self._overview_model)
-
     def mouse_scroll(self, event: Event):
         if self._is_detail_mode:
             return
@@ -654,6 +639,21 @@ class UI:
         self._overview_model.set_image_size(new_image_size, self._mouse_position, self._image_loader)
         self._renderer.render_overview(self._overview_model)
         self._set_window_title()
+
+    def scroll_to(self, start: bool):
+        if self._is_detail_mode:
+            return
+
+        if start:
+            new_offset = self._overview_model.min_scroll_offset
+        else:
+            new_offset = self._overview_model.max_scroll_offset
+
+        if self._overview_model.scroll_offset == new_offset:
+            return
+
+        self._overview_model.set_scroll_offset(new_offset)
+        self._renderer.render_overview(self._overview_model)
 
     def scroll_page(self, up: bool):
         if self._is_detail_mode:
