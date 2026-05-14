@@ -587,14 +587,17 @@ class UI:
 
         self._mouse_position = Position(0, 0)
 
-        self._overview_model = self._create_overview_model(image_files)
-        self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
+        self._overview_model = self._create_overview_model(image_files)
+
+    @property
+    def _is_detail_mode(self) -> bool:
+        return self._detail_model is not None
 
     def mouse_select(self, event: Event):
         self._mouse_position.x = event.x
         self._mouse_position.y = event.y
-        if self._selected_image:
+        if self._is_detail_mode:
             return
 
         for image in self._overview_model.images:
@@ -606,7 +609,7 @@ class UI:
                 self._renderer.render_overview_image_highlight(image)
 
     def scroll_to(self, start: bool):
-        if self._selected_image:
+        if self._is_detail_mode:
             return
 
         if start:
@@ -621,7 +624,7 @@ class UI:
         self._renderer.render_overview(self._overview_model)
 
     def mouse_scroll(self, event: Event):
-        if self._selected_image:
+        if self._is_detail_mode:
             return
 
         if event.num == 4:
@@ -640,7 +643,7 @@ class UI:
         self._renderer.render_overview(self._overview_model)
 
     def mouse_zoom(self, event: Event):
-        if self._selected_image:
+        if self._is_detail_mode:
             return
 
         if event.num == 4:
@@ -660,7 +663,7 @@ class UI:
         self._renderer.render_overview(self._overview_model)
 
     def scroll_page(self, up: bool):
-        if self._selected_image:
+        if self._is_detail_mode:
             return
 
         viewport_height = self._renderer.viewport().height
@@ -685,9 +688,8 @@ class UI:
         selected_image.selected = False
         previous_image.selected = True
 
-        if self._selected_image:
-            self._selected_image = previous_image
-            self._detail_model = self._create_detail_model(self._selected_image)
+        if self._is_detail_mode:
+            self._detail_model = self._create_detail_model(previous_image)
             self._renderer.render_detail(self._detail_model)
         else:
             self._renderer.render_overview_image_highlight(selected_image)
@@ -701,16 +703,15 @@ class UI:
         selected_image.selected = False
         next_image.selected = True
 
-        if self._selected_image:
-            self._selected_image = next_image
-            self._detail_model = self._create_detail_model(self._selected_image)
+        if self._is_detail_mode:
+            self._detail_model = self._create_detail_model(next_image)
             self._renderer.render_detail(self._detail_model)
         else:
             self._renderer.render_overview_image_highlight(selected_image)
             self._renderer.render_overview_image_highlight(next_image)
 
     def select_above(self):
-        if self._selected_image:
+        if self._is_detail_mode:
             return
 
         selected_image, above_image = self._overview_model.find_selected_image_and_above()
@@ -724,7 +725,7 @@ class UI:
         self._renderer.render_overview_image_highlight(above_image)
 
     def select_below(self):
-        if self._selected_image:
+        if self._is_detail_mode:
             return
 
         selected_image, bellow_image = self._overview_model.find_selected_image_and_bellow()
@@ -738,32 +739,32 @@ class UI:
         self._renderer.render_overview_image_highlight(bellow_image)
 
     def toggle_preview(self):
-        if self._selected_image:
-            self._selected_image = None
+        if self._is_detail_mode:
+            self._detail_model = None
             self._renderer.render_overview(self._overview_model)
         else:
-            self._selected_image = self._overview_model.find_selected_image()
-            self._detail_model = self._create_detail_model(self._selected_image)
+            selected_image = self._overview_model.find_selected_image()
+            self._detail_model = self._create_detail_model(selected_image)
             self._renderer.render_detail(self._detail_model)
 
     def initialize(self):
-        if self._selected_image:
-            self._window_manager.set_title(self._selected_image.image_file.name)
-            detail_model = self._create_detail_model(self._selected_image)
-            self._detail_model = detail_model
-            self._renderer.render_detail(detail_model)
+        if self._is_detail_mode:
+            self._window_manager.set_title(self._detail_model.image_file.name)
+            selected_image = self._overview_model.find_selected_image()
+            self._detail_model = self._create_detail_model(selected_image)
+            self._renderer.render_detail(self._detail_model)
         else:
             self._window_manager.reset_title()
             self._overview_model.set_viewport(self._renderer.viewport())
             self._renderer.render_overview(self._overview_model)
 
     def process_loaded_images(self):
-        if self._selected_image:
+        if self._is_detail_mode:
             return
 
         loaded_images = self._image_loader.poll_loaded_images()
         for loaded_image in loaded_images:
-            if self._selected_image:
+            if self._is_detail_mode:
                 continue
 
             overview_loaded_image = self._overview_model.create_loaded_image(loaded_image)
