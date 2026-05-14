@@ -633,7 +633,7 @@ class UI:
             return
 
         viewport_height = self._renderer.viewport().height
-        new_offset = min(self._scroll_offset + viewport_height, self._max_scroll_offset)
+        new_offset = min(self._scroll_offset + viewport_height, self._min_scroll_offset)
         if self._scroll_offset == new_offset:
             return
 
@@ -646,7 +646,7 @@ class UI:
             return
 
         viewport_height = self._renderer.viewport().height
-        new_offset = max(self._scroll_offset - viewport_height, self._min_scroll_offset)
+        new_offset = max(self._scroll_offset - viewport_height, self._max_scroll_offset)
         if self._scroll_offset == new_offset:
             return
 
