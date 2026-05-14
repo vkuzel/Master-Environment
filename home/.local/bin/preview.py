@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+"""
+- Application operates in two modes:
+1. Overview - of all images in the directory.
+2. Detail - of a selected image (space)
+- UI - orchestration logic
+- OverviewModel / DetailModel - mutable application state
+- ImageLoader - loads and resizes images in a worker thread (for the most cases) to prevent blocking UI
+- Renderer - draws Ui and images onto the screen
+"""
 import io
 import queue
 import threading
