@@ -555,6 +555,7 @@ class WindowManager:
 
 
 class UI:
+    _START_SCROLL_OFFSET = 0
     _START_IMAGE_SIZE = 100
 
     _MOUSE_SCROLL_SPEED = 75
@@ -571,8 +572,6 @@ class UI:
         self._image_loader = image_loader
         self._renderer = renderer
         self._image_files = image_files
-
-        self._scroll_offset = 0
 
         self._mouse_position = Position(0, 0)
 
@@ -614,11 +613,10 @@ class UI:
         else:
             new_offset = self._max_scroll_offset
 
-        if self._scroll_offset == new_offset:
+        if self._overview_model.scroll_offset == new_offset:
             return
 
-        self._scroll_offset = new_offset
-        self._overview_model.set_scroll_offset(self._scroll_offset)
+        self._overview_model.set_scroll_offset(new_offset)
         self._renderer.render_overview(self._overview_model)
 
     def mouse_scroll(self, event: Event):
@@ -626,17 +624,16 @@ class UI:
             return
 
         if event.num == 4:
-            new_offset = min(self._scroll_offset + self._MOUSE_SCROLL_SPEED, self._min_scroll_offset)
+            new_offset = min(self._overview_model.scroll_offset + self._MOUSE_SCROLL_SPEED, self._min_scroll_offset)
         elif event.num == 5:
-            new_offset = max(self._scroll_offset - self._MOUSE_SCROLL_SPEED, self._max_scroll_offset)
+            new_offset = max(self._overview_model.scroll_offset - self._MOUSE_SCROLL_SPEED, self._max_scroll_offset)
         else:
             return
 
-        if self._scroll_offset == new_offset:
+        if self._overview_model.scroll_offset == new_offset:
             return
 
-        self._scroll_offset = new_offset
-        self._overview_model.set_scroll_offset(self._scroll_offset)
+        self._overview_model.set_scroll_offset(new_offset)
         self._renderer.render_overview(self._overview_model)
 
     def mouse_zoom(self, event: Event):
@@ -665,14 +662,14 @@ class UI:
 
         viewport_height = self._renderer.viewport().height
         if up:
-            new_offset = min(self._scroll_offset + viewport_height, self._min_scroll_offset)
+            new_offset = min(self._overview_model.scroll_offset + viewport_height, self._min_scroll_offset)
         else:
-            new_offset = max(self._scroll_offset - viewport_height, self._max_scroll_offset)
-        if self._scroll_offset == new_offset:
+            new_offset = max(self._overview_model.scroll_offset - viewport_height, self._max_scroll_offset)
+
+        if self._overview_model.scroll_offset == new_offset:
             return
 
-        self._scroll_offset = new_offset
-        self._overview_model.set_scroll_offset(self._scroll_offset)
+        self._overview_model.set_scroll_offset(new_offset)
         self._renderer.render_overview(self._overview_model)
 
     def select_previous(self):
@@ -778,7 +775,7 @@ class UI:
             )
             image_placeholder = OverviewRequestedImage(
                 image_file=image_file,
-                position=image_position.with_scroll_offset(self._scroll_offset),
+                position=image_position.with_scroll_offset(self._START_SCROLL_OFFSET),
                 inner_dimensions=Dimensions.for_size(self._START_IMAGE_SIZE),
                 margin=OverviewModel.MARGIN,
                 selected=False
@@ -788,7 +785,7 @@ class UI:
 
         model = OverviewModel(
             viewport=self._renderer.viewport(),
-            scroll_offset=self._scroll_offset,
+            scroll_offset=self._START_SCROLL_OFFSET,
             image_size=self._START_IMAGE_SIZE,
             images=image_placeholders,
         )
