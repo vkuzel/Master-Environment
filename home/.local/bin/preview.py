@@ -150,17 +150,32 @@ class OverviewRequestedImage(OverviewImage):
         )
 
 
-@dataclass(frozen=True)
+@dataclass
 class OverviewModel:
+    viewport: Viewport
+    scroll_offset: int
+    image_size: int
     images: list[OverviewImage]
 
-    def set_scroll_offset(self, scroll_offset: int, viewport: Viewport, image_outer_size: int):
+    def set_viewport(self, viewport: Viewport):
+        self.viewport = viewport
+        # TODO Add logic
+
+    def set_scroll_offset(self, scroll_offset: int):
+        self.scroll_offset = scroll_offset
         for i, image in enumerate(self.images):
-            image_position = OverviewModel.calculate_image_position(i, viewport, image_outer_size)
+            image_outer_size = image.outer_rect.dimensions.width
+            image_position = OverviewModel.calculate_image_position(i, self.viewport, image_outer_size)
             image.position = Position(
                 x=image_position.x,
-                y=image_position.y + scroll_offset,
+                y=image_position.y + self.scroll_offset,
             )
+
+    # TODO scroll_offset adjustment should be performed inside this method, not externally
+    def set_image_size(self, image_size: int, scroll_offset: int):
+        self.image_size = image_size
+        self.scroll_offset = scroll_offset
+        # TODO Add logic
 
     @staticmethod
     def calculate_image_position(index: int, viewport: Viewport, image_outer_size: int) -> Position:
@@ -500,7 +515,13 @@ class UI:
 
         self._mouse_position = Position(0, 0)
 
-        self._model = OverviewModel([])
+        # TODO Rename to self._overview_model
+        self._model = OverviewModel(
+            viewport=self._renderer.viewport(),
+            scroll_offset=self._scroll_offset,
+            image_size=self._image_size,
+            images=[],
+        )
         self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
 
@@ -542,7 +563,7 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model.set_scroll_offset(self._scroll_offset, self._renderer.viewport(), self._image_outer_size)
+        self._model.set_scroll_offset(self._scroll_offset)
         self._renderer.render_overview(self._model)
 
     def scroll_to_end(self):
@@ -554,7 +575,7 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model.set_scroll_offset(self._scroll_offset, self._renderer.viewport(), self._image_outer_size)
+        self._model.set_scroll_offset(self._scroll_offset)
         self._renderer.render_overview(self._model)
 
     def scroll_page_up(self):
@@ -567,7 +588,7 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model.set_scroll_offset(self._scroll_offset, self._renderer.viewport(), self._image_outer_size)
+        self._model.set_scroll_offset(self._scroll_offset)
         self._renderer.render_overview(self._model)
 
     def scroll_page_down(self):
@@ -580,7 +601,7 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model.set_scroll_offset(self._scroll_offset, self._renderer.viewport(), self._image_outer_size)
+        self._model.set_scroll_offset(self._scroll_offset)
         self._renderer.render_overview(self._model)
 
     def scroll(self, event: Event):
@@ -598,7 +619,7 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model.set_scroll_offset(self._scroll_offset, self._renderer.viewport(), self._image_outer_size)
+        self._model.set_scroll_offset(self._scroll_offset)
         self._renderer.render_overview(self._model)
 
     def zoom(self, event: Event):
@@ -622,6 +643,7 @@ class UI:
         self._scroll_offset = round(self._mouse_position.y - content_y * new_tile_size / old_tile_size)
 
         self._image_loader.cancel()
+        self._model.set_image_size(self._image_size, self._scroll_offset)
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
@@ -698,6 +720,7 @@ class UI:
             self._renderer.render_detail(detail_model)
         else:
             self._window_manager.reset_title()
+            self._model.set_viewport(self._renderer.viewport())
             self._model = self._create_overview_model()
             self._renderer.render_overview(self._model)
 
@@ -768,7 +791,12 @@ class UI:
             overview_image.selected = overview_image.contains_position(self._mouse_position)
             overview_images.append(overview_image)
 
-        return OverviewModel(overview_images)
+        return OverviewModel(
+            viewport=self._renderer.viewport(),
+            scroll_offset=self._scroll_offset,
+            image_size=self._image_size,
+            images=overview_images
+        )
 
     def _calculate_image_position(self, index: int) -> Position:
         return OverviewModel.calculate_image_position(index, self._renderer.viewport(), self._image_outer_size)
