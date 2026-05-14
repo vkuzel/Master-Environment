@@ -183,7 +183,7 @@ class OverviewModel:
         image_position = OverviewModel.calculate_image_position(
             index=last_index,
             viewport=self.viewport,
-            image_outer_size=image_outer_size
+            image_size=self.image_size
         )
         images_height = image_position.y + image_outer_size
         return viewport_height - images_height
@@ -206,8 +206,7 @@ class OverviewModel:
         self.scroll_offset = round(mouse_position.y - content_y * new_tile_size / old_tile_size)
 
         for i, image in enumerate(self.images):
-            image_outer_size = image_size + 2 * image.margin
-            image_position = OverviewModel.calculate_image_position(i, self.viewport, image_outer_size)
+            image_position = OverviewModel.calculate_image_position(i, self.viewport, self.image_size)
             self.images[i] = OverviewRequestedImage(
                 image_file=image.image_file,
                 position=image_position.with_scroll_offset(self.scroll_offset),
@@ -245,15 +244,15 @@ class OverviewModel:
     # TODO Should contain mouse position
     def _recalculate_image_positions(self):
         for i, image in enumerate(self.images):
-            image_outer_size = image.outer_rect.dimensions.width
-            image_position = OverviewModel.calculate_image_position(i, self.viewport, image_outer_size)
+            image_position = OverviewModel.calculate_image_position(i, self.viewport, self.image_size)
             image.position = Position(
                 x=image_position.x,
                 y=image_position.y + self.scroll_offset,
             )
 
     @staticmethod
-    def calculate_image_position(index: int, viewport: Viewport, image_outer_size: int) -> Position:
+    def calculate_image_position(index: int, viewport: Viewport, image_size: int) -> Position:
+        image_outer_size = image_size + 2 * OverviewModel.MARGIN
         viewport_width = viewport.width
         image_width = image_outer_size
         image_height = image_outer_size
@@ -784,7 +783,7 @@ class UI:
             image_position = OverviewModel.calculate_image_position(
                 index=i,
                 viewport=self._renderer.viewport(),
-                image_outer_size=self._START_IMAGE_SIZE + 2 * OverviewModel.MARGIN,
+                image_size=self._START_IMAGE_SIZE,
             )
             image_placeholder = OverviewRequestedImage(
                 image_file=image_file,
