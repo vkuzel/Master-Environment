@@ -179,13 +179,7 @@ class OverviewModel:
     def max_scroll_offset(self) -> int:
         image_outer_size = self.image_size + 2 * self.MARGIN
         viewport_height = self.viewport.height
-        last_index = len(self.images) - 1
-        image_position = OverviewModel.calculate_image_position(
-            index=last_index,
-            viewport=self.viewport,
-            image_size=self.image_size
-        )
-        images_height = image_position.y + image_outer_size
+        images_height = self._calculate_image_position(len(self.images) - 1).y + image_outer_size
         return viewport_height - images_height
 
     def set_viewport(self, viewport: Viewport):
@@ -206,10 +200,9 @@ class OverviewModel:
         self.scroll_offset = round(mouse_position.y - content_y * new_tile_size / old_tile_size)
 
         for i, image in enumerate(self.images):
-            image_position = OverviewModel.calculate_image_position(i, self.viewport, self.image_size)
             self.images[i] = OverviewRequestedImage(
                 image_file=image.image_file,
-                position=image_position.with_scroll_offset(self.scroll_offset),
+                position=self._calculate_image_position(i).with_scroll_offset(self.scroll_offset),
                 inner_dimensions=Dimensions.for_size(image_size),
                 margin=image.margin,
                 selected=image.selected,
@@ -241,14 +234,12 @@ class OverviewModel:
             if loaded_image:
                 self.images[original_index] = image.to_loaded_image(loaded_image.photo_image)
 
-    # TODO Should contain mouse position
     def _recalculate_image_positions(self):
         for i, image in enumerate(self.images):
-            image_position = OverviewModel.calculate_image_position(i, self.viewport, self.image_size)
-            image.position = Position(
-                x=image_position.x,
-                y=image_position.y + self.scroll_offset,
-            )
+            image.position = self._calculate_image_position(i).with_scroll_offset(self.scroll_offset)
+
+    def _calculate_image_position(self, index: int) -> Position:
+        return OverviewModel.calculate_image_position(index, self.viewport, self.image_size)
 
     @staticmethod
     def calculate_image_position(index: int, viewport: Viewport, image_size: int) -> Position:
