@@ -747,6 +747,13 @@ class UI:
             self._detail_model = self._create_detail_model(selected_image)
             self._renderer.render_detail(self._detail_model)
 
+    def exit_preview_or_quit(self, root: Tk):
+        if self._is_detail_mode:
+            self._detail_model = None
+            self._renderer.render_overview(self._overview_model)
+        else:
+            root.quit()
+
     def initialize(self):
         if self._is_detail_mode:
             self._window_manager.set_title(self._detail_model.image_file.name)
@@ -849,7 +856,7 @@ def main():
 
     root.bind('<space>', lambda e: ui.toggle_preview())
 
-    root.bind('<Escape>', lambda e: root.quit())
+    root.bind('<Escape>', lambda e: ui.exit_preview_or_quit(root))
     root.bind('q', lambda e: root.quit())
 
     def poll_loaded_images(_):
