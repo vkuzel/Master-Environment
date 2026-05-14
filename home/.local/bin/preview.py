@@ -176,21 +176,33 @@ class OverviewModel:
         self.image_size = image_size
         self.scroll_offset = scroll_offset
 
-        images_to_load: list[Tuple[int, OverviewImage]] = []
         for i, image in enumerate(self.images):
-            image.inner_dimensions = Dimensions(
-                # TODO Factory for the size
-                width=image_size,
-                height=image_size,
-            )
-            image_outer_size = image.outer_rect.dimensions.width
+            image_outer_size = image_size + 2 * image.margin
             image_position = OverviewModel.calculate_image_position(i, self.viewport, image_outer_size)
-            image.position = Position(
-                x=image_position.x,
-                y=image_position.y + self.scroll_offset,
+            self.images[i] = OverviewRequestedImage(
+                image_file=image.image_file,
+                position=Position(
+                    x=image_position.x,
+                    # TODO Position with_scroll_offset
+                    y=image_position.y + self.scroll_offset,
+                ),
+                inner_dimensions=Dimensions(
+                    # TODO Factory for the size
+                    width=image_size,
+                    height=image_size,
+                ),
+                margin=image.margin,
+                selected=image.selected,
             )
             image.selected = image.contains_position(mouse_position)
-            images_to_load.append((i, image))
+
+        self.load_missing_images(mouse_position, image_loader)
+
+    def load_missing_images(self, mouse_position: Position, image_loader: "ImageLoader"):
+        images_to_load: list[Tuple[int, OverviewRequestedImage]] = []
+        for i, image in enumerate(self.images):
+            if isinstance(image, OverviewRequestedImage):
+                images_to_load.append((i, image))
 
         # Request images closes to the mouse cursor first
         images_to_load.sort(key=lambda im: im[1].inner_rect.distance_to_position(mouse_position))
@@ -207,16 +219,7 @@ class OverviewModel:
                 loaded_image = image_loader.get_low_quality_image(request)
 
             if loaded_image:
-                image.photo_image = loaded_image.photo_image
-            else:
-                # TODO Into factory
-                self.images[original_index] = OverviewRequestedImage(
-                    image_file=image.image_file,
-                    position=image.position,
-                    inner_dimensions=image.inner_dimensions,
-                    margin=image.margin,
-                    selected=image.selected,
-                )
+                self.images[original_index] = image.to_loaded_image(loaded_image.photo_image)
 
     # TODO Should contain mouse position
     def _recalculate_image_positions(self):
@@ -786,65 +789,33 @@ class UI:
                 self._renderer.render_overview_image(overview_loaded_image)
 
     def _create_overview_model(self) -> OverviewModel:
-        meta_images: list[UI._MetaImage] = []
+        image_placeholders: list[OverviewRequestedImage] = []
         for i, image_file in enumerate(self._image_files):
             image_position = self._calculate_image_position(i)
-            meta_images.append(UI._MetaImage(
-                file=image_file,
+            image_placeholder = OverviewRequestedImage(
+                image_file=image_file,
                 position=Position(
                     x=image_position.x,
                     y=image_position.y + self._scroll_offset,
                 ),
-                dimensions=Dimensions(
+                inner_dimensions=Dimensions(
                     width=self._image_size,
                     height=self._image_size,
                 ),
-            ))
-
-        # Request images closes to the mouse cursor first
-        meta_images.sort(key=lambda mi: mi.distance_to(self._mouse_position))
-        loaded_images = {}
-        for i, meta_image in enumerate(meta_images):
-            request = LoadImageRequest(
-                image_file=meta_image.file,
-                dimensions=meta_image.dimensions,
+                margin=self._MARGIN,
+                selected=False
             )
-            loaded_image = self._image_loader.request_image(request)
-            # Image(s) close to mouse cursor immediate low quality render to prevent flicker
-            if not loaded_image and i == 0:
-                loaded_image = self._image_loader.get_low_quality_image(request)
+            image_placeholder.selected = image_placeholder.contains_position(self._mouse_position)
+            image_placeholders.append(image_placeholder)
 
-            loaded_images[meta_image.file] = meta_image, loaded_image
-
-        overview_images: list[OverviewImage] = []
-        for image_file in self._image_files:
-            (meta_image, loaded_image) = loaded_images[image_file]
-            if loaded_image:
-                overview_image = OverviewLoadedImage(
-                    image_file=meta_image.file,
-                    position=meta_image.position,
-                    inner_dimensions=meta_image.dimensions,
-                    margin=self._MARGIN,
-                    selected=False,
-                    photo_image=loaded_image.photo_image,
-                )
-            else:
-                overview_image = OverviewRequestedImage(
-                    image_file=meta_image.file,
-                    position=meta_image.position,
-                    inner_dimensions=meta_image.dimensions,
-                    margin=self._MARGIN,
-                    selected=False,
-                )
-            overview_image.selected = overview_image.contains_position(self._mouse_position)
-            overview_images.append(overview_image)
-
-        return OverviewModel(
+        model = OverviewModel(
             viewport=self._renderer.viewport(),
             scroll_offset=self._scroll_offset,
             image_size=self._image_size,
-            images=overview_images
+            images=image_placeholders,
         )
+        model.load_missing_images(self._mouse_position, self._image_loader)
+        return model
 
     def _calculate_image_position(self, index: int) -> Position:
         return OverviewModel.calculate_image_position(index, self._renderer.viewport(), self._image_outer_size)
@@ -861,17 +832,6 @@ class UI:
             image_dimensions=image_dimensions,
             photo_image=photo_image,
         )
-
-    @dataclass(frozen=True)
-    class _MetaImage:
-        file: ImageFile
-        position: Position
-        dimensions: Dimensions
-
-        def distance_to(self, position: Position) -> int:
-            center_x = int(self.position.x + self.dimensions.width / 2)
-            center_y = int(self.position.y + self.dimensions.height / 2)
-            return (position.x - center_x) ** 2 + (position.y - center_y) ** 2
 
 
 def main():
