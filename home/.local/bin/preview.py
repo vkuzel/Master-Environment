@@ -76,6 +76,12 @@ class Rectangle:
 
 
 @dataclass(frozen=True)
+class ImageLoadContext:
+    image_loader: 'ImageLoader'
+    mouse_position: Position
+
+
+@dataclass(frozen=True)
 class LoadImageRequest:
     image_file: ImageFile
     dimensions: Dimensions
@@ -186,10 +192,10 @@ class OverviewModel:
     def max_image_size(self) -> int:
         return self.viewport.width - 2 * self.MARGIN
 
-    def set_viewport(self, viewport: Viewport, mouse_position: Position, image_loader: "ImageLoader"):
+    def set_viewport(self, viewport: Viewport, load_context: ImageLoadContext):
         self.viewport = viewport
         if self.image_size > self.max_image_size:
-            self.set_image_size(self.max_image_size, mouse_position, image_loader)
+            self.set_image_size(self.max_image_size, load_context)
         else:
             self._recalculate_image_positions()
 
@@ -197,14 +203,14 @@ class OverviewModel:
         self.scroll_offset = scroll_offset
         self._recalculate_image_positions()
 
-    def set_image_size(self, image_size: int, mouse_position: Position, image_loader: "ImageLoader"):
+    def set_image_size(self, image_size: int, load_context: ImageLoadContext):
         old_tile_size = self.image_size + 2 * self.MARGIN
         new_tile_size = image_size + 2 * self.MARGIN
 
         self.image_size = image_size
 
-        content_y = mouse_position.y - self.scroll_offset
-        new_scroll_offset = round(mouse_position.y - content_y * new_tile_size / old_tile_size)
+        content_y = load_context.mouse_position.y - self.scroll_offset
+        new_scroll_offset = round(load_context.mouse_position.y - content_y * new_tile_size / old_tile_size)
 
         if new_scroll_offset < self.max_scroll_offset:
             self.scroll_offset = self.max_scroll_offset
@@ -221,18 +227,18 @@ class OverviewModel:
                 margin=image.margin,
                 selected=image.selected,
             )
-            image.selected = image.contains_position(mouse_position)
+            image.selected = image.contains_position(load_context.mouse_position)
 
-        self.load_missing_images(mouse_position, image_loader)
+        self.load_missing_images(load_context)
 
-    def load_missing_images(self, mouse_position: Position, image_loader: "ImageLoader"):
+    def load_missing_images(self, load_context: ImageLoadContext):
         images_to_load: list[Tuple[int, OverviewImagePlaceholder]] = []
         for i, image in enumerate(self.images):
             if isinstance(image, OverviewImagePlaceholder):
                 images_to_load.append((i, image))
 
         # Request images closes to the mouse cursor first
-        images_to_load.sort(key=lambda im: im[1].inner_rect.distance_to_position(mouse_position))
+        images_to_load.sort(key=lambda im: im[1].inner_rect.distance_to_position(load_context.mouse_position))
 
         for i, image_to_load in enumerate(images_to_load):
             original_index, image = image_to_load
@@ -240,10 +246,10 @@ class OverviewModel:
                 image_file=image.image_file,
                 dimensions=image.inner_dimensions,
             )
-            loaded_image = image_loader.request_image(request)
+            loaded_image = load_context.image_loader.request_image(request)
             # Image(s) close to mouse cursor immediate low quality render to prevent flicker
             if not loaded_image and i == 0:
-                loaded_image = image_loader.get_low_quality_image(request)
+                loaded_image = load_context.image_loader.get_low_quality_image(request)
 
             if loaded_image:
                 self.images[original_index] = image.to_loaded_image(loaded_image.photo_image)
@@ -646,7 +652,7 @@ class UI:
             return
 
         self._image_loader.cancel()
-        self._overview_model.set_image_size(new_image_size, self._mouse_position, self._image_loader)
+        self._overview_model.set_image_size(new_image_size, self._create_image_load_context())
         self._renderer.render_overview(self._overview_model)
         self._set_window_title()
 
@@ -661,7 +667,7 @@ class UI:
             image_size = max_image_size
 
         self._image_loader.cancel()
-        self._overview_model.set_image_size(image_size, self._mouse_position, self._image_loader)
+        self._overview_model.set_image_size(image_size, self._create_image_load_context())
         self._renderer.render_overview(self._overview_model)
         self._set_window_title()
 
@@ -789,7 +795,7 @@ class UI:
             self._detail_model = self._create_detail_model(selected_image)
             self._renderer.render_detail(self._detail_model)
         else:
-            self._overview_model.set_viewport(self._renderer.viewport(), self._mouse_position, self._image_loader)
+            self._overview_model.set_viewport(self._renderer.viewport(), self._create_image_load_context())
             self._renderer.render_overview(self._overview_model)
         self._set_window_title()
 
@@ -816,6 +822,9 @@ class UI:
             else:
                 self._window_manager.reset_title()
 
+    def _create_image_load_context(self) -> ImageLoadContext:
+        return ImageLoadContext(self._image_loader, self._mouse_position)
+
     def _create_overview_model(self, image_files: list[ImageFile]) -> OverviewModel:
         image_placeholders: list[OverviewImagePlaceholder] = []
         for i, image_file in enumerate(image_files):
@@ -840,7 +849,7 @@ class UI:
             image_size=self._START_IMAGE_SIZE,
             images=image_placeholders,
         )
-        model.load_missing_images(self._mouse_position, self._image_loader)
+        model.load_missing_images(self._create_image_load_context())
         return model
 
     def _create_detail_model(self, image: OverviewImage) -> DetailModel:
