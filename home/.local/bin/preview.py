@@ -597,6 +597,7 @@ class UI:
             elif not image.selected and image.contains_position(self._mouse_position):
                 image.selected = True
                 self._renderer.render_overview_image_highlight(image)
+        self._set_window_title()
 
     def scroll_to(self, start: bool):
         if self._is_detail_mode:
@@ -631,6 +632,7 @@ class UI:
 
         self._overview_model.set_scroll_offset(new_offset)
         self._renderer.render_overview(self._overview_model)
+        self._set_window_title()
 
     def mouse_zoom(self, event: Event):
         if self._is_detail_mode:
@@ -651,6 +653,7 @@ class UI:
         self._image_loader.cancel()
         self._overview_model.set_image_size(new_image_size, self._mouse_position, self._image_loader)
         self._renderer.render_overview(self._overview_model)
+        self._set_window_title()
 
     def scroll_page(self, up: bool):
         if self._is_detail_mode:
@@ -684,6 +687,7 @@ class UI:
         else:
             self._renderer.render_overview_image_highlight(selected_image)
             self._renderer.render_overview_image_highlight(previous_image)
+        self._set_window_title()
 
     def select_next(self):
         selected_image, next_image = self._overview_model.find_selected_image_and_next()
@@ -699,6 +703,7 @@ class UI:
         else:
             self._renderer.render_overview_image_highlight(selected_image)
             self._renderer.render_overview_image_highlight(next_image)
+        self._set_window_title()
 
     def select_above(self):
         if self._is_detail_mode:
@@ -713,6 +718,7 @@ class UI:
 
         self._renderer.render_overview_image_highlight(selected_image)
         self._renderer.render_overview_image_highlight(above_image)
+        self._set_window_title()
 
     def select_below(self):
         if self._is_detail_mode:
@@ -727,6 +733,7 @@ class UI:
 
         self._renderer.render_overview_image_highlight(selected_image)
         self._renderer.render_overview_image_highlight(bellow_image)
+        self._set_window_title()
 
     def toggle_preview(self):
         if self._is_detail_mode:
@@ -736,24 +743,25 @@ class UI:
             selected_image = self._overview_model.find_selected_image()
             self._detail_model = self._create_detail_model(selected_image)
             self._renderer.render_detail(self._detail_model)
+        self._set_window_title()
 
     def exit_preview_or_quit(self, root: Tk):
         if self._is_detail_mode:
             self._detail_model = None
             self._renderer.render_overview(self._overview_model)
+            self._set_window_title()
         else:
             root.quit()
 
     def initialize(self):
         if self._is_detail_mode:
-            self._window_manager.set_title(self._detail_model.image_file.name)
             selected_image = self._overview_model.find_selected_image()
             self._detail_model = self._create_detail_model(selected_image)
             self._renderer.render_detail(self._detail_model)
         else:
-            self._window_manager.reset_title()
             self._overview_model.set_viewport(self._renderer.viewport())
             self._renderer.render_overview(self._overview_model)
+        self._set_window_title()
 
     def process_loaded_images(self):
         if self._is_detail_mode:
@@ -767,6 +775,16 @@ class UI:
             overview_loaded_image = self._overview_model.create_loaded_image(loaded_image)
             if overview_loaded_image:
                 self._renderer.render_overview_image(overview_loaded_image)
+
+    def _set_window_title(self):
+        if self._is_detail_mode:
+            self._window_manager.set_title(self._detail_model.image_file.name)
+        else:
+            selected_image = self._overview_model.find_selected_image()
+            if selected_image:
+                self._window_manager.set_title(selected_image.image_file.name)
+            else:
+                self._window_manager.reset_title()
 
     def _create_overview_model(self, image_files: list[ImageFile]) -> OverviewModel:
         image_placeholders: list[OverviewRequestedImage] = []
