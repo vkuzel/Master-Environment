@@ -670,6 +670,7 @@ class UI:
                 ),
             ))
 
+        # Render images closes to the mouse cursor first
         meta_images.sort(key=lambda mi: mi.distance_to(self._mouse_x, self._mouse_y))
 
         overview_images: list[OverviewImage] = []
@@ -679,6 +680,7 @@ class UI:
                 image_dimensions=meta_image.dimensions,
             )
             loaded_image = self._image_loader.request_image(request)
+            # Image(s) close to mouse cursor immediate low quality render to prevent flicker
             if not loaded_image and i == 0:
                 loaded_image = self._image_loader.get_low_quality_image(request)
 
