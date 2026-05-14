@@ -29,6 +29,9 @@ class Position:
     x: int
     y: int
 
+    def with_scroll_offset(self, scroll_offset: int) -> "Position":
+        return Position(self.x, self.y + scroll_offset)
+
 
 @dataclass(frozen=True)
 class Rectangle:
@@ -181,11 +184,7 @@ class OverviewModel:
             image_position = OverviewModel.calculate_image_position(i, self.viewport, image_outer_size)
             self.images[i] = OverviewRequestedImage(
                 image_file=image.image_file,
-                position=Position(
-                    x=image_position.x,
-                    # TODO Position with_scroll_offset
-                    y=image_position.y + self.scroll_offset,
-                ),
+                position=image_position.with_scroll_offset(self.scroll_offset),
                 inner_dimensions=Dimensions(
                     # TODO Factory for the size
                     width=image_size,
@@ -794,10 +793,7 @@ class UI:
             image_position = self._calculate_image_position(i)
             image_placeholder = OverviewRequestedImage(
                 image_file=image_file,
-                position=Position(
-                    x=image_position.x,
-                    y=image_position.y + self._scroll_offset,
-                ),
+                position=image_position.with_scroll_offset(self._scroll_offset),
                 inner_dimensions=Dimensions(
                     width=self._image_size,
                     height=self._image_size,
