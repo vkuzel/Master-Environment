@@ -503,15 +503,6 @@ class Renderer:
                 fill="#01302f",
             )
 
-            self._canvas.create_text(
-                image.outer_rect.center_x,
-                image.outer_rect.center_y,
-                text=image.image_file.name,
-                anchor="center",
-                font=("Arial", 12),
-                fill="white",
-            )
-
             if isinstance(image, OverviewLoadedImage):
                 self.render_overview_image(image)
 
