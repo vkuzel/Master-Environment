@@ -172,8 +172,21 @@ class OverviewModel:
     MARGIN: ClassVar[int] = 5
 
     @property
-    def image_outer_size(self) -> int:
-        return self.image_size + 2 * self.MARGIN
+    def min_scroll_offset(self) -> int:
+        return 0
+
+    @property
+    def max_scroll_offset(self) -> int:
+        image_outer_size = self.image_size + 2 * self.MARGIN
+        viewport_height = self.viewport.height
+        last_index = len(self.images) - 1
+        image_position = OverviewModel.calculate_image_position(
+            index=last_index,
+            viewport=self.viewport,
+            image_outer_size=image_outer_size
+        )
+        images_height = image_position.y + image_outer_size
+        return viewport_height - images_height
 
     def set_viewport(self, viewport: Viewport):
         self.viewport = viewport
@@ -579,17 +592,6 @@ class UI:
         self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
 
-    @property
-    def _min_scroll_offset(self) -> int:
-        return 0
-
-    @property
-    def _max_scroll_offset(self) -> int:
-        viewport_height = self._renderer.viewport().height
-        last_index = len(self._overview_model.images) - 1
-        images_height = self._calculate_image_position(last_index).y + self._overview_model.image_outer_size
-        return viewport_height - images_height
-
     def mouse_select(self, event: Event):
         self._mouse_position.x = event.x
         self._mouse_position.y = event.y
@@ -609,9 +611,9 @@ class UI:
             return
 
         if start:
-            new_offset = self._min_scroll_offset
+            new_offset = self._overview_model.min_scroll_offset
         else:
-            new_offset = self._max_scroll_offset
+            new_offset = self._overview_model.max_scroll_offset
 
         if self._overview_model.scroll_offset == new_offset:
             return
@@ -624,9 +626,11 @@ class UI:
             return
 
         if event.num == 4:
-            new_offset = min(self._overview_model.scroll_offset + self._MOUSE_SCROLL_SPEED, self._min_scroll_offset)
+            min_offset = self._overview_model.min_scroll_offset
+            new_offset = min(self._overview_model.scroll_offset + self._MOUSE_SCROLL_SPEED, min_offset)
         elif event.num == 5:
-            new_offset = max(self._overview_model.scroll_offset - self._MOUSE_SCROLL_SPEED, self._max_scroll_offset)
+            max_offset = self._overview_model.max_scroll_offset
+            new_offset = max(self._overview_model.scroll_offset - self._MOUSE_SCROLL_SPEED, max_offset)
         else:
             return
 
@@ -662,9 +666,11 @@ class UI:
 
         viewport_height = self._renderer.viewport().height
         if up:
-            new_offset = min(self._overview_model.scroll_offset + viewport_height, self._min_scroll_offset)
+            min_offset = self._overview_model.min_scroll_offset
+            new_offset = min(self._overview_model.scroll_offset + viewport_height, min_offset)
         else:
-            new_offset = max(self._overview_model.scroll_offset - viewport_height, self._max_scroll_offset)
+            max_offset = self._overview_model.max_scroll_offset
+            new_offset = max(self._overview_model.scroll_offset - viewport_height, max_offset)
 
         if self._overview_model.scroll_offset == new_offset:
             return
@@ -791,10 +797,6 @@ class UI:
         )
         model.load_missing_images(self._mouse_position, self._image_loader)
         return model
-
-    def _calculate_image_position(self, index: int) -> Position:
-        return OverviewModel.calculate_image_position(index, self._renderer.viewport(),
-                                                      self._overview_model.image_outer_size)
 
     def _create_detail_model(self) -> DetailModel:
         viewport = self._renderer.viewport()
