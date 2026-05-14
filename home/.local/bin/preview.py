@@ -584,11 +584,10 @@ class UI:
         self._window_manager = window_manager
         self._image_loader = image_loader
         self._renderer = renderer
-        self._image_files = image_files
 
         self._mouse_position = Position(0, 0)
 
-        self._overview_model = self._create_overview_model()
+        self._overview_model = self._create_overview_model(image_files)
         self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
 
@@ -771,9 +770,9 @@ class UI:
             if overview_loaded_image:
                 self._renderer.render_overview_image(overview_loaded_image)
 
-    def _create_overview_model(self) -> OverviewModel:
+    def _create_overview_model(self, image_files: list[ImageFile]) -> OverviewModel:
         image_placeholders: list[OverviewRequestedImage] = []
-        for i, image_file in enumerate(self._image_files):
+        for i, image_file in enumerate(image_files):
             image_position = OverviewModel.calculate_image_position(
                 index=i,
                 viewport=self._renderer.viewport(),
