@@ -180,7 +180,7 @@ class OverviewModel:
         image_outer_size = self.image_size + 2 * self.MARGIN
         viewport_height = self.viewport.height
         images_height = self._calculate_image_position(len(self.images) - 1).y + image_outer_size
-        return viewport_height - images_height
+        return min(viewport_height - images_height, 0)
 
     @property
     def max_image_size(self) -> int:
