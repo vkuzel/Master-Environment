@@ -62,6 +62,11 @@ class Rectangle:
     def contains_position(self, position: Position) -> bool:
         return self.x1 <= position.x <= self.x2 and self.y1 <= position.y <= self.y2
 
+    def distance_to_position(self, position: Position) -> int:
+        center_x = int(self.position.x + self.dimensions.width / 2)
+        center_y = int(self.position.y + self.dimensions.height / 2)
+        return (position.x - center_x) ** 2 + (position.y - center_y) ** 2
+
 
 @dataclass(frozen=True)
 class LoadImageRequest:
@@ -166,11 +171,54 @@ class OverviewModel:
         self._recalculate_image_positions()
 
     # TODO scroll_offset adjustment should be performed inside this method, not externally
-    def set_image_size(self, image_size: int, scroll_offset: int):
+    def set_image_size(self, image_size: int, scroll_offset: int, mouse_position: Position,
+                       image_loader: "ImageLoader"):
         self.image_size = image_size
         self.scroll_offset = scroll_offset
-        # TODO Add logic
 
+        images_to_load: list[Tuple[int, OverviewImage]] = []
+        for i, image in enumerate(self.images):
+            image.inner_dimensions = Dimensions(
+                # TODO Factory for the size
+                width=image_size,
+                height=image_size,
+            )
+            image_outer_size = image.outer_rect.dimensions.width
+            image_position = OverviewModel.calculate_image_position(i, self.viewport, image_outer_size)
+            image.position = Position(
+                x=image_position.x,
+                y=image_position.y + self.scroll_offset,
+            )
+            image.selected = image.contains_position(mouse_position)
+            images_to_load.append((i, image))
+
+        # Request images closes to the mouse cursor first
+        images_to_load.sort(key=lambda im: im[1].inner_rect.distance_to_position(mouse_position))
+
+        for i, image_to_load in enumerate(images_to_load):
+            original_index, image = image_to_load
+            request = LoadImageRequest(
+                image_file=image.image_file,
+                dimensions=image.inner_dimensions,
+            )
+            loaded_image = image_loader.request_image(request)
+            # Image(s) close to mouse cursor immediate low quality render to prevent flicker
+            if not loaded_image and i == 0:
+                loaded_image = image_loader.get_low_quality_image(request)
+
+            if loaded_image:
+                image.photo_image = loaded_image.photo_image
+            else:
+                # TODO Into factory
+                self.images[original_index] = OverviewRequestedImage(
+                    image_file=image.image_file,
+                    position=image.position,
+                    inner_dimensions=image.inner_dimensions,
+                    margin=image.margin,
+                    selected=image.selected,
+                )
+
+    # TODO Should contain mouse position
     def _recalculate_image_positions(self):
         for i, image in enumerate(self.images):
             image_outer_size = image.outer_rect.dimensions.width
@@ -640,8 +688,8 @@ class UI:
         self._scroll_offset = round(self._mouse_position.y - content_y * new_tile_size / old_tile_size)
 
         self._image_loader.cancel()
-        self._overview_model.set_image_size(self._image_size, self._scroll_offset)
-        self._overview_model = self._create_overview_model()
+        self._overview_model.set_image_size(self._image_size, self._scroll_offset, self._mouse_position,
+                                            self._image_loader)
         self._renderer.render_overview(self._overview_model)
 
     def select_previous(self):
