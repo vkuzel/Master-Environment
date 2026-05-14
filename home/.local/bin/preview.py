@@ -201,7 +201,14 @@ class OverviewModel:
         self.image_size = image_size
 
         content_y = mouse_position.y - self.scroll_offset
-        self.scroll_offset = round(mouse_position.y - content_y * new_tile_size / old_tile_size)
+        new_scroll_offset = round(mouse_position.y - content_y * new_tile_size / old_tile_size)
+
+        if new_scroll_offset < self.max_scroll_offset:
+            self.scroll_offset = self.max_scroll_offset
+        elif new_scroll_offset > self.min_scroll_offset:
+            self.scroll_offset = self.min_scroll_offset
+        else:
+            self.scroll_offset = new_scroll_offset
 
         for i, image in enumerate(self.images):
             self.images[i] = OverviewImagePlaceholder(
