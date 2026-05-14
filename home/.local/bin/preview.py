@@ -547,12 +547,16 @@ class UI:
         old_tile_size = self._image_outer_size
 
         if event.num == 4:
-            self._image_size = min(self._image_size + self._MOUSE_ZOOM_SPEED,
-                                   self._renderer.viewport().width - 2 * self._MARGIN)
+            max_image_size = self._renderer.viewport().width - 2 * self._MARGIN
+            self._image_size = min(self._image_size + self._MOUSE_ZOOM_SPEED, max_image_size)
         elif event.num == 5:
-            self._image_size = max(self._image_size - self._MOUSE_ZOOM_SPEED, 1)
+            min_image_size = 1
+            self._image_size = max(self._image_size - self._MOUSE_ZOOM_SPEED, min_image_size)
 
         new_tile_size = self._image_outer_size
+        if old_tile_size == new_tile_size:
+            return
+
         content_y = self._mouse_y - self._scroll_offset
         self._scroll_offset = round(self._mouse_y - content_y * new_tile_size / old_tile_size)
 
