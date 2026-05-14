@@ -6,7 +6,6 @@ import io
 import queue
 import threading
 from dataclasses import dataclass
-from math import floor
 from pathlib import Path
 from queue import Queue
 from tkinter import Canvas, Event, Tk
@@ -15,7 +14,6 @@ from typing import Dict, Optional, Set, Tuple
 from PIL import Image, ImageTk
 from PIL.Image import Resampling
 from PIL.ImageTk import PhotoImage
-from uaclient.files import files
 
 MARGIN = 5
 
@@ -29,6 +27,15 @@ class ImageFile:
 class ImageDimensions:
     width: int
     height: int
+    margin: int
+
+    @property
+    def outer_width(self) -> int:
+        return self.width + 2 * self.margin
+
+    @property
+    def outer_height(self) -> int:
+        return self.height + 2 * self.margin
 
 
 @dataclass(frozen=True)
@@ -62,6 +69,46 @@ class OverviewImage:
     image_dimensions: ImageDimensions
     selected: bool
 
+    @property
+    def center_x(self) -> int:
+        return int(self.image_position.x + self.image_dimensions.margin + self.image_dimensions.width / 2)
+
+    @property
+    def center_y(self) -> int:
+        return int(self.image_position.y + self.image_dimensions.margin + self.image_dimensions.height / 2)
+
+    @property
+    def content_x1(self) -> int:
+        return self.image_position.x + self.image_dimensions.margin
+
+    @property
+    def content_y1(self) -> int:
+        return self.image_position.y + self.image_dimensions.margin
+
+    @property
+    def content_x2(self) -> int:
+        return self.image_position.x + self.image_dimensions.margin + self.image_dimensions.width
+
+    @property
+    def content_y2(self) -> int:
+        return self.image_position.y + self.image_dimensions.margin + self.image_dimensions.height
+
+    @property
+    def outer_x1(self) -> int:
+        return self.image_position.x
+
+    @property
+    def outer_y1(self) -> int:
+        return self.image_position.y
+
+    @property
+    def outer_x2(self) -> int:
+        return self.image_position.x + self.image_dimensions.width + 2 * self.image_dimensions.margin
+
+    @property
+    def outer_y2(self) -> int:
+        return self.image_position.y + self.image_dimensions.height + 2 * self.image_dimensions.margin
+
     def contains_point(self, x: int, y: int) -> bool:
         x1, y1 = self.image_position.x, self.image_position.y
         x2, y2 = x1 + self.image_dimensions.width, y1 + self.image_dimensions.height
@@ -78,6 +125,16 @@ class OverviewRequestedImage(OverviewImage):
 @dataclass
 class OverviewLoadedImage(OverviewImage):
     photo_image: PhotoImage
+
+    @property
+    def photo_x1(self) -> int:
+        x_offset = int((self.image_dimensions.width - self.photo_image.width()) / 2)
+        return self.content_x1 + x_offset
+
+    @property
+    def photo_y1(self) -> int:
+        y_offset = int((self.image_dimensions.height - self.photo_image.height()) / 2)
+        return self.content_y1 + y_offset
 
 
 @dataclass(frozen=True)
@@ -165,6 +222,14 @@ class DetailModel:
     image_file: ImageFile
     image_dimensions: ImageDimensions
     photo_image: PhotoImage
+
+    @property
+    def photo_x1(self) -> int:
+        return int((self.image_dimensions.width - self.photo_image.width()) / 2)
+
+    @property
+    def photo_y1(self) -> int:
+        return int((self.image_dimensions.height - self.photo_image.height()) / 2)
 
 
 class ImageFilesScanner:
@@ -317,23 +382,21 @@ class Renderer:
         canvas_height = self._canvas.winfo_height()
 
         for image in overview_model.images:
-            if image.image_position.y + image.image_dimensions.height + 2 * MARGIN < 0:
-                continue
-            if image.image_position.y > canvas_height:
+            if image.outer_y1 > canvas_height or image.outer_y2 < 0:
                 continue
 
             self._canvas.create_rectangle(
-                image.image_position.x + MARGIN,
-                image.image_position.y + MARGIN,
-                image.image_position.x + MARGIN + image.image_dimensions.width,
-                image.image_position.y + MARGIN + image.image_dimensions.height,
+                image.content_x1,
+                image.content_y1,
+                image.content_x2,
+                image.content_y2,
                 width=2,
                 fill="#01302f",
             )
 
             self._canvas.create_text(
-                image.image_position.x + MARGIN + image.image_dimensions.width / 2,
-                image.image_position.y + MARGIN + image.image_dimensions.height / 2,
+                image.center_x,
+                image.center_y,
                 text=image.image_file.name,
                 anchor="center",
                 font=("Arial", 12),
@@ -346,11 +409,9 @@ class Renderer:
             self.render_overview_image_highlight(image)
 
     def render_overview_image(self, image: OverviewLoadedImage):
-        x_offset = int((image.image_dimensions.width - image.photo_image.width()) / 2)
-        y_offset = int((image.image_dimensions.height - image.photo_image.height()) / 2)
         self._canvas.create_image(
-            image.image_position.x + MARGIN + x_offset,
-            image.image_position.y + MARGIN + y_offset,
+            image.photo_x1,
+            image.photo_y1,
             image=image.photo_image,
             anchor="nw"
         )
@@ -358,20 +419,19 @@ class Renderer:
     def render_overview_image_highlight(self, image: OverviewImage):
         outline = "white" if image.selected else "black"
         self._canvas.create_rectangle(
-            image.image_position.x + MARGIN,
-            image.image_position.y + MARGIN,
-            image.image_position.x + MARGIN + image.image_dimensions.width,
-            image.image_position.y + MARGIN + image.image_dimensions.height,
+            image.content_x1,
+            image.content_y1,
+            image.content_x2,
+            image.content_y2,
             width=2,
             outline=outline,
         )
 
     def render_detail(self, image: DetailModel):
         self._canvas.delete("all")
-        viewport = self.viewport()
         self._canvas.create_image(
-            floor((viewport.width - image.photo_image.width()) / 2),
-            floor((viewport.height - image.photo_image.height()) / 2),
+            image.photo_x1,
+            image.photo_y1,
             image=image.photo_image,
             anchor='nw',
         )
@@ -411,6 +471,10 @@ class UI:
         self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
 
+    @property
+    def _image_outer_size(self) -> int:
+        return self._image_size + 2 * MARGIN
+
     def mouse_select(self, event: Event):
         self._mouse_x = event.x
         self._mouse_y = event.y
@@ -439,7 +503,7 @@ class UI:
 
         viewport_height = self._renderer.viewport().height
         last_index = len(self._model.images) - 1
-        images_height = self._calculate_image_position(last_index).y + self._image_size + 2 * MARGIN
+        images_height = self._calculate_image_position(last_index).y + self._image_outer_size
         self._scroll_offset = viewport_height - images_height
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
@@ -478,7 +542,7 @@ class UI:
         if self._selected_image:
             return
 
-        old_tile_size = self._image_size + 2 * MARGIN
+        old_tile_size = self._image_outer_size
 
         zoom_speed = 10
         if event.num == 4:
@@ -486,7 +550,7 @@ class UI:
         elif event.num == 5:
             self._image_size = max(self._image_size - zoom_speed, 1)
 
-        new_tile_size = self._image_size + 2 * MARGIN
+        new_tile_size = self._image_outer_size
         content_y = self._mouse_y - self._scroll_offset
         self._scroll_offset = round(self._mouse_y - content_y * new_tile_size / old_tile_size)
 
@@ -596,6 +660,7 @@ class UI:
                 dimensions=ImageDimensions(
                     width=self._image_size,
                     height=self._image_size,
+                    margin=MARGIN,
                 ),
             ))
 
@@ -632,11 +697,11 @@ class UI:
         return OverviewModel(overview_images)
 
     def _calculate_image_position(self, index: int) -> ImagePosition:
-        canvas_width = self._renderer.viewport().width
-        image_width = self._image_size + 2 * MARGIN
-        image_height = self._image_size + 2 * MARGIN
+        viewport_width = self._renderer.viewport().width
+        image_width = self._image_outer_size
+        image_height = self._image_outer_size
 
-        columns = max(1, canvas_width // image_width)
+        columns = max(1, viewport_width // image_width)
         return ImagePosition(
             x=(index % columns) * image_width,
             y=(index // columns) * image_height,
@@ -647,6 +712,7 @@ class UI:
         image_dimensions = ImageDimensions(
             width=viewport.width,
             height=viewport.height,
+            margin=0,
         )
         photo_image = self._image_loader.load_image(self._selected_image.image_file, image_dimensions)
         return DetailModel(
