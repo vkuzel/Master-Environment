@@ -654,7 +654,7 @@ class UI:
         self._overview_model.set_scroll_offset(self._scroll_offset)
         self._renderer.render_overview(self._overview_model)
 
-    def scroll(self, event: Event):
+    def mouse_scroll(self, event: Event):
         if self._selected_image:
             return
 
@@ -672,7 +672,7 @@ class UI:
         self._overview_model.set_scroll_offset(self._scroll_offset)
         self._renderer.render_overview(self._overview_model)
 
-    def zoom(self, event: Event):
+    def mouse_zoom(self, event: Event):
         if self._selected_image:
             return
 
@@ -845,11 +845,11 @@ def main():
 
     canvas.bind('<Motion>', lambda e: ui.mouse_select(e))
 
-    canvas.bind("<Button-4>", lambda e: ui.scroll(e))
-    canvas.bind("<Button-5>", lambda e: ui.scroll(e))
+    canvas.bind("<Button-4>", lambda e: ui.mouse_scroll(e))
+    canvas.bind("<Button-5>", lambda e: ui.mouse_scroll(e))
 
-    canvas.bind("<Control-Button-4>", lambda e: ui.zoom(e))
-    canvas.bind("<Control-Button-5>", lambda e: ui.zoom(e))
+    canvas.bind("<Control-Button-4>", lambda e: ui.mouse_zoom(e))
+    canvas.bind("<Control-Button-5>", lambda e: ui.mouse_zoom(e))
 
     root.bind('<Home>', lambda _: ui.scroll_to_start())
     root.bind('<End>', lambda _: ui.scroll_to_end())
