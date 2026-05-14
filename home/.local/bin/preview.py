@@ -177,11 +177,14 @@ class OverviewModel:
         self.scroll_offset = scroll_offset
         self._recalculate_image_positions()
 
-    # TODO scroll_offset adjustment should be performed inside this method, not externally
-    def set_image_size(self, image_size: int, scroll_offset: int, mouse_position: Position,
-                       image_loader: "ImageLoader"):
+    def set_image_size(self, image_size: int, mouse_position: Position, image_loader: "ImageLoader"):
+        old_tile_size = self.image_size + 2 * 5  # TODO Margin constant
+        new_tile_size = image_size + 2 * 5  # TODO Margin constant
+
         self.image_size = image_size
-        self.scroll_offset = scroll_offset
+
+        content_y = mouse_position.y - self.scroll_offset
+        self.scroll_offset = round(mouse_position.y - content_y * new_tile_size / old_tile_size)
 
         for i, image in enumerate(self.images):
             image_outer_size = image_size + 2 * image.margin
@@ -673,25 +676,21 @@ class UI:
         if self._selected_image:
             return
 
-        old_tile_size = self._image_outer_size
-
         if event.num == 4:
             max_image_size = self._renderer.viewport().width - 2 * self._MARGIN
-            self._image_size = min(self._image_size + self._MOUSE_ZOOM_SPEED, max_image_size)
+            new_image_size = min(self._image_size + self._MOUSE_ZOOM_SPEED, max_image_size)
         elif event.num == 5:
             min_image_size = 1
-            self._image_size = max(self._image_size - self._MOUSE_ZOOM_SPEED, min_image_size)
-
-        new_tile_size = self._image_outer_size
-        if old_tile_size == new_tile_size:
+            new_image_size = max(self._image_size - self._MOUSE_ZOOM_SPEED, min_image_size)
+        else:
             return
 
-        content_y = self._mouse_position.y - self._scroll_offset
-        self._scroll_offset = round(self._mouse_position.y - content_y * new_tile_size / old_tile_size)
+        if self._image_size == new_image_size:
+            return
 
+        self._image_size = new_image_size
         self._image_loader.cancel()
-        self._overview_model.set_image_size(self._image_size, self._scroll_offset, self._mouse_position,
-                                            self._image_loader)
+        self._overview_model.set_image_size(self._image_size, self._mouse_position, self._image_loader)
         self._renderer.render_overview(self._overview_model)
 
     def select_previous(self):
