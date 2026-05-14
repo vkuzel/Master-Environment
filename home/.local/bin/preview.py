@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from queue import Queue
 from tkinter import Canvas, Event, Tk
-from typing import Dict, Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple, ClassVar
 
 from PIL import Image, ImageTk
 from PIL.Image import Resampling
@@ -169,6 +169,8 @@ class OverviewModel:
     image_size: int
     images: list[OverviewImage]
 
+    MARGIN: ClassVar[int] = 5
+
     def set_viewport(self, viewport: Viewport):
         self.viewport = viewport
         self._recalculate_image_positions()
@@ -178,8 +180,8 @@ class OverviewModel:
         self._recalculate_image_positions()
 
     def set_image_size(self, image_size: int, mouse_position: Position, image_loader: "ImageLoader"):
-        old_tile_size = self.image_size + 2 * 5  # TODO Margin constant
-        new_tile_size = image_size + 2 * 5  # TODO Margin constant
+        old_tile_size = self.image_size + 2 * OverviewModel.MARGIN
+        new_tile_size = image_size + 2 * OverviewModel.MARGIN
 
         self.image_size = image_size
 
@@ -549,8 +551,6 @@ class WindowManager:
 
 
 class UI:
-    _MARGIN = 5
-
     _MOUSE_SCROLL_SPEED = 75
     _MOUSE_ZOOM_SPEED = 10
 
@@ -577,7 +577,7 @@ class UI:
 
     @property
     def _image_outer_size(self) -> int:
-        return self._image_size + 2 * self._MARGIN
+        return self._image_size + 2 * OverviewModel.MARGIN
 
     @property
     def _min_scroll_offset(self) -> int:
@@ -643,7 +643,7 @@ class UI:
             return
 
         if event.num == 4:
-            max_image_size = self._renderer.viewport().width - 2 * self._MARGIN
+            max_image_size = self._renderer.viewport().width - 2 * OverviewModel.MARGIN
             new_image_size = min(self._image_size + self._MOUSE_ZOOM_SPEED, max_image_size)
         elif event.num == 5:
             min_image_size = 1
@@ -776,7 +776,7 @@ class UI:
                 image_file=image_file,
                 position=image_position.with_scroll_offset(self._scroll_offset),
                 inner_dimensions=Dimensions.for_size(self._image_size),
-                margin=self._MARGIN,
+                margin=OverviewModel.MARGIN,
                 selected=False
             )
             image_placeholder.selected = image_placeholder.contains_position(self._mouse_position)
