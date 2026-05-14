@@ -489,6 +489,17 @@ class UI:
     def _image_outer_size(self) -> int:
         return self._image_size + 2 * self._MARGIN
 
+    @property
+    def _min_scroll_offset(self) -> int:
+        return 0
+
+    @property
+    def _max_scroll_offset(self) -> int:
+        viewport_height = self._renderer.viewport().height
+        last_index = len(self._model.images) - 1
+        images_height = self._calculate_image_position(last_index).y + self._image_outer_size
+        return viewport_height - images_height
+
     def mouse_select(self, event: Event):
         self._mouse_position.x = event.x
         self._mouse_position.y = event.y
@@ -507,7 +518,7 @@ class UI:
         if self._selected_image:
             return
 
-        self._scroll_offset = 0
+        self._scroll_offset = self._min_scroll_offset
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
@@ -515,10 +526,7 @@ class UI:
         if self._selected_image:
             return
 
-        viewport_height = self._renderer.viewport().height
-        last_index = len(self._model.images) - 1
-        images_height = self._calculate_image_position(last_index).y + self._image_outer_size
-        self._scroll_offset = viewport_height - images_height
+        self._scroll_offset = self._max_scroll_offset
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
