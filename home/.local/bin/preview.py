@@ -604,23 +604,15 @@ class UI:
                 image.selected = True
                 self._renderer.render_overview_image_highlight(image)
 
-    def scroll_to_start(self):
+    def scroll_to(self, start: bool):
         if self._selected_image:
             return
 
-        new_offset = self._min_scroll_offset
-        if self._scroll_offset == new_offset:
-            return
+        if start:
+            new_offset = self._min_scroll_offset
+        else:
+            new_offset = self._max_scroll_offset
 
-        self._scroll_offset = new_offset
-        self._overview_model.set_scroll_offset(self._scroll_offset)
-        self._renderer.render_overview(self._overview_model)
-
-    def scroll_to_end(self):
-        if self._selected_image:
-            return
-
-        new_offset = self._max_scroll_offset
         if self._scroll_offset == new_offset:
             return
 
@@ -841,8 +833,8 @@ def main():
     canvas.bind("<Control-Button-4>", lambda e: ui.mouse_zoom(e))
     canvas.bind("<Control-Button-5>", lambda e: ui.mouse_zoom(e))
 
-    root.bind('<Home>', lambda _: ui.scroll_to_start())
-    root.bind('<End>', lambda _: ui.scroll_to_end())
+    root.bind('<Home>', lambda _: ui.scroll_to(True))
+    root.bind('<End>', lambda _: ui.scroll_to(False))
     root.bind('<Prior>', lambda _: ui.scroll_page(True))
     root.bind('<Next>', lambda _: ui.scroll_page(False))
 
