@@ -22,13 +22,13 @@ class ImageFile:
 
 
 @dataclass(frozen=True)
-class ImageDimensions:
+class Dimensions:
     width: int
     height: int
 
 
 @dataclass(frozen=True)
-class ImagePosition:
+class Position:
     x: int
     y: int
 
@@ -36,7 +36,7 @@ class ImagePosition:
 @dataclass(frozen=True)
 class LoadImageRequest:
     image_file: ImageFile
-    image_dimensions: ImageDimensions
+    dimensions: Dimensions
 
 
 @dataclass(frozen=True)
@@ -54,54 +54,54 @@ class Viewport:
 @dataclass
 class OverviewImage:
     image_file: ImageFile
-    image_position: ImagePosition
-    image_dimensions: ImageDimensions
+    position: Position
+    inner_dimensions: Dimensions
     margin: int
     selected: bool
 
     @property
     def center_x(self) -> int:
-        return int(self.image_position.x + self.margin + self.image_dimensions.width / 2)
+        return int(self.position.x + self.margin + self.inner_dimensions.width / 2)
 
     @property
     def center_y(self) -> int:
-        return int(self.image_position.y + self.margin + self.image_dimensions.height / 2)
+        return int(self.position.y + self.margin + self.inner_dimensions.height / 2)
 
     @property
     def content_x1(self) -> int:
-        return self.image_position.x + self.margin
+        return self.position.x + self.margin
 
     @property
     def content_y1(self) -> int:
-        return self.image_position.y + self.margin
+        return self.position.y + self.margin
 
     @property
     def content_x2(self) -> int:
-        return self.image_position.x + self.margin + self.image_dimensions.width
+        return self.position.x + self.margin + self.inner_dimensions.width
 
     @property
     def content_y2(self) -> int:
-        return self.image_position.y + self.margin + self.image_dimensions.height
+        return self.position.y + self.margin + self.inner_dimensions.height
 
     @property
     def outer_x1(self) -> int:
-        return self.image_position.x
+        return self.position.x
 
     @property
     def outer_y1(self) -> int:
-        return self.image_position.y
+        return self.position.y
 
     @property
     def outer_x2(self) -> int:
-        return self.image_position.x + self.image_dimensions.width + 2 * self.margin
+        return self.position.x + self.inner_dimensions.width + 2 * self.margin
 
     @property
     def outer_y2(self) -> int:
-        return self.image_position.y + self.image_dimensions.height + 2 * self.margin
+        return self.position.y + self.inner_dimensions.height + 2 * self.margin
 
     def contains_point(self, x: int, y: int) -> bool:
-        x1, y1 = self.image_position.x, self.image_position.y
-        x2, y2 = x1 + self.image_dimensions.width, y1 + self.image_dimensions.height
+        x1, y1 = self.position.x, self.position.y
+        x2, y2 = x1 + self.inner_dimensions.width, y1 + self.inner_dimensions.height
         return x1 <= x <= x2 and y1 <= y <= y2
 
 
@@ -109,7 +109,7 @@ class OverviewImage:
 class OverviewRequestedImage(OverviewImage):
     def is_for_loaded_image(self, loaded_image: LoadedImage) -> bool:
         request = loaded_image.request
-        return self.image_file == request.image_file and self.image_dimensions == request.image_dimensions
+        return self.image_file == request.image_file and self.inner_dimensions == request.dimensions
 
 
 @dataclass
@@ -118,12 +118,12 @@ class OverviewLoadedImage(OverviewImage):
 
     @property
     def photo_x1(self) -> int:
-        x_offset = int((self.image_dimensions.width - self.photo_image.width()) / 2)
+        x_offset = int((self.inner_dimensions.width - self.photo_image.width()) / 2)
         return self.content_x1 + x_offset
 
     @property
     def photo_y1(self) -> int:
-        y_offset = int((self.image_dimensions.height - self.photo_image.height()) / 2)
+        y_offset = int((self.inner_dimensions.height - self.photo_image.height()) / 2)
         return self.content_y1 + y_offset
 
 
@@ -161,7 +161,7 @@ class OverviewModel:
         selected_image = self.images[index]
         for index in range(index - 1, -1, -1):
             image = self.images[index]
-            if image.image_position.x == selected_image.image_position.x:
+            if image.position.x == selected_image.position.x:
                 return selected_image, image
         else:
             return selected_image, None
@@ -174,7 +174,7 @@ class OverviewModel:
         selected_image = self.images[index]
         for index in range(index + 1, len(self.images)):
             image = self.images[index]
-            if image.image_position.x == selected_image.image_position.x:
+            if image.position.x == selected_image.position.x:
                 return selected_image, image
         else:
             return selected_image, None
@@ -196,8 +196,8 @@ class OverviewModel:
 
             loaded_image = OverviewLoadedImage(
                 image_file=image.image_file,
-                image_position=image.image_position,
-                image_dimensions=image.image_dimensions,
+                position=image.position,
+                inner_dimensions=image.inner_dimensions,
                 margin=image.margin,
                 selected=image.selected,
                 photo_image=loaded_image.photo_image,
@@ -211,7 +211,7 @@ class OverviewModel:
 @dataclass(frozen=True)
 class DetailModel:
     image_file: ImageFile
-    image_dimensions: ImageDimensions
+    image_dimensions: Dimensions
     photo_image: PhotoImage
 
     @property
@@ -287,7 +287,7 @@ class ImageLoader:
             image = Image.open(io.BytesIO(loaded_image.image_data))
             image.load()
 
-            image = self._resize_image(image, request.image_dimensions)
+            image = self._resize_image(image, request.dimensions)
             return LoadedImage(
                 request=request,
                 photo_image=ImageTk.PhotoImage(image),
@@ -302,14 +302,14 @@ class ImageLoader:
         self._clear_queue(self._out_queue)
 
     @staticmethod
-    def load_image(image_file: ImageFile, image_dimensions: ImageDimensions) -> ImageTk.PhotoImage:
+    def load_image(image_file: ImageFile, dimensions: Dimensions) -> ImageTk.PhotoImage:
         image = Image.open(image_file.name)
-        image = ImageLoader._resize_image(image, image_dimensions)
+        image = ImageLoader._resize_image(image, dimensions)
         return ImageTk.PhotoImage(image)
 
     @staticmethod
-    def _resize_image(image: Image.Image, image_dimensions: ImageDimensions) -> Image.Image:
-        scale = min(image_dimensions.width / image.width, image_dimensions.height / image.height)
+    def _resize_image(image: Image.Image, dimensions: Dimensions) -> Image.Image:
+        scale = min(dimensions.width / image.width, dimensions.height / image.height)
         new_width = int(image.width * scale)
         new_height = int(image.height * scale)
         return image.resize((new_width, new_height), resample=Resampling.NEAREST)
@@ -342,7 +342,7 @@ class ImageLoader:
 
                 try:
                     image = Image.open(request.image_file.name)
-                    image = ImageLoader._resize_image(image, request.image_dimensions)
+                    image = ImageLoader._resize_image(image, request.dimensions)
 
                     buf = io.BytesIO()
                     buf.write(f"P6\n{image.width} {image.height}\n255\n".encode())
@@ -652,11 +652,11 @@ class UI:
             image_position = self._calculate_image_position(i)
             meta_images.append(UI._MetaImage(
                 file=image_file,
-                position=ImagePosition(
+                position=Position(
                     x=image_position.x,
                     y=image_position.y + self._scroll_offset,
                 ),
-                dimensions=ImageDimensions(
+                dimensions=Dimensions(
                     width=self._image_size,
                     height=self._image_size,
                 ),
@@ -669,7 +669,7 @@ class UI:
         for i, meta_image in enumerate(meta_images):
             request = LoadImageRequest(
                 image_file=meta_image.file,
-                image_dimensions=meta_image.dimensions,
+                dimensions=meta_image.dimensions,
             )
             loaded_image = self._image_loader.request_image(request)
             # Image(s) close to mouse cursor immediate low quality render to prevent flicker
@@ -679,8 +679,8 @@ class UI:
             if loaded_image:
                 overview_image = OverviewLoadedImage(
                     image_file=meta_image.file,
-                    image_position=meta_image.position,
-                    image_dimensions=meta_image.dimensions,
+                    position=meta_image.position,
+                    inner_dimensions=meta_image.dimensions,
                     margin=self._MARGIN,
                     selected=False,
                     photo_image=loaded_image.photo_image,
@@ -688,8 +688,8 @@ class UI:
             else:
                 overview_image = OverviewRequestedImage(
                     image_file=meta_image.file,
-                    image_position=meta_image.position,
-                    image_dimensions=meta_image.dimensions,
+                    position=meta_image.position,
+                    inner_dimensions=meta_image.dimensions,
                     margin=self._MARGIN,
                     selected=False,
                 )
@@ -698,20 +698,20 @@ class UI:
 
         return OverviewModel(overview_images)
 
-    def _calculate_image_position(self, index: int) -> ImagePosition:
+    def _calculate_image_position(self, index: int) -> Position:
         viewport_width = self._renderer.viewport().width
         image_width = self._image_outer_size
         image_height = self._image_outer_size
 
         columns = max(1, viewport_width // image_width)
-        return ImagePosition(
+        return Position(
             x=(index % columns) * image_width,
             y=(index // columns) * image_height,
         )
 
     def _create_detail_model(self) -> DetailModel:
         viewport = self._renderer.viewport()
-        image_dimensions = ImageDimensions(
+        image_dimensions = Dimensions(
             width=viewport.width,
             height=viewport.height,
         )
@@ -725,8 +725,8 @@ class UI:
     @dataclass(frozen=True)
     class _MetaImage:
         file: ImageFile
-        position: ImagePosition
-        dimensions: ImageDimensions
+        position: Position
+        dimensions: Dimensions
 
         def distance_to(self, x: int, y: int) -> int:
             center_x = int(self.position.x + self.dimensions.width / 2)
