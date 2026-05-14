@@ -680,10 +680,9 @@ class UI:
                 ),
             ))
 
-        # Render images closes to the mouse cursor first
+        # Request images closes to the mouse cursor first
         meta_images.sort(key=lambda mi: mi.distance_to(self._mouse_position))
-
-        overview_images: list[OverviewImage] = []
+        loaded_images = {}
         for i, meta_image in enumerate(meta_images):
             request = LoadImageRequest(
                 image_file=meta_image.file,
@@ -694,6 +693,11 @@ class UI:
             if not loaded_image and i == 0:
                 loaded_image = self._image_loader.get_low_quality_image(request)
 
+            loaded_images[meta_image.file] = meta_image, loaded_image
+
+        overview_images: list[OverviewImage] = []
+        for image_file in self._image_files:
+            (meta_image, loaded_image) = loaded_images[image_file]
             if loaded_image:
                 overview_image = OverviewLoadedImage(
                     image_file=meta_image.file,
