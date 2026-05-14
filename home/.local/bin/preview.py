@@ -171,6 +171,10 @@ class OverviewModel:
 
     MARGIN: ClassVar[int] = 5
 
+    @property
+    def image_outer_size(self) -> int:
+        return self.image_size + 2 * self.MARGIN
+
     def set_viewport(self, viewport: Viewport):
         self.viewport = viewport
         self._recalculate_image_positions()
@@ -551,6 +555,8 @@ class WindowManager:
 
 
 class UI:
+    _START_IMAGE_SIZE = 100
+
     _MOUSE_SCROLL_SPEED = 75
     _MOUSE_ZOOM_SPEED = 10
 
@@ -567,17 +573,12 @@ class UI:
         self._image_files = image_files
 
         self._scroll_offset = 0
-        self._image_size = 100
 
         self._mouse_position = Position(0, 0)
 
         self._overview_model = self._create_overview_model()
         self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
-
-    @property
-    def _image_outer_size(self) -> int:
-        return self._image_size + 2 * OverviewModel.MARGIN
 
     @property
     def _min_scroll_offset(self) -> int:
@@ -587,7 +588,7 @@ class UI:
     def _max_scroll_offset(self) -> int:
         viewport_height = self._renderer.viewport().height
         last_index = len(self._overview_model.images) - 1
-        images_height = self._calculate_image_position(last_index).y + self._image_outer_size
+        images_height = self._calculate_image_position(last_index).y + self._overview_model.image_outer_size
         return viewport_height - images_height
 
     def mouse_select(self, event: Event):
@@ -644,19 +645,18 @@ class UI:
 
         if event.num == 4:
             max_image_size = self._renderer.viewport().width - 2 * OverviewModel.MARGIN
-            new_image_size = min(self._image_size + self._MOUSE_ZOOM_SPEED, max_image_size)
+            new_image_size = min(self._overview_model.image_size + self._MOUSE_ZOOM_SPEED, max_image_size)
         elif event.num == 5:
             min_image_size = 1
-            new_image_size = max(self._image_size - self._MOUSE_ZOOM_SPEED, min_image_size)
+            new_image_size = max(self._overview_model.image_size - self._MOUSE_ZOOM_SPEED, min_image_size)
         else:
             return
 
-        if self._image_size == new_image_size:
+        if self._overview_model.image_size == new_image_size:
             return
 
-        self._image_size = new_image_size
         self._image_loader.cancel()
-        self._overview_model.set_image_size(self._image_size, self._mouse_position, self._image_loader)
+        self._overview_model.set_image_size(new_image_size, self._mouse_position, self._image_loader)
         self._renderer.render_overview(self._overview_model)
 
     def scroll_page(self, up: bool):
@@ -771,11 +771,15 @@ class UI:
     def _create_overview_model(self) -> OverviewModel:
         image_placeholders: list[OverviewRequestedImage] = []
         for i, image_file in enumerate(self._image_files):
-            image_position = self._calculate_image_position(i)
+            image_position = OverviewModel.calculate_image_position(
+                index=i,
+                viewport=self._renderer.viewport(),
+                image_outer_size=self._START_IMAGE_SIZE + 2 * OverviewModel.MARGIN,
+            )
             image_placeholder = OverviewRequestedImage(
                 image_file=image_file,
                 position=image_position.with_scroll_offset(self._scroll_offset),
-                inner_dimensions=Dimensions.for_size(self._image_size),
+                inner_dimensions=Dimensions.for_size(self._START_IMAGE_SIZE),
                 margin=OverviewModel.MARGIN,
                 selected=False
             )
@@ -785,14 +789,15 @@ class UI:
         model = OverviewModel(
             viewport=self._renderer.viewport(),
             scroll_offset=self._scroll_offset,
-            image_size=self._image_size,
+            image_size=self._START_IMAGE_SIZE,
             images=image_placeholders,
         )
         model.load_missing_images(self._mouse_position, self._image_loader)
         return model
 
     def _calculate_image_position(self, index: int) -> Position:
-        return OverviewModel.calculate_image_position(index, self._renderer.viewport(), self._image_outer_size)
+        return OverviewModel.calculate_image_position(index, self._renderer.viewport(),
+                                                      self._overview_model.image_outer_size)
 
     def _create_detail_model(self) -> DetailModel:
         viewport = self._renderer.viewport()
