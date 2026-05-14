@@ -549,6 +549,11 @@ class WindowManager:
 
 
 class UI:
+    _KEY_HOME = 110
+    _KEY_END = 115
+    _KEY_PAGE_UP = 112
+    _KEY_PAGE_DOWN = 117
+
     _START_SCROLL_OFFSET = 0
     _START_IMAGE_SIZE = 100
 
@@ -631,14 +636,16 @@ class UI:
         self._renderer.render_overview(self._overview_model)
         self._set_window_title()
 
-    def scroll_to(self, start: bool):
+    def scroll_to(self, event: Event):
         if self._is_detail_mode:
             return
 
-        if start:
+        if event.keycode == self._KEY_HOME:
             new_offset = self._overview_model.min_scroll_offset
-        else:
+        elif event.keycode == self._KEY_END:
             new_offset = self._overview_model.max_scroll_offset
+        else:
+            return
 
         if self._overview_model.scroll_offset == new_offset:
             return
@@ -646,17 +653,19 @@ class UI:
         self._overview_model.set_scroll_offset(new_offset)
         self._renderer.render_overview(self._overview_model)
 
-    def scroll_page(self, up: bool):
+    def scroll_page(self, event: Event):
         if self._is_detail_mode:
             return
 
         viewport_height = self._renderer.viewport().height
-        if up:
+        if event.keycode == self._KEY_PAGE_UP:
             min_offset = self._overview_model.min_scroll_offset
             new_offset = min(self._overview_model.scroll_offset + viewport_height, min_offset)
-        else:
+        elif event.keycode == self._KEY_PAGE_DOWN:
             max_offset = self._overview_model.max_scroll_offset
             new_offset = max(self._overview_model.scroll_offset - viewport_height, max_offset)
+        else:
+            return
 
         if self._overview_model.scroll_offset == new_offset:
             return
@@ -844,10 +853,10 @@ def main():
     canvas.bind("<Control-Button-4>", lambda e: ui.mouse_zoom(e))
     canvas.bind("<Control-Button-5>", lambda e: ui.mouse_zoom(e))
 
-    root.bind('<Home>', lambda _: ui.scroll_to(True))
-    root.bind('<End>', lambda _: ui.scroll_to(False))
-    root.bind('<Prior>', lambda _: ui.scroll_page(True))
-    root.bind('<Next>', lambda _: ui.scroll_page(False))
+    root.bind('<Home>', lambda e: ui.scroll_to(e))
+    root.bind('<End>', lambda e: ui.scroll_to(e))
+    root.bind('<Prior>', lambda e: ui.scroll_page(e))
+    root.bind('<Next>', lambda e: ui.scroll_page(e))
 
     root.bind('<Left>', lambda _: ui.select_previous())
     root.bind('<Right>', lambda _: ui.select_next())
