@@ -159,7 +159,7 @@ class OverviewModel:
 
     def set_viewport(self, viewport: Viewport):
         self.viewport = viewport
-        # TODO Add logic
+        self.set_scroll_offset(self.scroll_offset)
 
     def set_scroll_offset(self, scroll_offset: int):
         self.scroll_offset = scroll_offset
@@ -516,12 +516,7 @@ class UI:
         self._mouse_position = Position(0, 0)
 
         # TODO Rename to self._overview_model
-        self._model = OverviewModel(
-            viewport=self._renderer.viewport(),
-            scroll_offset=self._scroll_offset,
-            image_size=self._image_size,
-            images=[],
-        )
+        self._model = self._create_overview_model()
         self._selected_image: Optional[OverviewImage] = None
         self._detail_model: Optional[DetailModel] = None
 
@@ -725,7 +720,6 @@ class UI:
         else:
             self._window_manager.reset_title()
             self._model.set_viewport(self._renderer.viewport())
-            self._model = self._create_overview_model()
             self._renderer.render_overview(self._model)
 
     def process_loaded_images(self):
