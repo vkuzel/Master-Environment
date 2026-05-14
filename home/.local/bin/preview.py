@@ -115,13 +115,6 @@ class OverviewImage:
 
 
 @dataclass
-class OverviewRequestedImage(OverviewImage):
-    def is_for_loaded_image(self, loaded_image: LoadedImage) -> bool:
-        request = loaded_image.request
-        return self.image_file == request.image_file and self.inner_dimensions == request.dimensions
-
-
-@dataclass
 class OverviewLoadedImage(OverviewImage):
     photo_image: PhotoImage
 
@@ -138,6 +131,23 @@ class OverviewLoadedImage(OverviewImage):
                 width=self.photo_image.width(),
                 height=self.photo_image.height(),
             )
+        )
+
+
+@dataclass
+class OverviewRequestedImage(OverviewImage):
+    def is_for_loaded_image(self, loaded_image: LoadedImage) -> bool:
+        request = loaded_image.request
+        return self.image_file == request.image_file and self.inner_dimensions == request.dimensions
+
+    def to_loaded_image(self, photo_image: PhotoImage) -> OverviewLoadedImage:
+        return OverviewLoadedImage(
+            image_file=self.image_file,
+            position=self.position,
+            inner_dimensions=self.inner_dimensions,
+            margin=self.margin,
+            selected=self.selected,
+            photo_image=photo_image,
         )
 
 
@@ -208,16 +218,9 @@ class OverviewModel:
             if not image.is_for_loaded_image(loaded_image):
                 continue
 
-            loaded_image = OverviewLoadedImage(
-                image_file=image.image_file,
-                position=image.position,
-                inner_dimensions=image.inner_dimensions,
-                margin=image.margin,
-                selected=image.selected,
-                photo_image=loaded_image.photo_image,
-            )
-            self.images[i] = loaded_image
-            return loaded_image
+            overview_loaded_image = image.to_loaded_image(loaded_image.photo_image)
+            self.images[i] = overview_loaded_image
+            return overview_loaded_image
         else:
             return None
 
