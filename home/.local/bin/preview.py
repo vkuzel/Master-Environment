@@ -657,7 +657,8 @@ class UI:
 
         if self._selected_image:
             self._selected_image = previous_image
-            self.initialize()
+            self._detail_model = self._create_detail_model()
+            self._renderer.render_detail(self._detail_model)
         else:
             self._renderer.render_overview_image_highlight(selected_image)
             self._renderer.render_overview_image_highlight(previous_image)
@@ -672,7 +673,8 @@ class UI:
 
         if self._selected_image:
             self._selected_image = next_image
-            self.initialize()
+            self._detail_model = self._create_detail_model()
+            self._renderer.render_detail(self._detail_model)
         else:
             self._renderer.render_overview_image_highlight(selected_image)
             self._renderer.render_overview_image_highlight(next_image)
