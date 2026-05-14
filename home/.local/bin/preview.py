@@ -159,10 +159,19 @@ class OverviewModel:
 
     def set_viewport(self, viewport: Viewport):
         self.viewport = viewport
-        self.set_scroll_offset(self.scroll_offset)
+        self._recalculate_image_positions()
 
     def set_scroll_offset(self, scroll_offset: int):
         self.scroll_offset = scroll_offset
+        self._recalculate_image_positions()
+
+    # TODO scroll_offset adjustment should be performed inside this method, not externally
+    def set_image_size(self, image_size: int, scroll_offset: int):
+        self.image_size = image_size
+        self.scroll_offset = scroll_offset
+        # TODO Add logic
+
+    def _recalculate_image_positions(self):
         for i, image in enumerate(self.images):
             image_outer_size = image.outer_rect.dimensions.width
             image_position = OverviewModel.calculate_image_position(i, self.viewport, image_outer_size)
@@ -170,12 +179,6 @@ class OverviewModel:
                 x=image_position.x,
                 y=image_position.y + self.scroll_offset,
             )
-
-    # TODO scroll_offset adjustment should be performed inside this method, not externally
-    def set_image_size(self, image_size: int, scroll_offset: int):
-        self.image_size = image_size
-        self.scroll_offset = scroll_offset
-        # TODO Add logic
 
     @staticmethod
     def calculate_image_position(index: int, viewport: Viewport, image_outer_size: int) -> Position:
