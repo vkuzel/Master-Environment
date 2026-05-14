@@ -449,6 +449,9 @@ class WindowManager:
 class UI:
     _MARGIN = 5
 
+    _MOUSE_SCROLL_SPEED = 75
+    _MOUSE_ZOOM_SPEED = 10
+
     def __init__(
             self,
             window_manager: WindowManager,
@@ -530,11 +533,10 @@ class UI:
         if self._selected_image:
             return
 
-        scroll_speed = 75
         if event.num == 4:
-            self._scroll_offset += scroll_speed
+            self._scroll_offset += self._MOUSE_SCROLL_SPEED
         elif event.num == 5:
-            self._scroll_offset -= scroll_speed
+            self._scroll_offset -= self._MOUSE_SCROLL_SPEED
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
@@ -544,11 +546,11 @@ class UI:
 
         old_tile_size = self._image_outer_size
 
-        zoom_speed = 10
         if event.num == 4:
-            self._image_size = min(self._image_size + zoom_speed, self._renderer.viewport().width - 2 * self._MARGIN)
+            self._image_size = min(self._image_size + self._MOUSE_ZOOM_SPEED,
+                                   self._renderer.viewport().width - 2 * self._MARGIN)
         elif event.num == 5:
-            self._image_size = max(self._image_size - zoom_speed, 1)
+            self._image_size = max(self._image_size - self._MOUSE_ZOOM_SPEED, 1)
 
         new_tile_size = self._image_outer_size
         content_y = self._mouse_y - self._scroll_offset
