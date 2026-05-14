@@ -146,7 +146,7 @@ class OverviewLoadedImage(OverviewImage):
 
 
 @dataclass
-class OverviewRequestedImage(OverviewImage):
+class OverviewImagePlaceholder(OverviewImage):
     def is_for_loaded_image(self, loaded_image: LoadedImage) -> bool:
         request = loaded_image.request
         return self.image_file == request.image_file and self.inner_dimensions == request.dimensions
@@ -200,7 +200,7 @@ class OverviewModel:
         self.scroll_offset = round(mouse_position.y - content_y * new_tile_size / old_tile_size)
 
         for i, image in enumerate(self.images):
-            self.images[i] = OverviewRequestedImage(
+            self.images[i] = OverviewImagePlaceholder(
                 image_file=image.image_file,
                 position=self._calculate_image_position(i).with_scroll_offset(self.scroll_offset),
                 inner_dimensions=Dimensions.for_size(image_size),
@@ -212,9 +212,9 @@ class OverviewModel:
         self.load_missing_images(mouse_position, image_loader)
 
     def load_missing_images(self, mouse_position: Position, image_loader: "ImageLoader"):
-        images_to_load: list[Tuple[int, OverviewRequestedImage]] = []
+        images_to_load: list[Tuple[int, OverviewImagePlaceholder]] = []
         for i, image in enumerate(self.images):
-            if isinstance(image, OverviewRequestedImage):
+            if isinstance(image, OverviewImagePlaceholder):
                 images_to_load.append((i, image))
 
         # Request images closes to the mouse cursor first
@@ -312,7 +312,7 @@ class OverviewModel:
     def create_loaded_image(self, loaded_image: LoadedImage) -> Optional[OverviewLoadedImage]:
         # Loop in a loop can be optimized
         for i, image in enumerate(self.images):
-            if not isinstance(image, OverviewRequestedImage):
+            if not isinstance(image, OverviewImagePlaceholder):
                 continue
             if not image.is_for_loaded_image(loaded_image):
                 continue
@@ -779,14 +779,14 @@ class UI:
                 self._window_manager.reset_title()
 
     def _create_overview_model(self, image_files: list[ImageFile]) -> OverviewModel:
-        image_placeholders: list[OverviewRequestedImage] = []
+        image_placeholders: list[OverviewImagePlaceholder] = []
         for i, image_file in enumerate(image_files):
             image_position = OverviewModel.calculate_image_position(
                 index=i,
                 viewport=self._renderer.viewport(),
                 image_size=self._START_IMAGE_SIZE,
             )
-            image_placeholder = OverviewRequestedImage(
+            image_placeholder = OverviewImagePlaceholder(
                 image_file=image_file,
                 position=image_position.with_scroll_offset(self._START_SCROLL_OFFSET),
                 inner_dimensions=Dimensions.for_size(self._START_IMAGE_SIZE),
