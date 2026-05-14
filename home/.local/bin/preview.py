@@ -442,15 +442,15 @@ class ImageLoader:
     @staticmethod
     def load_image(image_file: ImageFile, dimensions: Dimensions) -> ImageTk.PhotoImage:
         image = Image.open(image_file.name)
-        image = ImageLoader._resize_image(image, dimensions)
+        image = ImageLoader._resize_image(image, dimensions, Resampling.LANCZOS)
         return ImageTk.PhotoImage(image)
 
     @staticmethod
-    def _resize_image(image: Image.Image, dimensions: Dimensions) -> Image.Image:
+    def _resize_image(image: Image.Image, dimensions: Dimensions, resampling = Resampling.NEAREST) -> Image.Image:
         scale = min(dimensions.width / image.width, dimensions.height / image.height)
         new_width = int(image.width * scale)
         new_height = int(image.height * scale)
-        return image.resize((new_width, new_height), resample=Resampling.NEAREST)
+        return image.resize((new_width, new_height), resample=resampling)
 
     @staticmethod
     def _clear_queue(q: Queue):
