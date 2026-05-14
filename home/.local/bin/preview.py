@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-"""
-- TODO Don't allow to scroll past last image
-"""
 import io
 import queue
 import threading
@@ -518,7 +515,11 @@ class UI:
         if self._selected_image:
             return
 
-        self._scroll_offset = self._min_scroll_offset
+        new_offset = self._min_scroll_offset
+        if self._scroll_offset == new_offset:
+            return
+
+        self._scroll_offset = new_offset
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
@@ -526,7 +527,11 @@ class UI:
         if self._selected_image:
             return
 
-        self._scroll_offset = self._max_scroll_offset
+        new_offset = self._max_scroll_offset
+        if self._scroll_offset == new_offset:
+            return
+
+        self._scroll_offset = new_offset
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
@@ -535,7 +540,11 @@ class UI:
             return
 
         viewport_height = self._renderer.viewport().height
-        self._scroll_offset += viewport_height
+        new_offset = min(self._scroll_offset + viewport_height, self._max_scroll_offset)
+        if self._scroll_offset == new_offset:
+            return
+
+        self._scroll_offset = new_offset
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
@@ -544,7 +553,11 @@ class UI:
             return
 
         viewport_height = self._renderer.viewport().height
-        self._scroll_offset -= viewport_height
+        new_offset = max(self._scroll_offset - viewport_height, self._min_scroll_offset)
+        if self._scroll_offset == new_offset:
+            return
+
+        self._scroll_offset = new_offset
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
@@ -553,9 +566,16 @@ class UI:
             return
 
         if event.num == 4:
-            self._scroll_offset += self._MOUSE_SCROLL_SPEED
+            new_offset = min(self._scroll_offset + self._MOUSE_SCROLL_SPEED, self._min_scroll_offset)
         elif event.num == 5:
-            self._scroll_offset -= self._MOUSE_SCROLL_SPEED
+            new_offset = max(self._scroll_offset - self._MOUSE_SCROLL_SPEED, self._max_scroll_offset)
+        else:
+            return
+
+        if self._scroll_offset == new_offset:
+            return
+
+        self._scroll_offset = new_offset
         self._model = self._create_overview_model()
         self._renderer.render_overview(self._model)
 
