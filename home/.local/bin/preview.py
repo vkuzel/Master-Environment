@@ -34,6 +34,39 @@ class Position:
 
 
 @dataclass(frozen=True)
+class Rectangle:
+    position: Position
+    dimensions: Dimensions
+
+    @property
+    def x1(self) -> int:
+        return self.position.x
+
+    @property
+    def y1(self) -> int:
+        return self.position.y
+
+    @property
+    def x2(self) -> int:
+        return self.position.x + self.dimensions.width
+
+    @property
+    def y2(self) -> int:
+        return self.position.y + self.dimensions.height
+
+    @property
+    def center_x(self) -> int:
+        return int(self.position.x + self.dimensions.width / 2)
+
+    @property
+    def center_y(self) -> int:
+        return int(self.position.y + self.dimensions.height / 2)
+
+    def contains_point(self, x: int, y: int) -> bool:
+        return self.x1 <= x <= self.x2 and self.y1 <= y <= self.y2
+
+
+@dataclass(frozen=True)
 class LoadImageRequest:
     image_file: ImageFile
     dimensions: Dimensions
@@ -60,49 +93,28 @@ class OverviewImage:
     selected: bool
 
     @property
-    def center_x(self) -> int:
-        return int(self.position.x + self.margin + self.inner_dimensions.width / 2)
+    def inner_rect(self) -> Rectangle:
+        return Rectangle(
+            position=Position(
+                self.position.x + self.margin,
+                self.position.y + self.margin,
+            ),
+            dimensions=self.inner_dimensions,
+        )
 
     @property
-    def center_y(self) -> int:
-        return int(self.position.y + self.margin + self.inner_dimensions.height / 2)
+    def outer_rect(self) -> Rectangle:
+        return Rectangle(
+            position=self.position,
+            dimensions=Dimensions(
+                self.inner_dimensions.width + 2 * self.margin,
+                self.inner_dimensions.height + 2 * self.margin,
+            )
+        )
 
-    @property
-    def content_x1(self) -> int:
-        return self.position.x + self.margin
-
-    @property
-    def content_y1(self) -> int:
-        return self.position.y + self.margin
-
-    @property
-    def content_x2(self) -> int:
-        return self.position.x + self.margin + self.inner_dimensions.width
-
-    @property
-    def content_y2(self) -> int:
-        return self.position.y + self.margin + self.inner_dimensions.height
-
-    @property
-    def outer_x1(self) -> int:
-        return self.position.x
-
-    @property
-    def outer_y1(self) -> int:
-        return self.position.y
-
-    @property
-    def outer_x2(self) -> int:
-        return self.position.x + self.inner_dimensions.width + 2 * self.margin
-
-    @property
-    def outer_y2(self) -> int:
-        return self.position.y + self.inner_dimensions.height + 2 * self.margin
-
+    # TODO Mouse should be stored as a mutable Position object
     def contains_point(self, x: int, y: int) -> bool:
-        x1, y1 = self.position.x, self.position.y
-        x2, y2 = x1 + self.inner_dimensions.width, y1 + self.inner_dimensions.height
-        return x1 <= x <= x2 and y1 <= y <= y2
+        return self.outer_rect.contains_point(x, y)
 
 
 @dataclass
@@ -117,14 +129,19 @@ class OverviewLoadedImage(OverviewImage):
     photo_image: PhotoImage
 
     @property
-    def photo_x1(self) -> int:
-        x_offset = int((self.inner_dimensions.width - self.photo_image.width()) / 2)
-        return self.content_x1 + x_offset
-
-    @property
-    def photo_y1(self) -> int:
-        y_offset = int((self.inner_dimensions.height - self.photo_image.height()) / 2)
-        return self.content_y1 + y_offset
+    def photo_rect(self) -> Rectangle:
+        x_offset = int((self.inner_rect.dimensions.width - self.photo_image.width()) / 2)
+        y_offset = int((self.inner_rect.dimensions.height - self.photo_image.height()) / 2)
+        return Rectangle(
+            position=Position(
+                x=self.inner_rect.position.x + x_offset,
+                y=self.inner_rect.position.y + y_offset,
+            ),
+            dimensions=Dimensions(
+                width=self.photo_image.width(),
+                height=self.photo_image.height(),
+            )
+        )
 
 
 @dataclass(frozen=True)
@@ -215,12 +232,14 @@ class DetailModel:
     photo_image: PhotoImage
 
     @property
-    def photo_x1(self) -> int:
-        return int((self.image_dimensions.width - self.photo_image.width()) / 2)
-
-    @property
-    def photo_y1(self) -> int:
-        return int((self.image_dimensions.height - self.photo_image.height()) / 2)
+    def photo_rect(self) -> Rectangle:
+        return Rectangle(
+            position=Position(
+                x=int((self.image_dimensions.width - self.photo_image.width()) / 2),
+                y=int((self.image_dimensions.height - self.photo_image.height()) / 2),
+            ),
+            dimensions=self.image_dimensions,
+        )
 
 
 class ImageFilesScanner:
@@ -373,21 +392,21 @@ class Renderer:
         canvas_height = self._canvas.winfo_height()
 
         for image in overview_model.images:
-            if image.outer_y1 > canvas_height or image.outer_y2 < 0:
+            if image.outer_rect.y1 > canvas_height or image.outer_rect.y2 < 0:
                 continue
 
             self._canvas.create_rectangle(
-                image.content_x1,
-                image.content_y1,
-                image.content_x2,
-                image.content_y2,
+                image.inner_rect.x1,
+                image.inner_rect.y1,
+                image.inner_rect.x2,
+                image.inner_rect.y2,
                 width=2,
                 fill="#01302f",
             )
 
             self._canvas.create_text(
-                image.center_x,
-                image.center_y,
+                image.outer_rect.center_x,
+                image.outer_rect.center_y,
                 text=image.image_file.name,
                 anchor="center",
                 font=("Arial", 12),
@@ -401,8 +420,8 @@ class Renderer:
 
     def render_overview_image(self, image: OverviewLoadedImage):
         self._canvas.create_image(
-            image.photo_x1,
-            image.photo_y1,
+            image.photo_rect.x1,
+            image.photo_rect.y1,
             image=image.photo_image,
             anchor="nw"
         )
@@ -410,10 +429,10 @@ class Renderer:
     def render_overview_image_highlight(self, image: OverviewImage):
         outline = "white" if image.selected else "black"
         self._canvas.create_rectangle(
-            image.content_x1,
-            image.content_y1,
-            image.content_x2,
-            image.content_y2,
+            image.inner_rect.x1,
+            image.inner_rect.y1,
+            image.inner_rect.x2,
+            image.inner_rect.y2,
             width=2,
             outline=outline,
         )
@@ -421,8 +440,8 @@ class Renderer:
     def render_detail(self, image: DetailModel):
         self._canvas.delete("all")
         self._canvas.create_image(
-            image.photo_x1,
-            image.photo_y1,
+            image.photo_rect.x1,
+            image.photo_rect.y1,
             image=image.photo_image,
             anchor='nw',
         )
