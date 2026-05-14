@@ -182,6 +182,10 @@ class OverviewModel:
         images_height = self._calculate_image_position(len(self.images) - 1).y + image_outer_size
         return viewport_height - images_height
 
+    @property
+    def max_image_size(self) -> int:
+        return self.viewport.width - 2 * self.MARGIN
+
     def set_viewport(self, viewport: Viewport):
         self.viewport = viewport
         self._recalculate_image_positions()
@@ -191,8 +195,8 @@ class OverviewModel:
         self._recalculate_image_positions()
 
     def set_image_size(self, image_size: int, mouse_position: Position, image_loader: "ImageLoader"):
-        old_tile_size = self.image_size + 2 * OverviewModel.MARGIN
-        new_tile_size = image_size + 2 * OverviewModel.MARGIN
+        old_tile_size = self.image_size + 2 * self.MARGIN
+        new_tile_size = image_size + 2 * self.MARGIN
 
         self.image_size = image_size
 
@@ -239,7 +243,7 @@ class OverviewModel:
             image.position = self._calculate_image_position(i).with_scroll_offset(self.scroll_offset)
 
     def _calculate_image_position(self, index: int) -> Position:
-        return OverviewModel.calculate_image_position(index, self.viewport, self.image_size)
+        return self.calculate_image_position(index, self.viewport, self.image_size)
 
     @staticmethod
     def calculate_image_position(index: int, viewport: Viewport, image_size: int) -> Position:
@@ -620,7 +624,7 @@ class UI:
             return
 
         if event.num == 4:
-            max_image_size = self._renderer.viewport().width - 2 * OverviewModel.MARGIN
+            max_image_size = self._overview_model.max_image_size
             new_image_size = min(self._overview_model.image_size + self._MOUSE_ZOOM_SPEED, max_image_size)
         elif event.num == 5:
             min_image_size = 1
@@ -640,7 +644,7 @@ class UI:
         if self._is_detail_mode:
             return
 
-        max_image_size = self._renderer.viewport().width - 2 * OverviewModel.MARGIN
+        max_image_size = self._overview_model.max_image_size
         if self._overview_model.image_size == max_image_size:
             image_size = min(self._START_IMAGE_SIZE, max_image_size)
         else:
