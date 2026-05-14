@@ -620,22 +620,6 @@ class UI:
         self._overview_model.set_scroll_offset(self._scroll_offset)
         self._renderer.render_overview(self._overview_model)
 
-    def scroll_page(self, up: bool):
-        if self._selected_image:
-            return
-
-        viewport_height = self._renderer.viewport().height
-        if up:
-            new_offset = min(self._scroll_offset + viewport_height, self._min_scroll_offset)
-        else:
-            new_offset = max(self._scroll_offset - viewport_height, self._max_scroll_offset)
-        if self._scroll_offset == new_offset:
-            return
-
-        self._scroll_offset = new_offset
-        self._overview_model.set_scroll_offset(self._scroll_offset)
-        self._renderer.render_overview(self._overview_model)
-
     def mouse_scroll(self, event: Event):
         if self._selected_image:
             return
@@ -673,6 +657,22 @@ class UI:
         self._image_size = new_image_size
         self._image_loader.cancel()
         self._overview_model.set_image_size(self._image_size, self._mouse_position, self._image_loader)
+        self._renderer.render_overview(self._overview_model)
+
+    def scroll_page(self, up: bool):
+        if self._selected_image:
+            return
+
+        viewport_height = self._renderer.viewport().height
+        if up:
+            new_offset = min(self._scroll_offset + viewport_height, self._min_scroll_offset)
+        else:
+            new_offset = max(self._scroll_offset - viewport_height, self._max_scroll_offset)
+        if self._scroll_offset == new_offset:
+            return
+
+        self._scroll_offset = new_offset
+        self._overview_model.set_scroll_offset(self._scroll_offset)
         self._renderer.render_overview(self._overview_model)
 
     def select_previous(self):
