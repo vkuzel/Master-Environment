@@ -732,8 +732,9 @@ class UI:
             self._renderer.render_overview(self._overview_model)
         else:
             selected_image = self._overview_model.find_selected_image()
-            self._detail_model = self._create_detail_model(selected_image)
-            self._renderer.render_detail(self._detail_model)
+            if selected_image:
+                self._detail_model = self._create_detail_model(selected_image)
+                self._renderer.render_detail(self._detail_model)
         self._set_window_title()
 
     def exit_preview_or_quit(self, root: Tk):
