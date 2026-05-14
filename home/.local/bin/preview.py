@@ -687,7 +687,7 @@ class UI:
 
         if self._selected_image:
             self._selected_image = previous_image
-            self._detail_model = self._create_detail_model()
+            self._detail_model = self._create_detail_model(self._selected_image)
             self._renderer.render_detail(self._detail_model)
         else:
             self._renderer.render_overview_image_highlight(selected_image)
@@ -703,7 +703,7 @@ class UI:
 
         if self._selected_image:
             self._selected_image = next_image
-            self._detail_model = self._create_detail_model()
+            self._detail_model = self._create_detail_model(self._selected_image)
             self._renderer.render_detail(self._detail_model)
         else:
             self._renderer.render_overview_image_highlight(selected_image)
@@ -743,13 +743,13 @@ class UI:
             self._renderer.render_overview(self._overview_model)
         else:
             self._selected_image = self._overview_model.find_selected_image()
-            self._detail_model = self._create_detail_model()
+            self._detail_model = self._create_detail_model(self._selected_image)
             self._renderer.render_detail(self._detail_model)
 
     def initialize(self):
         if self._selected_image:
             self._window_manager.set_title(self._selected_image.image_file.name)
-            detail_model = self._create_detail_model()
+            detail_model = self._create_detail_model(self._selected_image)
             self._detail_model = detail_model
             self._renderer.render_detail(detail_model)
         else:
@@ -797,15 +797,15 @@ class UI:
         model.load_missing_images(self._mouse_position, self._image_loader)
         return model
 
-    def _create_detail_model(self) -> DetailModel:
+    def _create_detail_model(self, image: OverviewImage) -> DetailModel:
         viewport = self._renderer.viewport()
         image_dimensions = Dimensions(
             width=viewport.width,
             height=viewport.height,
         )
-        photo_image = self._image_loader.load_image(self._selected_image.image_file, image_dimensions)
+        photo_image = self._image_loader.load_image(image.image_file, image_dimensions)
         return DetailModel(
-            image_file=self._selected_image.image_file,
+            image_file=image.image_file,
             image_dimensions=image_dimensions,
             photo_image=photo_image,
         )
