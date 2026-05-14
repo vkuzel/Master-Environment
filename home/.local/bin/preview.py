@@ -15,8 +15,6 @@ from PIL import Image, ImageTk
 from PIL.Image import Resampling
 from PIL.ImageTk import PhotoImage
 
-MARGIN = 5
-
 
 @dataclass(frozen=True)
 class ImageFile:
@@ -449,6 +447,8 @@ class WindowManager:
 
 
 class UI:
+    _MARGIN = 5
+
     def __init__(
             self,
             window_manager: WindowManager,
@@ -473,7 +473,7 @@ class UI:
 
     @property
     def _image_outer_size(self) -> int:
-        return self._image_size + 2 * MARGIN
+        return self._image_size + 2 * self._MARGIN
 
     def mouse_select(self, event: Event):
         self._mouse_x = event.x
@@ -546,7 +546,7 @@ class UI:
 
         zoom_speed = 10
         if event.num == 4:
-            self._image_size = min(self._image_size + zoom_speed, self._renderer.viewport().width - 2 * MARGIN)
+            self._image_size = min(self._image_size + zoom_speed, self._renderer.viewport().width - 2 * self._MARGIN)
         elif event.num == 5:
             self._image_size = max(self._image_size - zoom_speed, 1)
 
@@ -660,7 +660,7 @@ class UI:
                 dimensions=ImageDimensions(
                     width=self._image_size,
                     height=self._image_size,
-                    margin=MARGIN,
+                    margin=self._MARGIN,
                 ),
             ))
 
