@@ -109,7 +109,6 @@ class OverviewImage:
             )
         )
 
-    # TODO Mouse should be stored as a mutable Position object
     def contains_position(self, position: Position) -> bool:
         return self.outer_rect.contains_position(position)
 
