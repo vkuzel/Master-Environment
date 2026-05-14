@@ -25,15 +25,6 @@ class ImageFile:
 class ImageDimensions:
     width: int
     height: int
-    margin: int
-
-    @property
-    def outer_width(self) -> int:
-        return self.width + 2 * self.margin
-
-    @property
-    def outer_height(self) -> int:
-        return self.height + 2 * self.margin
 
 
 @dataclass(frozen=True)
@@ -65,31 +56,32 @@ class OverviewImage:
     image_file: ImageFile
     image_position: ImagePosition
     image_dimensions: ImageDimensions
+    margin: int
     selected: bool
 
     @property
     def center_x(self) -> int:
-        return int(self.image_position.x + self.image_dimensions.margin + self.image_dimensions.width / 2)
+        return int(self.image_position.x + self.margin + self.image_dimensions.width / 2)
 
     @property
     def center_y(self) -> int:
-        return int(self.image_position.y + self.image_dimensions.margin + self.image_dimensions.height / 2)
+        return int(self.image_position.y + self.margin + self.image_dimensions.height / 2)
 
     @property
     def content_x1(self) -> int:
-        return self.image_position.x + self.image_dimensions.margin
+        return self.image_position.x + self.margin
 
     @property
     def content_y1(self) -> int:
-        return self.image_position.y + self.image_dimensions.margin
+        return self.image_position.y + self.margin
 
     @property
     def content_x2(self) -> int:
-        return self.image_position.x + self.image_dimensions.margin + self.image_dimensions.width
+        return self.image_position.x + self.margin + self.image_dimensions.width
 
     @property
     def content_y2(self) -> int:
-        return self.image_position.y + self.image_dimensions.margin + self.image_dimensions.height
+        return self.image_position.y + self.margin + self.image_dimensions.height
 
     @property
     def outer_x1(self) -> int:
@@ -101,11 +93,11 @@ class OverviewImage:
 
     @property
     def outer_x2(self) -> int:
-        return self.image_position.x + self.image_dimensions.width + 2 * self.image_dimensions.margin
+        return self.image_position.x + self.image_dimensions.width + 2 * self.margin
 
     @property
     def outer_y2(self) -> int:
-        return self.image_position.y + self.image_dimensions.height + 2 * self.image_dimensions.margin
+        return self.image_position.y + self.image_dimensions.height + 2 * self.margin
 
     def contains_point(self, x: int, y: int) -> bool:
         x1, y1 = self.image_position.x, self.image_position.y
@@ -206,6 +198,7 @@ class OverviewModel:
                 image_file=image.image_file,
                 image_position=image.image_position,
                 image_dimensions=image.image_dimensions,
+                margin=image.margin,
                 selected=image.selected,
                 photo_image=loaded_image.photo_image,
             )
@@ -666,7 +659,6 @@ class UI:
                 dimensions=ImageDimensions(
                     width=self._image_size,
                     height=self._image_size,
-                    margin=self._MARGIN,
                 ),
             ))
 
@@ -689,6 +681,7 @@ class UI:
                     image_file=meta_image.file,
                     image_position=meta_image.position,
                     image_dimensions=meta_image.dimensions,
+                    margin=self._MARGIN,
                     selected=False,
                     photo_image=loaded_image.photo_image,
                 )
@@ -697,6 +690,7 @@ class UI:
                     image_file=meta_image.file,
                     image_position=meta_image.position,
                     image_dimensions=meta_image.dimensions,
+                    margin=self._MARGIN,
                     selected=False,
                 )
             overview_image.selected = overview_image.contains_point(self._mouse_x, self._mouse_y)
@@ -720,7 +714,6 @@ class UI:
         image_dimensions = ImageDimensions(
             width=viewport.width,
             height=viewport.height,
-            margin=0,
         )
         photo_image = self._image_loader.load_image(self._selected_image.image_file, image_dimensions)
         return DetailModel(
