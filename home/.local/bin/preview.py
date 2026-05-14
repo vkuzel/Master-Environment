@@ -446,7 +446,7 @@ class ImageLoader:
         return ImageTk.PhotoImage(image)
 
     @staticmethod
-    def _resize_image(image: Image.Image, dimensions: Dimensions, resampling = Resampling.NEAREST) -> Image.Image:
+    def _resize_image(image: Image.Image, dimensions: Dimensions, resampling=Resampling.NEAREST) -> Image.Image:
         scale = min(dimensions.width / image.width, dimensions.height / image.height)
         new_width = int(image.width * scale)
         new_height = int(image.height * scale)
@@ -716,12 +716,17 @@ class UI:
         selected_image.selected = False
         previous_image.selected = True
 
+        changed_offset = self._adjust_scroll_offset_to_selected_image(previous_image)
+
         if self._is_detail_mode:
             self._detail_model = self._create_detail_model(previous_image)
             self._renderer.render_detail(self._detail_model)
         else:
-            self._renderer.render_overview_image_highlight(selected_image)
-            self._renderer.render_overview_image_highlight(previous_image)
+            if changed_offset:
+                self._renderer.render_overview(self._overview_model)
+            else:
+                self._renderer.render_overview_image_highlight(selected_image)
+                self._renderer.render_overview_image_highlight(previous_image)
         self._set_window_title()
 
     def select_next(self):
@@ -732,12 +737,17 @@ class UI:
         selected_image.selected = False
         next_image.selected = True
 
+        changed_offset = self._adjust_scroll_offset_to_selected_image(next_image)
+
         if self._is_detail_mode:
             self._detail_model = self._create_detail_model(next_image)
             self._renderer.render_detail(self._detail_model)
         else:
-            self._renderer.render_overview_image_highlight(selected_image)
-            self._renderer.render_overview_image_highlight(next_image)
+            if changed_offset:
+                self._renderer.render_overview(self._overview_model)
+            else:
+                self._renderer.render_overview_image_highlight(selected_image)
+                self._renderer.render_overview_image_highlight(next_image)
         self._set_window_title()
 
     def select_above(self):
@@ -751,8 +761,13 @@ class UI:
         selected_image.selected = False
         above_image.selected = True
 
-        self._renderer.render_overview_image_highlight(selected_image)
-        self._renderer.render_overview_image_highlight(above_image)
+        changed_offset = self._adjust_scroll_offset_to_selected_image(above_image)
+
+        if changed_offset:
+            self._renderer.render_overview(self._overview_model)
+        else:
+            self._renderer.render_overview_image_highlight(selected_image)
+            self._renderer.render_overview_image_highlight(above_image)
         self._set_window_title()
 
     def select_below(self):
@@ -766,9 +781,28 @@ class UI:
         selected_image.selected = False
         bellow_image.selected = True
 
-        self._renderer.render_overview_image_highlight(selected_image)
-        self._renderer.render_overview_image_highlight(bellow_image)
+        changed_offset = self._adjust_scroll_offset_to_selected_image(bellow_image)
+
+        if changed_offset:
+            self._renderer.render_overview(self._overview_model)
+        else:
+            self._renderer.render_overview_image_highlight(selected_image)
+            self._renderer.render_overview_image_highlight(bellow_image)
         self._set_window_title()
+
+    def _adjust_scroll_offset_to_selected_image(self, image: OverviewImage) -> bool:
+        if image.outer_rect.y1 < 0:
+            scroll_offset_delta = 0 - image.outer_rect.y1
+            new_offset = self._overview_model.scroll_offset + scroll_offset_delta
+            self._overview_model.set_scroll_offset(new_offset)
+            return True
+        elif image.outer_rect.y2 > self._overview_model.viewport.height:
+            scroll_offset_delta = image.outer_rect.y2 - self._overview_model.viewport.height
+            new_offset = self._overview_model.scroll_offset - scroll_offset_delta
+            self._overview_model.set_scroll_offset(new_offset)
+            return True
+        else:
+            return False
 
     def toggle_preview(self):
         if self._is_detail_mode:
