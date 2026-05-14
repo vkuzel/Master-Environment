@@ -23,6 +23,10 @@ class Dimensions:
     width: int
     height: int
 
+    @staticmethod
+    def for_size(size: int) -> "Dimensions":
+        return Dimensions(size, size)
+
 
 @dataclass
 class Position:
@@ -185,11 +189,7 @@ class OverviewModel:
             self.images[i] = OverviewRequestedImage(
                 image_file=image.image_file,
                 position=image_position.with_scroll_offset(self.scroll_offset),
-                inner_dimensions=Dimensions(
-                    # TODO Factory for the size
-                    width=image_size,
-                    height=image_size,
-                ),
+                inner_dimensions=Dimensions.for_size(image_size),
                 margin=image.margin,
                 selected=image.selected,
             )
@@ -794,10 +794,7 @@ class UI:
             image_placeholder = OverviewRequestedImage(
                 image_file=image_file,
                 position=image_position.with_scroll_offset(self._scroll_offset),
-                inner_dimensions=Dimensions(
-                    width=self._image_size,
-                    height=self._image_size,
-                ),
+                inner_dimensions=Dimensions.for_size(self._image_size),
                 margin=self._MARGIN,
                 selected=False
             )
