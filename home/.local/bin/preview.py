@@ -154,6 +154,14 @@ class OverviewRequestedImage(OverviewImage):
 class OverviewModel:
     images: list[OverviewImage]
 
+    def set_scroll_offset(self, scroll_offset: int, viewport: Viewport, image_outer_size: int):
+        for i, image in enumerate(self.images):
+            image_position = OverviewModel.calculate_image_position(i, viewport, image_outer_size)
+            image.position = Position(
+                x=image_position.x,
+                y=image_position.y + scroll_offset,
+            )
+
     @staticmethod
     def calculate_image_position(index: int, viewport: Viewport, image_outer_size: int) -> Position:
         viewport_width = viewport.width
@@ -534,7 +542,7 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model = self._create_overview_model()
+        self._model.set_scroll_offset(self._scroll_offset, self._renderer.viewport(), self._image_outer_size)
         self._renderer.render_overview(self._model)
 
     def scroll_to_end(self):
@@ -546,7 +554,7 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model = self._create_overview_model()
+        self._model.set_scroll_offset(self._scroll_offset, self._renderer.viewport(), self._image_outer_size)
         self._renderer.render_overview(self._model)
 
     def scroll_page_up(self):
@@ -559,7 +567,7 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model = self._create_overview_model()
+        self._model.set_scroll_offset(self._scroll_offset, self._renderer.viewport(), self._image_outer_size)
         self._renderer.render_overview(self._model)
 
     def scroll_page_down(self):
@@ -572,7 +580,7 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model = self._create_overview_model()
+        self._model.set_scroll_offset(self._scroll_offset, self._renderer.viewport(), self._image_outer_size)
         self._renderer.render_overview(self._model)
 
     def scroll(self, event: Event):
@@ -590,7 +598,7 @@ class UI:
             return
 
         self._scroll_offset = new_offset
-        self._model = self._create_overview_model()
+        self._model.set_scroll_offset(self._scroll_offset, self._renderer.viewport(), self._image_outer_size)
         self._renderer.render_overview(self._model)
 
     def zoom(self, event: Event):
