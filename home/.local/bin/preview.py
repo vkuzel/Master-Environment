@@ -186,9 +186,12 @@ class OverviewModel:
     def max_image_size(self) -> int:
         return self.viewport.width - 2 * self.MARGIN
 
-    def set_viewport(self, viewport: Viewport):
+    def set_viewport(self, viewport: Viewport, mouse_position: Position, image_loader: "ImageLoader"):
         self.viewport = viewport
-        self._recalculate_image_positions()
+        if self.image_size > self.max_image_size:
+            self.set_image_size(self.max_image_size, mouse_position, image_loader)
+        else:
+            self._recalculate_image_positions()
 
     def set_scroll_offset(self, scroll_offset: int):
         self.scroll_offset = scroll_offset
@@ -786,7 +789,7 @@ class UI:
             self._detail_model = self._create_detail_model(selected_image)
             self._renderer.render_detail(self._detail_model)
         else:
-            self._overview_model.set_viewport(self._renderer.viewport())
+            self._overview_model.set_viewport(self._renderer.viewport(), self._mouse_position, self._image_loader)
             self._renderer.render_overview(self._overview_model)
         self._set_window_title()
 
