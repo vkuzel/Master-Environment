@@ -154,6 +154,18 @@ class OverviewRequestedImage(OverviewImage):
 class OverviewModel:
     images: list[OverviewImage]
 
+    @staticmethod
+    def calculate_image_position(index: int, viewport: Viewport, image_outer_size: int) -> Position:
+        viewport_width = viewport.width
+        image_width = image_outer_size
+        image_height = image_outer_size
+
+        columns = max(1, viewport_width // image_width)
+        return Position(
+            x=(index % columns) * image_width,
+            y=(index // columns) * image_height,
+        )
+
     def find_selected_image(self) -> Optional[OverviewImage]:
         index = self._find_selected_image_index()
         return self.images[index] if index is not None else None
@@ -751,15 +763,7 @@ class UI:
         return OverviewModel(overview_images)
 
     def _calculate_image_position(self, index: int) -> Position:
-        viewport_width = self._renderer.viewport().width
-        image_width = self._image_outer_size
-        image_height = self._image_outer_size
-
-        columns = max(1, viewport_width // image_width)
-        return Position(
-            x=(index % columns) * image_width,
-            y=(index // columns) * image_height,
-        )
+        return OverviewModel.calculate_image_position(index, self._renderer.viewport(), self._image_outer_size)
 
     def _create_detail_model(self) -> DetailModel:
         viewport = self._renderer.viewport()
