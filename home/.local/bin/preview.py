@@ -27,7 +27,7 @@ class Dimensions:
     height: int
 
 
-@dataclass(frozen=True)
+@dataclass
 class Position:
     x: int
     y: int
@@ -62,8 +62,8 @@ class Rectangle:
     def center_y(self) -> int:
         return int(self.position.y + self.dimensions.height / 2)
 
-    def contains_point(self, x: int, y: int) -> bool:
-        return self.x1 <= x <= self.x2 and self.y1 <= y <= self.y2
+    def contains_position(self, position: Position) -> bool:
+        return self.x1 <= position.x <= self.x2 and self.y1 <= position.y <= self.y2
 
 
 @dataclass(frozen=True)
@@ -113,8 +113,8 @@ class OverviewImage:
         )
 
     # TODO Mouse should be stored as a mutable Position object
-    def contains_point(self, x: int, y: int) -> bool:
-        return self.outer_rect.contains_point(x, y)
+    def contains_position(self, position: Position) -> bool:
+        return self.outer_rect.contains_position(position)
 
 
 @dataclass
@@ -479,8 +479,7 @@ class UI:
         self._scroll_offset = 0
         self._image_size = 100
 
-        self._mouse_x = 0
-        self._mouse_y = 0
+        self._mouse_position = Position(0, 0)
 
         self._model = OverviewModel([])
         self._selected_image: Optional[OverviewImage] = None
@@ -491,16 +490,16 @@ class UI:
         return self._image_size + 2 * self._MARGIN
 
     def mouse_select(self, event: Event):
-        self._mouse_x = event.x
-        self._mouse_y = event.y
+        self._mouse_position.x = event.x
+        self._mouse_position.y = event.y
         if self._selected_image:
             return
 
         for image in self._model.images:
-            if image.selected and not image.contains_point(self._mouse_x, self._mouse_y):
+            if image.selected and not image.contains_position(self._mouse_position):
                 image.selected = False
                 self._renderer.render_overview_image_highlight(image)
-            elif not image.selected and image.contains_point(self._mouse_x, self._mouse_y):
+            elif not image.selected and image.contains_position(self._mouse_position):
                 image.selected = True
                 self._renderer.render_overview_image_highlight(image)
 
@@ -569,8 +568,8 @@ class UI:
         if old_tile_size == new_tile_size:
             return
 
-        content_y = self._mouse_y - self._scroll_offset
-        self._scroll_offset = round(self._mouse_y - content_y * new_tile_size / old_tile_size)
+        content_y = self._mouse_position.y - self._scroll_offset
+        self._scroll_offset = round(self._mouse_position.y - content_y * new_tile_size / old_tile_size)
 
         self._image_loader.cancel()
         self._model = self._create_overview_model()
@@ -682,7 +681,7 @@ class UI:
             ))
 
         # Render images closes to the mouse cursor first
-        meta_images.sort(key=lambda mi: mi.distance_to(self._mouse_x, self._mouse_y))
+        meta_images.sort(key=lambda mi: mi.distance_to(self._mouse_position))
 
         overview_images: list[OverviewImage] = []
         for i, meta_image in enumerate(meta_images):
@@ -712,7 +711,7 @@ class UI:
                     margin=self._MARGIN,
                     selected=False,
                 )
-            overview_image.selected = overview_image.contains_point(self._mouse_x, self._mouse_y)
+            overview_image.selected = overview_image.contains_position(self._mouse_position)
             overview_images.append(overview_image)
 
         return OverviewModel(overview_images)
@@ -747,10 +746,10 @@ class UI:
         position: Position
         dimensions: Dimensions
 
-        def distance_to(self, x: int, y: int) -> int:
+        def distance_to(self, position: Position) -> int:
             center_x = int(self.position.x + self.dimensions.width / 2)
             center_y = int(self.position.y + self.dimensions.height / 2)
-            return (x - center_x) ** 2 + (y - center_y) ** 2
+            return (position.x - center_x) ** 2 + (position.y - center_y) ** 2
 
 
 def main():
