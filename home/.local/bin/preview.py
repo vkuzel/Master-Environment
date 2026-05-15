@@ -112,28 +112,28 @@ class Viewport:
 class OverviewImage:
     image_file: ImageFile
     position: Position
-    inner_dimensions: Dimensions
-    margin: int
+    dimensions: Dimensions
+    padding: int
     selected: bool
 
     @property
     def inner_rect(self) -> Rectangle:
         return Rectangle(
             position=Position(
-                self.position.x + self.margin,
-                self.position.y + self.margin,
+                self.position.x + self.padding,
+                self.position.y + self.padding,
             ),
-            dimensions=self.inner_dimensions,
+            dimensions=Dimensions(
+                self.dimensions.width - 2 * self.padding,
+                self.dimensions.height - 2 * self.padding,
+            ),
         )
 
     @property
     def outer_rect(self) -> Rectangle:
         return Rectangle(
             position=self.position,
-            dimensions=Dimensions(
-                self.inner_dimensions.width + 2 * self.margin,
-                self.inner_dimensions.height + 2 * self.margin,
-            )
+            dimensions=self.dimensions,
         )
 
     def contains_position(self, position: Position) -> bool:
@@ -164,14 +164,14 @@ class OverviewLoadedImage(OverviewImage):
 class OverviewImagePlaceholder(OverviewImage):
     def is_for_loaded_image(self, loaded_image: LoadedImage) -> bool:
         request = loaded_image.request
-        return self.image_file == request.image_file and self.inner_dimensions == request.dimensions
+        return self.image_file == request.image_file and self.inner_rect.dimensions == request.dimensions
 
     def to_loaded_image(self, photo_image: PhotoImage) -> OverviewLoadedImage:
         return OverviewLoadedImage(
             image_file=self.image_file,
             position=self.position,
-            inner_dimensions=self.inner_dimensions,
-            margin=self.margin,
+            dimensions=self.dimensions,
+            padding=self.padding,
             selected=self.selected,
             photo_image=photo_image,
         )
@@ -184,7 +184,7 @@ class OverviewModel:
     image_size: int
     images: list[OverviewImage]
 
-    MARGIN: ClassVar[int] = 5
+    PADDING: ClassVar[int] = 5
 
     @property
     def min_scroll_offset(self) -> int:
@@ -192,14 +192,13 @@ class OverviewModel:
 
     @property
     def max_scroll_offset(self) -> int:
-        image_outer_size = self.image_size + 2 * self.MARGIN
         viewport_height = self.viewport.height
-        images_height = self._calculate_image_position(len(self.images) - 1).y + image_outer_size
+        images_height = self._calculate_image_position(len(self.images) - 1).y + self.image_size
         return min(viewport_height - images_height, 0)
 
     @property
     def max_image_size(self) -> int:
-        return self.viewport.width - 2 * self.MARGIN
+        return self.viewport.width
 
     def set_viewport(self, viewport: Viewport, load_context: ImageLoadContext):
         self.viewport = viewport
@@ -213,13 +212,11 @@ class OverviewModel:
         self._recalculate_image_positions()
 
     def set_image_size(self, image_size: int, load_context: ImageLoadContext):
-        old_tile_size = self.image_size + 2 * self.MARGIN
-        new_tile_size = image_size + 2 * self.MARGIN
-
+        old_image_size = self.image_size
         self.image_size = image_size
 
         content_y = load_context.mouse_position.y - self.scroll_offset
-        new_scroll_offset = round(load_context.mouse_position.y - content_y * new_tile_size / old_tile_size)
+        new_scroll_offset = round(load_context.mouse_position.y - content_y * self.image_size / old_image_size)
 
         if new_scroll_offset < self.max_scroll_offset:
             self.scroll_offset = self.max_scroll_offset
@@ -232,8 +229,8 @@ class OverviewModel:
             self.images[i] = OverviewImagePlaceholder(
                 image_file=image.image_file,
                 position=self._calculate_image_position(i).with_scroll_offset(self.scroll_offset),
-                inner_dimensions=Dimensions.for_size(image_size),
-                margin=image.margin,
+                dimensions=Dimensions.for_size(self.image_size),
+                padding=image.padding,
                 selected=image.selected,
             )
             image.selected = image.contains_position(load_context.mouse_position)
@@ -253,7 +250,7 @@ class OverviewModel:
             original_index, image = image_to_load
             request = LoadImageRequest(
                 image_file=image.image_file,
-                dimensions=image.inner_dimensions,
+                dimensions=image.inner_rect.dimensions,
             )
             loaded_image = load_context.image_loader.request_image(request)
             # Image(s) close to mouse cursor immediate low quality render to prevent flicker
@@ -272,10 +269,9 @@ class OverviewModel:
 
     @staticmethod
     def calculate_image_position(index: int, viewport: Viewport, image_size: int) -> Position:
-        image_outer_size = image_size + 2 * OverviewModel.MARGIN
         viewport_width = viewport.width
-        image_width = image_outer_size
-        image_height = image_outer_size
+        image_width = image_size
+        image_height = image_size
 
         columns = max(1, viewport_width // image_width)
         return Position(
@@ -879,8 +875,8 @@ class UI:
             image_placeholder = OverviewImagePlaceholder(
                 image_file=image_file,
                 position=image_position.with_scroll_offset(self._START_SCROLL_OFFSET),
-                inner_dimensions=Dimensions.for_size(self._START_IMAGE_SIZE),
-                margin=OverviewModel.MARGIN,
+                dimensions=Dimensions.for_size(self._START_IMAGE_SIZE),
+                padding=OverviewModel.PADDING,
                 selected=False
             )
             image_placeholder.selected = image_placeholder.contains_position(self._mouse_position)
