@@ -26,7 +26,7 @@ bindkey '^[[B' history-substring-search-down
 
 # To speed-up mc's startup time we disable some advanced fatures
 if [ -n "$MC_SID" ]; then
-	PROMPT='%n@%m:%~ %# '
+	PROMPT='%F{red}mc%f %F{green}%n@%m%f:%F{yellow}%~%f %# '
 else
 	autoload -U colors && colors
 	[ -x /usr/bin/dircolors ] && eval "$(dircolors -b)"
