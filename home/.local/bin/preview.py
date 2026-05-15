@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from queue import Queue
 from tkinter import Canvas, Event, Tk
-from typing import Dict, Optional, Set, Tuple, ClassVar
+from typing import Dict, Optional, Set, Tuple
 
 from PIL import Image, ImageTk
 from PIL.Image import Resampling
@@ -447,7 +447,11 @@ class ImageLoader:
         return ImageTk.PhotoImage(image)
 
     @staticmethod
-    def _resize_image(image: Image.Image, dimensions: Dimensions, resampling=Resampling.NEAREST) -> Image.Image:
+    def _resize_image(
+            image: Image.Image,
+            dimensions: Dimensions,
+            resampling: Resampling = Resampling.NEAREST,
+    ) -> Image.Image:
         scale = min(dimensions.width / image.width, dimensions.height / image.height)
         new_width = int(image.width * scale)
         new_height = int(image.height * scale)
