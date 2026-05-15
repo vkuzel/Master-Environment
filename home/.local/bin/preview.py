@@ -113,19 +113,19 @@ class OverviewImage:
     image_file: ImageFile
     position: Position
     dimensions: Dimensions
-    padding: int
     selected: bool
 
     @property
     def inner_rect(self) -> Rectangle:
+        padding = 5
         return Rectangle(
             position=Position(
-                self.position.x + self.padding,
-                self.position.y + self.padding,
+                self.position.x + padding,
+                self.position.y + padding,
             ),
             dimensions=Dimensions(
-                self.dimensions.width - 2 * self.padding,
-                self.dimensions.height - 2 * self.padding,
+                self.dimensions.width - padding,
+                self.dimensions.height - padding,
             ),
         )
 
@@ -171,7 +171,6 @@ class OverviewImagePlaceholder(OverviewImage):
             image_file=self.image_file,
             position=self.position,
             dimensions=self.dimensions,
-            padding=self.padding,
             selected=self.selected,
             photo_image=photo_image,
         )
@@ -183,8 +182,6 @@ class OverviewModel:
     scroll_offset: int
     image_size: int
     images: list[OverviewImage]
-
-    PADDING: ClassVar[int] = 5
 
     @property
     def min_scroll_offset(self) -> int:
@@ -230,7 +227,6 @@ class OverviewModel:
                 image_file=image.image_file,
                 position=self._calculate_image_position(i).with_scroll_offset(self.scroll_offset),
                 dimensions=Dimensions.for_size(self.image_size),
-                padding=image.padding,
                 selected=image.selected,
             )
             image.selected = image.contains_position(load_context.mouse_position)
@@ -876,7 +872,6 @@ class UI:
                 image_file=image_file,
                 position=image_position.with_scroll_offset(self._START_SCROLL_OFFSET),
                 dimensions=Dimensions.for_size(self._START_IMAGE_SIZE),
-                padding=OverviewModel.PADDING,
                 selected=False
             )
             image_placeholder.selected = image_placeholder.contains_position(self._mouse_position)
