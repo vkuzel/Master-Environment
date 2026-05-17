@@ -13,6 +13,7 @@ alias uuidgen-lower="uuidgen | tr '[:upper:]' '[:lower:]'"
 alias cdd="cd $HOME/Downloads"
 alias cdD="cd $HOME/Documents"
 alias cdp="cd $HOME/projects"
+alias cds="cd $HOME/slop"
 # get keys by running `showkey -a`
 bindkey -e
 bindkey '^[[1;5D' backward-word
