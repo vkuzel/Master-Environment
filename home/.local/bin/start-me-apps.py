@@ -76,7 +76,7 @@ def switch_to_workspace(workspace: int):
 
 
 def main():
-    switch_to_workspace(5)
+    switch_to_workspace(10)
 
     if not is_app_running("thunderbird"):
         start_app_detached("thunderbird")
