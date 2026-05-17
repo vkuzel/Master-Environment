@@ -3,32 +3,7 @@ import json
 import os
 import subprocess
 import sys
-
-
-def wait_for_window(pattern: str):
-    pattern = pattern.lower()
-
-    proc = subprocess.Popen(
-        args=["swaymsg", "-t", "subscribe", '["window"]'],
-        stdout=subprocess.PIPE,
-        text=True
-    )
-
-    try:
-        for line in proc.stdout:
-            event = json.loads(line)
-
-            if event.get("change") not in ("new", "title"):
-                continue
-
-            container = event.get("container", {})
-            app_id = (container.get("app_id") or "").lower()
-            title = (container.get("name") or "").lower()
-
-            if pattern in app_id or pattern in title:
-                return
-    finally:
-        proc.kill()
+import time
 
 
 def is_app_running(pattern: str) -> bool:
@@ -58,6 +33,11 @@ def is_app_running(pattern: str) -> bool:
     return search(tree)
 
 
+def wait_for_app_to_start(pattern: str):
+    while not is_app_running(pattern):
+        time.sleep(1)
+
+
 def start_app_detached(*cmd: str):
     subprocess.Popen(
         args=list(cmd),
@@ -78,37 +58,43 @@ def switch_to_workspace(workspace: int):
 def main():
     switch_to_workspace(10)
 
-    if not is_app_running("thunderbird"):
+    thunderbird_pattern = "thunderbird"
+    if not is_app_running(thunderbird_pattern):
         start_app_detached("thunderbird")
-        wait_for_window("thunderbird")
+        wait_for_app_to_start(thunderbird_pattern)
 
-    if not is_app_running("signal"):
+    signal_pattern = "signal"
+    if not is_app_running(signal_pattern):
         start_app_detached("signal-desktop")
-        wait_for_window("signal")
+        wait_for_app_to_start(signal_pattern)
 
     switch_to_workspace(2)
 
-    if not is_app_running("firefox"):
+    firefox_pattern = "firefox"
+    if not is_app_running(firefox_pattern):
         start_app_detached("firefox")
-        wait_for_window("firefox")
+        wait_for_app_to_start(firefox_pattern)
 
     switch_to_workspace(3)
 
-    if not is_app_running("jetbrains-idea"):
+    idea_pattern = "jetbrains-idea"
+    if not is_app_running(idea_pattern):
         start_app_detached("gtk-launch", "jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop")
-        wait_for_window("jetbrains-idea")
+        wait_for_app_to_start(idea_pattern)
 
     switch_to_workspace(7)
 
-    if not is_app_running("nvim-qt"):
+    neo_vim_pattern = "nvim-qt"
+    if not is_app_running(neo_vim_pattern):
         home = os.path.expanduser("~")
         tmp_file = os.path.join(home, "Documents/tmp.md")
         start_app_detached("nvim-qt", "--", "-p", tmp_file)
-        wait_for_window("nvim-qt")
+        wait_for_app_to_start(neo_vim_pattern)
 
-    if not is_app_running("Blank Box"):
+    blank_box_pattern = "Blank Box"
+    if not is_app_running(blank_box_pattern):
         start_app_detached("blank-box")
-        wait_for_window("blank-box")
+        wait_for_app_to_start(blank_box_pattern)
 
     switch_to_workspace(2)
 
