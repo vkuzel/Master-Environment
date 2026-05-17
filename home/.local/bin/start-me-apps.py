@@ -103,9 +103,7 @@ def main():
     if not is_app_running("nvim-qt"):
         home = os.path.expanduser("~")
         tmp_file = os.path.join(home, "Documents/tmp.md")
-        todo_file = os.path.join(home, "Documents/TODO.md")
-        log_file = os.path.join(home, "Documents/log.md")
-        start_app_detached("nvim-qt", "--", "-p", tmp_file, todo_file, log_file)
+        start_app_detached("nvim-qt", "--", "-p", tmp_file)
         wait_for_window("nvim-qt")
 
     if not is_app_running("Blank Box"):
