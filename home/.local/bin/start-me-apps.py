@@ -95,7 +95,7 @@ def main():
     switch_to_workspace(3)
 
     if not is_app_running("jetbrains-idea"):
-        start_app_detached("gtk-launch", "jetbrains-idea-98984e61-a56f-427f-983a-de28833912c2.desktop")
+        start_app_detached("gtk-launch", "jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop")
         wait_for_window("jetbrains-idea")
 
     switch_to_workspace(7)
