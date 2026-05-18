@@ -212,8 +212,16 @@ class OverviewModel:
         old_image_size = self.image_size
         self.image_size = image_size
 
-        content_y = load_context.mouse_position.y - self.scroll_offset
-        new_scroll_offset = round(load_context.mouse_position.y - content_y * self.image_size / old_image_size)
+        index = self._find_selected_image_index()
+        if index:
+            old_image_y = self.calculate_image_position(index, self.viewport, old_image_size).y
+            new_image_y = self._calculate_image_position(index).y
+            mouse_y = load_context.mouse_position.y
+            relative_mouse_y = mouse_y - old_image_y - self.scroll_offset
+            new_scroll_offset = mouse_y - new_image_y - round(relative_mouse_y * self.image_size / old_image_size)
+        else:
+            content_y = load_context.mouse_position.y - self.scroll_offset
+            new_scroll_offset = round(load_context.mouse_position.y - content_y * self.image_size / old_image_size)
 
         if new_scroll_offset < self.max_scroll_offset:
             self.scroll_offset = self.max_scroll_offset
