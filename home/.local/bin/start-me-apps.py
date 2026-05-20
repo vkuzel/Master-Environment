@@ -7,48 +7,6 @@ import time
 from typing import Optional
 
 
-def is_app_running(pattern: str) -> bool:
-    pattern = pattern.lower()
-
-    result = subprocess.run(
-        ["swaymsg", "-t", "get_tree"],
-        capture_output=True,
-        text=True,
-    )
-    tree = json.loads(result.stdout)
-
-    def search(node):
-        if isinstance(node, dict):
-            app_id = (node.get("app_id") or "").lower()
-            title = (node.get("title") or "").lower()
-            window_class = (node.get("class") or "").lower()
-
-            if pattern in app_id or pattern in title or pattern in window_class:
-                return True
-
-            return any(search(v) for v in node.values())
-        elif isinstance(node, list):
-            return any(search(i) for i in node)
-        return False
-
-    return search(tree)
-
-
-def wait_for_app_to_start(pattern: str):
-    while not is_app_running(pattern):
-        time.sleep(1)
-
-
-def start_app_detached(cmd: list[str]):
-    subprocess.Popen(
-        args=cmd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        stdin=subprocess.DEVNULL,
-        start_new_session=True
-    )
-
-
 class AppLauncher:
     _current_workspace: Optional[int] = None
 
@@ -58,14 +16,14 @@ class AppLauncher:
             check_pattern: str,
             cmd: list[str],
     ):
-        if is_app_running(check_pattern):
+        if self._is_app_running(check_pattern):
             return
 
         if workspace != self._current_workspace:
             self.switch_to_workspace(workspace)
 
-        start_app_detached(*cmd)
-        wait_for_app_to_start(check_pattern)
+        self._start_app_detached(*cmd)
+        self._wait_for_app_to_start(check_pattern)
 
     def switch_to_workspace(self, workspace: int):
         subprocess.run(
@@ -73,6 +31,47 @@ class AppLauncher:
             stdout=subprocess.DEVNULL,
         )
         self._current_workspace = workspace
+
+    @staticmethod
+    def _is_app_running(check_pattern: str) -> bool:
+        check_pattern = check_pattern.lower()
+
+        result = subprocess.run(
+            ["swaymsg", "-t", "get_tree"],
+            capture_output=True,
+            text=True,
+        )
+        tree = json.loads(result.stdout)
+
+        def search(node):
+            if isinstance(node, dict):
+                app_id = (node.get("app_id") or "").lower()
+                title = (node.get("title") or "").lower()
+                window_class = (node.get("class") or "").lower()
+
+                if check_pattern in app_id or check_pattern in title or check_pattern in window_class:
+                    return True
+
+                return any(search(v) for v in node.values())
+            elif isinstance(node, list):
+                return any(search(i) for i in node)
+            return False
+
+        return search(tree)
+
+    @staticmethod
+    def _start_app_detached(cmd: list[str]):
+        subprocess.Popen(
+            args=cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            start_new_session=True
+        )
+
+    def _wait_for_app_to_start(self, pattern: str):
+        while not self._is_app_running(pattern):
+            time.sleep(1)
 
 
 def main():
