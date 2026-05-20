@@ -49,14 +49,6 @@ def start_app_detached(cmd: list[str]):
     )
 
 
-def ensure_app_running(check_running_pattern: str, cmd: list[str]):
-    if is_app_running(check_running_pattern):
-        return
-
-    start_app_detached(*cmd)
-    wait_for_app_to_start(check_running_pattern)
-
-
 class AppLauncher:
     _current_workspace: Optional[int] = None
 
