@@ -14,7 +14,7 @@ class AppLauncher:
             self,
             workspace: int,
             check_pattern: str,
-            cmd: list[str],
+            cmd: str,
     ):
         if self._is_app_running(check_pattern):
             return
@@ -22,7 +22,7 @@ class AppLauncher:
         if workspace != self._current_workspace:
             self.switch_to_workspace(workspace)
 
-        self._start_app_detached(*cmd)
+        self._start_app_detached(cmd)
         self._wait_for_app_to_start(check_pattern)
 
     def switch_to_workspace(self, workspace: int):
@@ -63,15 +63,42 @@ class AppLauncher:
         while not self._is_app_running(pattern):
             time.sleep(1)
 
-    @staticmethod
-    def _start_app_detached(cmd: list[str]):
+    def _start_app_detached(self, cmd: str):
+        args = self._prepare_cmd(cmd)
         subprocess.Popen(
-            args=cmd,
+            args=args,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             stdin=subprocess.DEVNULL,
             start_new_session=True
         )
+
+    def _prepare_cmd(self, cmd: str) -> list[str]:
+        tokens = self._tokenize_cmd(cmd)
+        home = os.path.expanduser("~")
+        return [token.replace("$HOME", home) for token in tokens]
+
+    @staticmethod
+    def _tokenize_cmd(cmd: str) -> list[str]:
+        opening_quote = ""
+        current_token = ""
+        tokens = []
+        for ch in cmd:
+            if (ch == "'" or ch == '"') and not opening_quote:
+                opening_quote = ch
+            elif ch == opening_quote:
+                opening_quote = ""
+
+            if ch == " " and not opening_quote:
+                if current_token:
+                    tokens.append(current_token)
+                current_token = ""
+            else:
+                current_token += ch
+        if current_token:
+            tokens.append(current_token)
+
+        return tokens
 
 
 def main():
@@ -80,39 +107,37 @@ def main():
     app_launcher.launch(
         workspace=10,
         check_pattern="thunderbird",
-        cmd=["thunderbird"],
+        cmd="thunderbird",
     )
 
     app_launcher.launch(
         workspace=10,
         check_pattern="signal",
-        cmd=["signal-desktop"],
+        cmd="signal-desktop",
     )
 
     app_launcher.launch(
         workspace=2,
         check_pattern="firefox",
-        cmd=["firefox"],
+        cmd="firefox",
     )
 
     app_launcher.launch(
         workspace=3,
         check_pattern="jetbrains-idea",
-        cmd=["gtk-launch", "jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop"],
+        cmd="gtk-launch jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop",
     )
 
-    home = os.path.expanduser("~")
-    tmp_file = os.path.join(home, "Documents/tmp.md")
     app_launcher.launch(
         workspace=7,
         check_pattern="nvim-qt",
-        cmd=["nvim-qt", "--", "-p", tmp_file],
+        cmd="nvim-qt -- -p $HOME/Documents/tmp.md",
     )
 
     app_launcher.launch(
         workspace=7,
         check_pattern="Blank Box",
-        cmd=["blank-box"],
+        cmd="blank-box",
     )
 
     app_launcher.switch_to_workspace(2)
