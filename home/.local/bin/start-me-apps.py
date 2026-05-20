@@ -2,30 +2,35 @@
 import json
 import os
 import subprocess
-import sys
 import time
+from dataclasses import dataclass
 from typing import Optional
+
+
+@dataclass
+class App:
+    workspace: int
+    check_pattern: Optional[str] = None
+    cmd: Optional[str] = None
 
 
 class AppLauncher:
     _current_workspace: Optional[int] = None
 
-    def launch(
-            self,
-            workspace: int,
-            check_pattern: str,
-            cmd: str,
-    ):
-        if self._is_app_running(check_pattern):
+    def launch(self, app: App):
+        if app.workspace != self._current_workspace:
+            self._switch_to_workspace(app.workspace)
+
+        if not app.check_pattern or not app.cmd:
             return
 
-        if workspace != self._current_workspace:
-            self.switch_to_workspace(workspace)
+        if self._is_app_running(app.check_pattern):
+            return
 
-        self._start_app_detached(cmd)
-        self._wait_for_app_to_start(check_pattern)
+        self._start_app_detached(app.cmd)
+        self._wait_for_app_to_start(app.check_pattern)
 
-    def switch_to_workspace(self, workspace: int):
+    def _switch_to_workspace(self, workspace: int):
         subprocess.run(
             args=['swaymsg', 'workspace', f"{workspace}"],
             stdout=subprocess.DEVNULL,
@@ -104,43 +109,44 @@ class AppLauncher:
 def main():
     app_launcher = AppLauncher()
 
-    app_launcher.launch(
-        workspace=10,
-        check_pattern="thunderbird",
-        cmd="thunderbird",
-    )
+    apps = [
+        App(
+            workspace=10,
+            check_pattern="thunderbird",
+            cmd="thunderbird",
+        ),
+        App(
+            workspace=10,
+            check_pattern="signal",
+            cmd="signal-desktop",
+        ),
+        App(
+            workspace=2,
+            check_pattern="firefox",
+            cmd="firefox",
+        ),
+        App(
+            workspace=3,
+            check_pattern="jetbrains-idea",
+            cmd="gtk-launch jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop",
+        ),
+        App(
+            workspace=7,
+            check_pattern="nvim-qt",
+            cmd="nvim-qt -- -p $HOME/Documents/tmp.md",
+        ),
+        App(
+            workspace=7,
+            check_pattern="Blank Box",
+            cmd="blank-box",
+        ),
+        App(
+            workspace=2,
+        ),
+    ]
 
-    app_launcher.launch(
-        workspace=10,
-        check_pattern="signal",
-        cmd="signal-desktop",
-    )
-
-    app_launcher.launch(
-        workspace=2,
-        check_pattern="firefox",
-        cmd="firefox",
-    )
-
-    app_launcher.launch(
-        workspace=3,
-        check_pattern="jetbrains-idea",
-        cmd="gtk-launch jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop",
-    )
-
-    app_launcher.launch(
-        workspace=7,
-        check_pattern="nvim-qt",
-        cmd="nvim-qt -- -p $HOME/Documents/tmp.md",
-    )
-
-    app_launcher.launch(
-        workspace=7,
-        check_pattern="Blank Box",
-        cmd="blank-box",
-    )
-
-    app_launcher.switch_to_workspace(2)
+    for app in apps:
+        app_launcher.launch(app)
 
 
 if __name__ == "__main__":
