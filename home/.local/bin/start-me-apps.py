@@ -57,13 +57,6 @@ def ensure_app_running(check_running_pattern: str, cmd: list[str]):
     wait_for_app_to_start(check_running_pattern)
 
 
-def switch_to_workspace(workspace: int):
-    subprocess.run(
-        args=['swaymsg', 'workspace', f"{workspace}"],
-        stdout=subprocess.DEVNULL,
-    )
-
-
 class AppLauncher:
     _current_workspace: Optional[int] = None
 
@@ -77,14 +70,16 @@ class AppLauncher:
             return
 
         if workspace != self._current_workspace:
-            switch_to_workspace(workspace)
-            self._current_workspace = workspace
+            self.switch_to_workspace(workspace)
 
         start_app_detached(*cmd)
         wait_for_app_to_start(check_pattern)
 
     def switch_to_workspace(self, workspace: int):
-        switch_to_workspace(workspace)
+        subprocess.run(
+            args=['swaymsg', 'workspace', f"{workspace}"],
+            stdout=subprocess.DEVNULL,
+        )
         self._current_workspace = workspace
 
 
