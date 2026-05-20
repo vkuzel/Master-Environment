@@ -20,7 +20,7 @@ class App:
 class AppLoader:
 
     def load(self) -> list[App]:
-        override_config_path = self._resolve_config_file_path("override-apps.yaml")
+        override_config_path = self._resolve_config_file_path("apps-override.yaml")
         if override_config_path.is_file():
             return self._load_from_file(override_config_path)
 
