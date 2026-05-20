@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import time
+from typing import Optional
 
 
 def is_app_running(pattern: str) -> bool:
@@ -63,48 +64,72 @@ def switch_to_workspace(workspace: int):
     )
 
 
-def main():
-    switch_to_workspace(10)
+class AppLauncher:
+    _current_workspace: Optional[int] = None
 
-    ensure_app_running(
-        check_running_pattern="thunderbird",
+    def launch(
+            self,
+            workspace: int,
+            check_pattern: str,
+            cmd: list[str],
+    ):
+        if is_app_running(check_pattern):
+            return
+
+        if workspace != self._current_workspace:
+            switch_to_workspace(workspace)
+            self._current_workspace = workspace
+
+        start_app_detached(*cmd)
+        wait_for_app_to_start(check_pattern)
+
+    def switch_to_workspace(self, workspace: int):
+        switch_to_workspace(workspace)
+        self._current_workspace = workspace
+
+
+def main():
+    app_launcher = AppLauncher()
+
+    app_launcher.launch(
+        workspace=10,
+        check_pattern="thunderbird",
         cmd=["thunderbird"],
     )
 
-    ensure_app_running(
-        check_running_pattern="signal",
+    app_launcher.launch(
+        workspace=10,
+        check_pattern="signal",
         cmd=["signal-desktop"],
     )
 
-    switch_to_workspace(2)
-
-    ensure_app_running(
-        check_running_pattern="firefox",
+    app_launcher.launch(
+        workspace=2,
+        check_pattern="firefox",
         cmd=["firefox"],
     )
 
-    switch_to_workspace(3)
-
-    ensure_app_running(
-        check_running_pattern="jetbrains-idea",
+    app_launcher.launch(
+        workspace=3,
+        check_pattern="jetbrains-idea",
         cmd=["gtk-launch", "jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop"],
     )
 
-    switch_to_workspace(7)
-
     home = os.path.expanduser("~")
     tmp_file = os.path.join(home, "Documents/tmp.md")
-    ensure_app_running(
-        check_running_pattern="nvim-qt",
+    app_launcher.launch(
+        workspace=7,
+        check_pattern="nvim-qt",
         cmd=["nvim-qt", "--", "-p", tmp_file],
     )
 
-    ensure_app_running(
-        check_running_pattern="Blank Box",
+    app_launcher.launch(
+        workspace=7,
+        check_pattern="Blank Box",
         cmd=["blank-box"],
     )
 
-    switch_to_workspace(2)
+    app_launcher.switch_to_workspace(2)
 
 
 if __name__ == "__main__":
