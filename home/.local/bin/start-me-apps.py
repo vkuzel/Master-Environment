@@ -59,6 +59,10 @@ class AppLauncher:
 
         return search(tree)
 
+    def _wait_for_app_to_start(self, pattern: str):
+        while not self._is_app_running(pattern):
+            time.sleep(1)
+
     @staticmethod
     def _start_app_detached(cmd: list[str]):
         subprocess.Popen(
@@ -68,10 +72,6 @@ class AppLauncher:
             stdin=subprocess.DEVNULL,
             start_new_session=True
         )
-
-    def _wait_for_app_to_start(self, pattern: str):
-        while not self._is_app_running(pattern):
-            time.sleep(1)
 
 
 def main():
