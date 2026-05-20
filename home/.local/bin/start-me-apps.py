@@ -4,7 +4,10 @@ import os
 import subprocess
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
+
+import yaml
 
 
 @dataclass
@@ -12,6 +15,32 @@ class App:
     workspace: int
     check_pattern: Optional[str] = None
     cmd: Optional[str] = None
+
+
+class AppLoader:
+
+    def load(self) -> list[App]:
+        override_config_path = self._resolve_config_file_path("override-apps.yaml")
+        if override_config_path.is_file():
+            return self._load_from_file(override_config_path)
+
+        default_config_path = self._resolve_config_file_path("apps.yaml")
+        if default_config_path.is_file():
+            return self._load_from_file(default_config_path)
+
+        return []
+
+    @staticmethod
+    def _resolve_config_file_path(file_name: str) -> Path:
+        home = os.path.expanduser("~")
+        return Path(home, ".config", "app-launcher", file_name)
+
+    @staticmethod
+    def _load_from_file(config_path: Path) -> list[App]:
+        with open(config_path) as f:
+            data = yaml.safe_load(f)
+
+        return [App(**item) for item in data]
 
 
 class AppLauncher:
@@ -107,44 +136,10 @@ class AppLauncher:
 
 
 def main():
+    app_loader = AppLoader()
     app_launcher = AppLauncher()
 
-    apps = [
-        App(
-            workspace=10,
-            check_pattern="thunderbird",
-            cmd="thunderbird",
-        ),
-        App(
-            workspace=10,
-            check_pattern="signal",
-            cmd="signal-desktop",
-        ),
-        App(
-            workspace=2,
-            check_pattern="firefox",
-            cmd="firefox",
-        ),
-        App(
-            workspace=3,
-            check_pattern="jetbrains-idea",
-            cmd="gtk-launch jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop",
-        ),
-        App(
-            workspace=7,
-            check_pattern="nvim-qt",
-            cmd="nvim-qt -- -p $HOME/Documents/tmp.md",
-        ),
-        App(
-            workspace=7,
-            check_pattern="Blank Box",
-            cmd="blank-box",
-        ),
-        App(
-            workspace=2,
-        ),
-    ]
-
+    apps = app_loader.load()
     for app in apps:
         app_launcher.launch(app)
 

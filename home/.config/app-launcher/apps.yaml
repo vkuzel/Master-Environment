@@ -1,0 +1,26 @@
+- workspace: 10
+  check_pattern: thunderbird
+  cmd: thunderbird
+
+- workspace: 10
+  check_pattern: signal
+  cmd: signal-desktop
+
+- workspace: 2
+  check_pattern: firefox
+  cmd: firefox
+
+- workspace: 3
+  check_pattern: jetbrains-idea
+  cmd: gtk-launch jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop
+
+- workspace: 7
+  check_pattern: nvim-qt
+  cmd: nvim-qt -- -p $HOME/Documents/tmp.md
+
+- workspace: 7
+  check_pattern: Blank Box
+  cmd: blank-box
+
+- workspace: 2
+
