@@ -9,6 +9,7 @@
 - Renderer - draws Ui and images onto the screen
 """
 import io
+import os
 import queue
 import threading
 from dataclasses import dataclass
@@ -371,20 +372,29 @@ class DetailModel:
 
 
 class ImageFilesScanner:
-    @staticmethod
-    def scan() -> list[ImageFile]:
+    def scan(self) -> list[ImageFile]:
+        cwd = Path.cwd()
+        return self._scan_dir(cwd, cwd, recursively=False)
+
+    def _scan_dir(self, base_path: Path, path: Path, recursively: bool) -> list[ImageFile]:
         image_suffixes = {
             ".jpg", ".jpeg", ".png", ".gif", ".bmp",
             ".tiff", ".webp", ".svg", ".ico"
         }
 
         image_files = []
-        for file in Path.cwd().iterdir():
-            if not file.is_file() or file.suffix.lower() not in image_suffixes:
-                continue
-            image_files.append(ImageFile(file.name))
+        for file in path.iterdir():
+            if file.is_file() and file.suffix.lower() in image_suffixes:
+                relative_path = file.relative_to(base_path)
+                image_files.append(ImageFile(str(relative_path)))
 
         image_files.sort(key=lambda f: f.name)
+
+        if recursively:
+            for file in path.iterdir():
+                if file.is_dir():
+                    dir_image_files = self._scan_dir(base_path, file, recursively)
+                    image_files.extend(dir_image_files)
 
         return image_files
 
