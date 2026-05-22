@@ -8,6 +8,7 @@
 - ImageLoader - loads and resizes images in a worker thread (for the most cases) to prevent blocking UI
 - Renderer - draws Ui and images onto the screen
 """
+import argparse
 import io
 import os
 import queue
@@ -372,11 +373,11 @@ class DetailModel:
 
 
 class ImageFilesScanner:
-    def scan(self) -> list[ImageFile]:
+    def scan(self, recursive: bool) -> list[ImageFile]:
         cwd = Path.cwd()
-        return self._scan_dir(cwd, cwd, recursively=False)
+        return self._scan_dir(cwd, cwd, recursive)
 
-    def _scan_dir(self, base_path: Path, path: Path, recursively: bool) -> list[ImageFile]:
+    def _scan_dir(self, base_path: Path, path: Path, recursive: bool) -> list[ImageFile]:
         image_suffixes = {
             ".jpg", ".jpeg", ".png", ".gif", ".bmp",
             ".tiff", ".webp", ".svg", ".ico"
@@ -390,10 +391,10 @@ class ImageFilesScanner:
 
         image_files.sort(key=lambda f: f.name)
 
-        if recursively:
+        if recursive:
             for file in path.iterdir():
                 if file.is_dir():
-                    dir_image_files = self._scan_dir(base_path, file, recursively)
+                    dir_image_files = self._scan_dir(base_path, file, recursive)
                     image_files.extend(dir_image_files)
 
         return image_files
@@ -923,7 +924,11 @@ class UI:
 
 
 def main():
-    files = ImageFilesScanner().scan()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-r", "--recursive", action="store_true", help="Enable recursive mode")
+    args = parser.parse_args()
+
+    files = ImageFilesScanner().scan(args.recursive)
     if len(files) == 0:
         print("No images found")
         return
