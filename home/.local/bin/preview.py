@@ -383,21 +383,24 @@ class ImageFilesScanner:
             ".tiff", ".webp", ".svg", ".ico"
         }
 
-        image_files = []
+        files = []
+        directories = []
         for file in path.iterdir():
             if file.is_file() and file.suffix.lower() in image_suffixes:
                 relative_path = file.relative_to(base_path)
-                image_files.append(ImageFile(str(relative_path)))
+                files.append(ImageFile(str(relative_path)))
+            elif file.is_dir():
+                directories.append(file)
 
-        image_files.sort(key=lambda f: f.name.casefold())
+        files.sort(key=lambda f: f.name.casefold())
+        directories.sort(key=lambda f: f.name.casefold())
 
         if recursive:
-            for file in path.iterdir():
-                if file.is_dir():
-                    dir_image_files = self._scan_dir(base_path, file, recursive)
-                    image_files.extend(dir_image_files)
+            for directory in directories:
+                dir_image_files = self._scan_dir(base_path, directory, recursive)
+                files.extend(dir_image_files)
 
-        return image_files
+        return files
 
 
 class ImageLoader:
