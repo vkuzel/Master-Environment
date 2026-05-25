@@ -389,7 +389,7 @@ class ImageFilesScanner:
                 relative_path = file.relative_to(base_path)
                 image_files.append(ImageFile(str(relative_path)))
 
-        image_files.sort(key=lambda f: f.name)
+        image_files.sort(key=lambda f: f.name.casefold())
 
         if recursive:
             for file in path.iterdir():
