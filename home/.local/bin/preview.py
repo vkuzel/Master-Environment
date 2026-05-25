@@ -393,9 +393,10 @@ class ImageFilesScanner:
                 directories.append(file)
 
         files.sort(key=lambda f: f.name.casefold())
-        directories.sort(key=lambda f: f.name.casefold())
 
         if recursive:
+            directories.sort(key=lambda f: f.name.casefold())
+
             for directory in directories:
                 dir_image_files = self._scan_dir(base_path, directory, recursive)
                 files.extend(dir_image_files)
