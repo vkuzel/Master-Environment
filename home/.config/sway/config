@@ -1,5 +1,3 @@
-# `man 5 sway` for a complete reference.
-
 set $mod Mod4
 set $alt Mod1
 
@@ -8,9 +6,6 @@ set $term foot
 # on the original workspace that the command was run on.
 set $menu fuzzel --background=000f27ff --selection-color=eee8d5ff | xargs sway:msg exec --
 
-#
-# Output config:
-#
 output * background #018281 solid_color
 
 default_border pixel 5
@@ -30,10 +25,7 @@ workspace 10 output eDP-1 eDP-2
 
 exec swayidle -w
 
-#
-# Input config:
-#
-# `man 5 sway-input` for more information about this section.
+
 input * {
     xkb_layout "us,cz(qwerty)"
     # Switching doesn't work on the current Sway version, see keyboard-layout-toggle.sh
@@ -44,54 +36,32 @@ input * {
     repeat_rate 40
 }
 
-# Toggle keyboard layout (hack) on-release: layouyt is toggled and the actions is swallowed to prevent Firefox from opening menu via Alt key.
+# Toggle keyboard layout (hack) on-release: layout is toggled and the actions
+# is swallowed to prevent Firefox from opening menu via Alt key.
 bindsym --release --locked --no-repeat $alt+Space exec $HOME/.config/sway/keyboard-layout-toggle.sh
+
 
 bindsym Print exec $HOME/.config/sway/screenshot.sh
 bindsym $alt+Print exec $HOME/.config/sway/screenshot.sh --focused-window
 
-# Start a terminal
 bindsym $mod+Return exec $term
-
-# Kill focused window
 bindsym $mod+Shift+q kill
-
-# Start your launcher
 bindsym $mod+Space exec $menu
-
-# Drag floating windows by holding down $mod and left mouse button.
-# Resize them with right mouse button + $mod.
-# Despite the name, also works for non-floating windows.
-# Change normal to inverse to use left mouse button for resizing and right
-# mouse button for dragging.
 floating_modifier $mod normal
-
-# Reload the configuration file
 bindsym $mod+Shift+c reload
-
-# Exit sway (logs you out of your Wayland session)
 bindsym $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
 
 
-#
-# Moving around:
-#
-# Move your focus around
 bindsym $mod+Left focus left
 bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
-# Move windows around
 bindsym $mod+Shift+Left move left
 bindsym $mod+Shift+Down move down
 bindsym $mod+Shift+Up move up
 bindsym $mod+Shift+Right move right
 
 
-#
-# Workspaces:
-#
-# Switch to workspace
 bindsym $mod+1 workspace number 1
 bindsym $mod+2 workspace number 2
 bindsym $mod+3 workspace number 3
@@ -113,38 +83,19 @@ bindsym $mod+Shift+7 move container to workspace number 7
 bindsym $mod+Shift+8 move container to workspace number 8
 bindsym $mod+Shift+9 move container to workspace number 9
 bindsym $mod+Shift+0 move container to workspace number 10
-# Note: workspaces can have any name you want, not just numbers.
-# We just use 1-10 as the default.
 
 
-#
-# Layout stuff:
-#
-# You can "split" the current object of your focus with
-# $mod+b or $mod+v, for horizontal and vertical splits
-# respectively.
 bindsym $mod+b splith
 bindsym $mod+v splitv
 
-# Switch the current container between different layout styles
 bindsym $mod+s layout stacking
 bindsym $mod+w layout tabbed
 bindsym $mod+e layout toggle split
 
-# Rearrange workspaces
 bindsym $mod+Shift+r exec $HOME/.config/sway/rearrange-workspaces.sh
 
-# Make the current focus fullscreen
 bindsym $mod+f fullscreen
-
-# Toggle the current focus between tiling and floating mode
 bindsym $mod+Shift+space floating toggle
-
-# Swap focus between the tiling area and the floating area
-#bindsym $mod+space focus mode_toggle
-
-# Move focus to the parent container
-bindsym $mod+a focus parent
 
 
 bindsym $mod+l exec swaylock
@@ -167,9 +118,6 @@ bindsym XF86AudioStop exec playerctl stop
 bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPrev exec playerctl previous
 
-#
-# Resizing containers:
-#
 mode "resize" {
     bindsym Left resize shrink width 10px
     bindsym Down resize grow height 10px
@@ -181,10 +129,6 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
-#
-# Status Bar:
-#
-# Read `man 5 sway-bar` for more information about this section.
 bar {
     swaybar_command waybar
     position top
