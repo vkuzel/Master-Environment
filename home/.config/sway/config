@@ -13,6 +13,9 @@ set $menu fuzzel --background=000f27ff --selection-color=eee8d5ff | xargs sway:m
 #
 output * background #018281 solid_color
 
+default_border pixel 5
+default_floating_border pixel 5
+
 # swaymsg -t get_outputs
 workspace 1 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
 workspace 2 output DP-1 DP-2 DP-3 DP-4 DP-5 DP-6 DP-7 DP-8 DP-9 HDMI-A-1 HDMI-A-2
