@@ -6,7 +6,7 @@ source "$HOME/.config/zsh/.zshrc.aliases.zsh"
 
 # To speed-up mc's startup time we disable some advanced features
 if [ -n "$MC_SID" ]; then
-	PROMPT='%F{red}mc%f %F{green}%n@%m%f:%F{yellow}%~%f %# '
+	PROMPT='[%F{red}mc%f]%F{green}%n@%m%f:%F{yellow}%~%f %# '
 else
 	autoload -U colors && colors
 	[ -x /usr/bin/dircolors ] && eval "$(dircolors -b)"
