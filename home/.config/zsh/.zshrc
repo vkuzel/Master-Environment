@@ -1,29 +1,8 @@
 EDITOR=vi
 PAGER=less
 
-alias ls='ls --color=auto'
-alias l="ls -l"
-alias ll='ls -lA'
-alias grep='grep --color=auto'
-alias vi='nvim'
-alias bc='bc -l'
-# Most servers does not recognize "foot" terminal
-alias ssh='TERM=xterm-256color ssh'
-alias uuidgen-lower="uuidgen | tr '[:upper:]' '[:lower:]'"
-alias cdd="cd $HOME/Downloads"
-alias cdD="cd $HOME/Documents"
-alias cdp="cd $HOME/projects"
-alias cds="cd $HOME/slop"
-# get keys by running `showkey -a`
-bindkey -e
-bindkey '^[[1;5D' backward-word
-bindkey '^[[1;5C' forward-word
-bindkey '^H' backward-kill-word
-bindkey "^[[3;5~" kill-word
-bindkey '^[[H' beginning-of-line
-bindkey '^[[F' end-of-line
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
+source "$HOME/.config/zsh/.zshrc.key-bindings.zsh"
+source "$HOME/.config/zsh/.zshrc.aliases.zsh"
 
 # To speed-up mc's startup time we disable some advanced features
 if [ -n "$MC_SID" ]; then
