@@ -10,7 +10,6 @@
 """
 import argparse
 import io
-import os
 import queue
 import threading
 from dataclasses import dataclass
