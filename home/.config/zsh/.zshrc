@@ -25,7 +25,7 @@ bindkey '^[[F' end-of-line
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 
-# To speed-up mc's startup time we disable some advanced fatures
+# To speed-up mc's startup time we disable some advanced features
 if [ -n "$MC_SID" ]; then
 	PROMPT='%F{red}mc%f %F{green}%n@%m%f:%F{yellow}%~%f %# '
 else
