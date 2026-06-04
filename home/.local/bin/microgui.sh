@@ -1,3 +1,3 @@
 #!/bin/bash
 
-setsid foot --title="microgui" -e micro "$@" > /dev/null 2>&1 &
+setsid foot --title="microgui" -e micro --parsecursor=True "$@" > /dev/null 2>&1 &
