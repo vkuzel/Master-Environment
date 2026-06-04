@@ -1,4 +1,4 @@
-EDITOR=vi
+EDITOR=micro
 PAGER=less
 
 source "$HOME/.config/zsh/.zshrc.key-bindings.zsh"

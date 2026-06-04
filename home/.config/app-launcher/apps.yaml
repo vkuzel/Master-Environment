@@ -15,8 +15,8 @@
   cmd: gtk-launch jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop
 
 - workspace: 7
-  check_pattern: nvim-qt
-  cmd: nvim-qt -- -p $HOME/Documents/tmp.md
+  check_pattern: microgui
+  cmd: microgui.sh $HOME/Documents/tmp.md
 
 - workspace: 7
   check_pattern: Blank Box

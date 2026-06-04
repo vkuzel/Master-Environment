@@ -194,6 +194,17 @@ install_zsh_plugin() {
 	fi
 }
 
+install_micro_plugin() {
+	local pluginName="$1"
+
+	info "=== Install Micro plugin $pluginName ==="
+	if ! micro -plugin list | grep "$pluginName"; then
+		micro -plugin install "$pluginName"
+	else
+		micro -plugin update "$pluginName"
+	fi
+}
+
 create_directory_structure() {
 	info "=== Create directory structure ==="
 	local srcDir=$1
@@ -345,6 +356,8 @@ install_apt_package mpv-mpris
 
 # Office utils
 install_apt_package wl-clipboard
+install_apt_package micro
+install_micro_plugin filemanager
 install_apt_package neovim-qt
 install_apt_package gimp
 

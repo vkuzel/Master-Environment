@@ -2,7 +2,8 @@ alias ls='ls --color=auto'
 alias l="ls -l"
 alias ll='ls -lA'
 alias grep='grep --color=auto'
-alias vi='nvim'
+alias vi='micro'
+alias mi='micro'
 alias bc='bc -l'
 # Most servers does not recognize "foot" terminal
 alias ssh='TERM=xterm-256color ssh'

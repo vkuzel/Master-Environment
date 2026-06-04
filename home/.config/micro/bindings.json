@@ -1,0 +1,8 @@
+{
+    "Alt-/": "lua:comment.comment",
+    "CtrlUnderscore": "lua:comment.comment",
+    "Alt-1": "command:tree",
+    "Ctrl-w": "command:quit",
+    "Ctrl-Shift-PageDown": "command:tabmove +1",
+    "Ctrl-Shift-PageUp": "command:tabmove -1",
+}
