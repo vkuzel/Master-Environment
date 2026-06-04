@@ -14,6 +14,7 @@ import yaml
 class App:
     workspace: int
     check_pattern: Optional[str] = None
+    cwd: Optional[str] = None
     cmd: Optional[str] = None
 
 
@@ -56,7 +57,7 @@ class AppLauncher:
         if self._is_app_running(app.check_pattern):
             return
 
-        self._start_app_detached(app.cmd)
+        self._start_app_detached(app.cwd, app.cmd)
         self._wait_for_app_to_start(app.check_pattern)
 
     def _switch_to_workspace(self, workspace: int):
@@ -98,15 +99,23 @@ class AppLauncher:
         while not self._is_app_running(pattern):
             time.sleep(1)
 
-    def _start_app_detached(self, cmd: str):
+    def _start_app_detached(self, cwd: Optional[str], cmd: str):
+        cwd = self._prepare_cwd(cwd)
         args = self._prepare_cmd(cmd)
         subprocess.Popen(
+            cwd=cwd,
             args=args,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             stdin=subprocess.DEVNULL,
             start_new_session=True
         )
+
+    @staticmethod
+    def _prepare_cwd(cwd: Optional[str]) -> Optional[str]:
+        if not cwd: return None
+        home = os.path.expanduser("~")
+        return cwd.replace("$HOME", home)
 
     def _prepare_cmd(self, cmd: str) -> list[str]:
         tokens = self._tokenize_cmd(cmd)

@@ -16,7 +16,8 @@
 
 - workspace: 7
   check_pattern: microgui
-  cmd: microgui.sh $HOME/Documents/tmp.md
+  cwd: $HOME/Documents/
+  cmd: microgui.sh tmp.md
 
 - workspace: 7
   check_pattern: Blank Box
