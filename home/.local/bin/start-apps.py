@@ -80,10 +80,11 @@ class AppLauncher:
         def search(node):
             if isinstance(node, dict):
                 app_id = (node.get("app_id") or "").lower()
+                name = (node.get("name") or "").lower()
                 title = (node.get("title") or "").lower()
                 window_class = (node.get("class") or "").lower()
 
-                if check_pattern in app_id or check_pattern in title or check_pattern in window_class:
+                if check_pattern in app_id or check_pattern in name or check_pattern in title or check_pattern in window_class:
                     return True
 
                 return any(search(v) for v in node.values())
