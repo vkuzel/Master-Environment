@@ -6,7 +6,9 @@
     "Ctrl-Shift-PageDown": "command:tabmove +1",
     "Ctrl-Shift-PageUp": "command:tabmove -1",    
     "OldBackspace": "DeleteWordLeft",
-    "Ctrl-Delete": "DeleteWordRight",    
+    "Ctrl-Delete": "DeleteWordRight",
+    "ShiftPageUp": "SelectPageUp",
+    "ShiftPageDown": "SelectPageDown",
     "Ctrl-Shift-End": "SelectToEnd",
     "Ctrl-Shift-Home": "SelectToStart"
 }
