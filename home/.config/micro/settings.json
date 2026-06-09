@@ -1,5 +1,6 @@
 {
     "basename": true,
     "hlsearch": true,
-    "softwrap": true
+    "softwrap": true,
+    "wordwrap": true
 }
