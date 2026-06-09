@@ -89,6 +89,9 @@
     Settings:
     * Disable: Settings -> Editor -> General -> Smart Keys -> Markdown -> Adjust indentation on type
 
+   Plugins:
+	* [Tab Management Plugin](https://github.com/vkuzel/IntelliJ-Tab-Management) for advanced tab management
+
 9. Firefox focus extensions
 
     * Startpage - Private Search Engine
