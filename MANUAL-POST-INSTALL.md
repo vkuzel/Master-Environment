@@ -81,16 +81,12 @@
 
 8. IntelliJ IDEA setup:
 
-    Shortcuts:
-    * Select Next Tab: Ctrl + Page Down
-    * Select Previous Tab: Ctrl + Page Up
-    * Close Tab: Ctrl + W
+   Plugins:
+	* [Tab Management Plugin](https://github.com/vkuzel/IntelliJ-Tab-Management) for advanced tab management
 
     Settings:
     * Disable: Settings -> Editor -> General -> Smart Keys -> Markdown -> Adjust indentation on type
-
-   Plugins:
-	* [Tab Management Plugin](https://github.com/vkuzel/IntelliJ-Tab-Management) for advanced tab management
+    * Select: Keymap -> Tab Management
 
 9. Firefox focus extensions
 
