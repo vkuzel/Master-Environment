@@ -195,27 +195,22 @@ install_zsh_plugin() {
 }
 
 install_micro_plugin() {
-  local pluginUrl="$1"
-  local pluginName=$(echo $pluginUrl | grep -Eo "[^/]+/archive" | grep -Eo "^[^/]+")
+  local pluginUrl=$1
   local pluginsDir="$HOME/.config/micro/plug"
+  local pluginName=$(echo "$pluginUrl" | grep -Eo "[^/]+$" | grep -Eo "^[^.]+")
   local pluginDir="$pluginsDir/$pluginName"
 
-	info "=== Install Micro plugin $pluginName ==="
-	if [[ -d "$pluginDir" ]]; then
-	  info "Already installed"
-	else
-	  local pluginArchiveDir=$(mktemp -d --suffix="$pluginName")
+  info "=== Install Micro plugin $pluginName ==="
+  if [[ -z "$pluginName" ]]; then
+    fail "Plugin name cannot be resolved from $pluginUrl"
+  fi
 
-    local pluginArchivePath="$pluginArchiveDir/$pluginName.zip"
-    curl --location --output "$pluginArchivePath" --remote-name "$pluginUrl"
-
-    local pluginUnzipDir="$pluginArchiveDir/content"
-    unzip "$pluginArchivePath" -d "$pluginUnzipDir"
-
-    local pluginSrcDir="$pluginUnzipDir/$(ls "$pluginUnzipDir")"
-    mv "$pluginSrcDir" "$pluginDir"
-
-    rm -r "$pluginArchiveDir"
+  if [[ -d "$pluginDir/.git" ]]; then
+    pushd "$pluginDir" >> /dev/null
+    git pull
+    popd > /dev/null
+  else
+    git clone "$pluginUrl" "$pluginDir"
   fi
 }
 
@@ -371,7 +366,7 @@ install_apt_package mpv-mpris
 # Office utils
 install_apt_package wl-clipboard
 install_apt_package micro
-install_micro_plugin "https://github.com/vkuzel/Micro-Filemanager-Plugin/archive/refs/heads/main.zip"
+install_micro_plugin "https://github.com/vkuzel/Micro-Filemanager-Plugin.git"
 install_apt_package neovim-qt
 install_apt_package gimp
 
