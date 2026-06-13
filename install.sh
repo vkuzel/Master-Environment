@@ -195,14 +195,28 @@ install_zsh_plugin() {
 }
 
 install_micro_plugin() {
-	local pluginName="$1"
+  local pluginUrl="$1"
+  local pluginName=$(echo $pluginUrl | grep -Eo "[^/]+/archive" | grep -Eo "^[^/]+")
+  local pluginsDir="$HOME/.config/micro/plug"
+  local pluginDir="$pluginsDir/$pluginName"
 
 	info "=== Install Micro plugin $pluginName ==="
-	if ! micro -plugin list | grep "$pluginName"; then
-		micro -plugin install "$pluginName"
+	if [[ -d "$pluginDir" ]]; then
+	  info "Already installed"
 	else
-		micro -plugin update "$pluginName"
-	fi
+	  local pluginArchiveDir=$(mktemp -d --suffix="$pluginName")
+
+    local pluginArchivePath="$pluginArchiveDir/$pluginName.zip"
+    curl --location --output "$pluginArchivePath" --remote-name "$pluginUrl"
+
+    local pluginUnzipDir="$pluginArchiveDir/content"
+    unzip "$pluginArchivePath" -d "$pluginUnzipDir"
+
+    local pluginSrcDir="$pluginUnzipDir/$(ls "$pluginUnzipDir")"
+    mv "$pluginSrcDir" "$pluginDir"
+
+    rm -r "$pluginArchiveDir"
+  fi
 }
 
 create_directory_structure() {
@@ -357,7 +371,7 @@ install_apt_package mpv-mpris
 # Office utils
 install_apt_package wl-clipboard
 install_apt_package micro
-install_micro_plugin filemanager
+install_micro_plugin "https://github.com/vkuzel/Micro-Filemanager-Plugin/archive/refs/heads/main.zip"
 install_apt_package neovim-qt
 install_apt_package gimp
 
