@@ -174,62 +174,49 @@ install_starship() {
 	fi
 }
 
-install_zsh_plugin() {
-  local pluginUrl="$1"
-  local pluginsDir="$HOME/.config/zsh"
-  local pluginName=$(echo $pluginUrl | grep -Eo "[^/]+/archive" | grep -Eo "^[^/]+")
-  local pluginDir="$pluginsDir/$pluginName"
+install_plugin_from_github_archive() {
+	local pluginName="$1"
+	local pluginUrl="$2"
+	local pluginDir="$3"
 
-	info "=== Install ZSH plugin $pluginName ==="
 	if [[ -z "$pluginName" ]]; then
 		fail "Plugin name cannot be resolved from $pluginUrl"
 	fi
 
 	if [[ -d "$pluginDir" ]]; then
-	  info "Already installed"
+		info "Already installed"
 	else
-	  local pluginArchiveDir=$(mktemp -d --suffix="$pluginName")
+		local pluginArchiveDir=$(mktemp -d --suffix="$pluginName")
 
-    local pluginArchivePath="$pluginArchiveDir/$pluginName.zip"
-    curl --location --output "$pluginArchivePath" --remote-name "$pluginUrl"
+		local pluginArchivePath="$pluginArchiveDir/$pluginName.zip"
+		curl --location --output "$pluginArchivePath" --remote-name "$pluginUrl"
 
-    local pluginUnzipDir="$pluginArchiveDir/content"
-    unzip "$pluginArchivePath" -d "$pluginUnzipDir"
+		local pluginUnzipDir="$pluginArchiveDir/content"
+		unzip "$pluginArchivePath" -d "$pluginUnzipDir"
 
-    local pluginSrcDir="$pluginUnzipDir/$(ls "$pluginUnzipDir")"
-    mv "$pluginSrcDir" "$pluginDir"
+		local pluginSrcDir="$pluginUnzipDir/$(ls "$pluginUnzipDir")"
+		mv "$pluginSrcDir" "$pluginDir"
 
-    rm -r "$pluginArchiveDir"
-  fi
+		rm -r "$pluginArchiveDir"
+	fi
+}
+
+install_zsh_plugin() {
+	local pluginUrl="$1"
+	local pluginName=$(echo $pluginUrl | grep -Eo "[^/]+/archive" | grep -Eo "^[^/]+")
+	local pluginDir="$HOME/.config/zsh/$pluginName"
+
+	info "=== Install ZSH plugin $pluginName ==="
+	install_plugin_from_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
 }
 
 install_micro_plugin() {
-  local pluginUrl="$1"
-  local pluginsDir="$HOME/.config/micro/plug"
-  local pluginName=$(echo $pluginUrl | grep -Eo "[^/]+/archive" | grep -Eo "^[^/]+")
-  local pluginDir="$pluginsDir/$pluginName"
+	local pluginUrl="$1"
+	local pluginName=$(echo $pluginUrl | grep -Eo "[^/]+/archive" | grep -Eo "^[^/]+")
+	local pluginDir="$HOME/.config/micro/plug/$pluginName"
 
 	info "=== Install Micro plugin $pluginName ==="
-	if [[ -z "$pluginName" ]]; then
-		fail "Plugin name cannot be resolved from $pluginUrl"
-	fi
-
-	if [[ -d "$pluginDir" ]]; then
-	  info "Already installed"
-	else
-	  local pluginArchiveDir=$(mktemp -d --suffix="$pluginName")
-
-    local pluginArchivePath="$pluginArchiveDir/$pluginName.zip"
-    curl --location --output "$pluginArchivePath" --remote-name "$pluginUrl"
-
-    local pluginUnzipDir="$pluginArchiveDir/content"
-    unzip "$pluginArchivePath" -d "$pluginUnzipDir"
-
-    local pluginSrcDir="$pluginUnzipDir/$(ls "$pluginUnzipDir")"
-    mv "$pluginSrcDir" "$pluginDir"
-
-    rm -r "$pluginArchiveDir"
-  fi
+	install_plugin_from_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
 }
 
 create_directory_structure() {
