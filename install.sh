@@ -175,38 +175,60 @@ install_starship() {
 }
 
 install_zsh_plugin() {
-	local pluginUrl=$1
-	local pluginsDir="$HOME/.config/zsh"
-	local pluginName=$(echo "$pluginUrl" | grep -Eo "[^/]+$" | grep -Eo "^[^.]+")
-	local pluginDir="$pluginsDir/$pluginName"
+  local pluginUrl="$1"
+  local pluginsDir="$HOME/.config/zsh"
+  local pluginName=$(echo $pluginUrl | grep -Eo "[^/]+/archive" | grep -Eo "^[^/]+")
+  local pluginDir="$pluginsDir/$pluginName"
 
 	info "=== Install ZSH plugin $pluginName ==="
 	if [[ -z "$pluginName" ]]; then
 		fail "Plugin name cannot be resolved from $pluginUrl"
 	fi
-	
+
 	if [[ -d "$pluginDir" ]]; then
-    info "Already installed"
+	  info "Already installed"
 	else
-		git clone --depth 1 --single-branch "$pluginUrl" "$pluginDir"
-	fi
+	  local pluginArchiveDir=$(mktemp -d --suffix="$pluginName")
+
+    local pluginArchivePath="$pluginArchiveDir/$pluginName.zip"
+    curl --location --output "$pluginArchivePath" --remote-name "$pluginUrl"
+
+    local pluginUnzipDir="$pluginArchiveDir/content"
+    unzip "$pluginArchivePath" -d "$pluginUnzipDir"
+
+    local pluginSrcDir="$pluginUnzipDir/$(ls "$pluginUnzipDir")"
+    mv "$pluginSrcDir" "$pluginDir"
+
+    rm -r "$pluginArchiveDir"
+  fi
 }
 
 install_micro_plugin() {
-  local pluginUrl=$1
+  local pluginUrl="$1"
   local pluginsDir="$HOME/.config/micro/plug"
-  local pluginName=$(echo "$pluginUrl" | grep -Eo "[^/]+$" | grep -Eo "^[^.]+")
+  local pluginName=$(echo $pluginUrl | grep -Eo "[^/]+/archive" | grep -Eo "^[^/]+")
   local pluginDir="$pluginsDir/$pluginName"
 
-  info "=== Install Micro plugin $pluginName ==="
-  if [[ -z "$pluginName" ]]; then
-    fail "Plugin name cannot be resolved from $pluginUrl"
-  fi
+	info "=== Install Micro plugin $pluginName ==="
+	if [[ -z "$pluginName" ]]; then
+		fail "Plugin name cannot be resolved from $pluginUrl"
+	fi
 
-  if [[ -d "$pluginDir" ]]; then
-    info "Already installed"
-  else
-    git clone --depth 1 --single-branch "$pluginUrl" "$pluginDir"
+	if [[ -d "$pluginDir" ]]; then
+	  info "Already installed"
+	else
+	  local pluginArchiveDir=$(mktemp -d --suffix="$pluginName")
+
+    local pluginArchivePath="$pluginArchiveDir/$pluginName.zip"
+    curl --location --output "$pluginArchivePath" --remote-name "$pluginUrl"
+
+    local pluginUnzipDir="$pluginArchiveDir/content"
+    unzip "$pluginArchivePath" -d "$pluginUnzipDir"
+
+    local pluginSrcDir="$pluginUnzipDir/$(ls "$pluginUnzipDir")"
+    mv "$pluginSrcDir" "$pluginDir"
+
+    rm -r "$pluginArchiveDir"
   fi
 }
 
@@ -295,9 +317,9 @@ install_nerd_fonts
 install_apt_package fonts-noto-color-emoji
 install_apt_package zsh
 install_starship
-install_zsh_plugin "https://github.com/zsh-users/zsh-autosuggestions.git"
-install_zsh_plugin "https://github.com/zsh-users/zsh-history-substring-search.git"
-install_zsh_plugin "https://github.com/zsh-users/zsh-syntax-highlighting.git"
+install_zsh_plugin "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/heads/master.zip"
+install_zsh_plugin "https://github.com/zsh-users/zsh-history-substring-search/archive/refs/heads/master.zip"
+install_zsh_plugin "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.zip"
 chsh_zsh
 
 # Sway
@@ -362,7 +384,7 @@ install_apt_package mpv-mpris
 # Office utils
 install_apt_package wl-clipboard
 install_apt_package micro
-install_micro_plugin "https://github.com/vkuzel/Micro-Filemanager-Plugin.git"
+install_micro_plugin "https://github.com/vkuzel/Micro-Filemanager-Plugin/archive/refs/heads/main.zip"
 install_apt_package neovim-qt
 install_apt_package gimp
 
