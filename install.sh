@@ -185,12 +185,10 @@ install_zsh_plugin() {
 		fail "Plugin name cannot be resolved from $pluginUrl"
 	fi
 	
-	if [[ -d "$pluginDir/.git" ]]; then
-		pushd "$pluginDir" >> /dev/null
-		git pull
-		popd > /dev/null
+	if [[ -d "$pluginDir" ]]; then
+    info "Already installed"
 	else
-		git clone "$pluginUrl" "$pluginDir"
+		git clone --depth 1 --single-branch "$pluginUrl" "$pluginDir"
 	fi
 }
 
@@ -205,12 +203,10 @@ install_micro_plugin() {
     fail "Plugin name cannot be resolved from $pluginUrl"
   fi
 
-  if [[ -d "$pluginDir/.git" ]]; then
-    pushd "$pluginDir" >> /dev/null
-    git pull
-    popd > /dev/null
+  if [[ -d "$pluginDir" ]]; then
+    info "Already installed"
   else
-    git clone "$pluginUrl" "$pluginDir"
+    git clone --depth 1 --single-branch "$pluginUrl" "$pluginDir"
   fi
 }
 
