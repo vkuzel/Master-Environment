@@ -5,7 +5,7 @@ alias grep='grep --color=auto'
 alias vi='micro'
 alias mi='micro'
 alias bc='bc -l'
-# Most servers does not recognize "foot" terminal
+# Most servers do not recognize "foot" terminal
 alias ssh='TERM=xterm-256color ssh'
 alias uuidgen-lower="uuidgen | tr '[:upper:]' '[:lower:]'"
 alias cdd="cd $HOME/Downloads"
