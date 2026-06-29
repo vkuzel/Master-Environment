@@ -16,7 +16,7 @@ Center display:
 * Workspace #6:
 
 Right display:
-* Workspace #7: Notes (NeoVim-QT)
+* Workspace #7: Notes (Micro)
 * Workspace #8:
 * Workspace #9:
 

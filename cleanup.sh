@@ -55,6 +55,7 @@ purge_apt_package gedit
 purge_apt_package vim
 remove_dir "$HOME/.local/share/gedit"
 remove_dir "$HOME/.local/config/gedit"
+remove_dir "$HOME/.config/nvim"
 remove_link "$HOME/.vimrc"
 remove_link "$HOME/.local/bin/mountui.sh"
 remove_link "$HOME/.local/bin/start-me-apps"

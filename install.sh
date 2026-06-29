@@ -372,7 +372,6 @@ install_apt_package mpv-mpris
 install_apt_package wl-clipboard
 install_apt_package micro
 install_micro_plugin "https://github.com/vkuzel/Micro-Filemanager-Plugin/archive/refs/heads/main.zip"
-install_apt_package neovim-qt
 install_apt_package gimp
 
 # Android file mount
