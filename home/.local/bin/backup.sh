@@ -67,8 +67,8 @@ rsync \
 	"$HOME/Music" \
 	"$HOME/Videos" \
 	"$HOME/Pictures" \
-  "$firefoxBackupDir" \
-  "$mtBackupDir" \
+	"$firefoxBackupDir" \
+	"$mtBackupDir" \
 	"$backupDir"
 
 rm -r "$tmpDir"
