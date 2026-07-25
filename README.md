@@ -2,7 +2,7 @@
 
 Desktop environment setup for Java / Kotlin developer based on [Ubuntu Server](https://ubuntu.com/download/server) and the tilling window manager [sway](https://swaywm.org/).
 
-The workflow is optimized for a laptop running additional one or two external 27-inch displays. Motivation is to have a minimal environment focused on productivity, inspired by [ThePrimeagen](https://github.com/ThePrimeagen/)'s idea of search fatigue reduction. Most common tasks have their fixed place and are as little keystrokes away as possible.
+The workflow is optimized for a laptop with one or two 27-inch external displays. The goal is to create a minimal, productivity-focused environment inspired by [ThePrimeagen](https://github.com/ThePrimeagen/)'s idea of reducing search fatigue. The most common tasks have a fixed place and are accessible with as few keystrokes as possible. Keyboard shortcuts are also designed to be consistent across the system.
 
 Laptop display on the left:
 * Workspace #0: Social apps (mail, ...)
