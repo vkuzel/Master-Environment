@@ -192,7 +192,7 @@ install_plugin_from_github_archive() {
 		curl --location --output "$pluginArchivePath" --remote-name "$pluginUrl"
 
 		local pluginUnzipDir="$pluginArchiveDir/content"
-		unzip "$pluginArchivePath" -d "$pluginUnzipDir"
+		python3 -m zipfile -e "$pluginArchivePath" "$pluginUnzipDir"
 
 		local pluginSrcDir="$pluginUnzipDir/$(ls "$pluginUnzipDir")"
 		mv "$pluginSrcDir" "$pluginDir"
