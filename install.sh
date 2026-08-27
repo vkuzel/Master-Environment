@@ -195,6 +195,7 @@ install_plugin_from_github_archive() {
 		python3 -m zipfile -e "$pluginArchivePath" "$pluginUnzipDir"
 
 		local pluginSrcDir="$pluginUnzipDir/$(ls "$pluginUnzipDir")"
+		mkdir -p $(dirname "$pluginDir")
 		mv "$pluginSrcDir" "$pluginDir"
 
 		rm -r "$pluginArchiveDir"
