@@ -42,9 +42,7 @@ class BlockDevice:
 
 @dataclass
 class MtpDevice:
-    busLocation: int
-    devNum: int
-    id: str
+    serial: str
     name: str
 
 
@@ -170,8 +168,7 @@ class MountableBlockDevice(MountableDevice):
 
 @dataclass
 class MountableMtpDevice(MountableDevice):
-    busLocation: int
-    devNum: int
+    serial: str
 
     def is_mounted(self) -> bool:
         # Fast but fuzzy solution. Better approach would be to call `mount`
@@ -301,26 +298,63 @@ class MtpDevicesFactory:
         if result.returncode != 0:
             return Error(f"Cannot get MTP devices: {result.stderr}")
 
-        raw_device_pattern = r'^Bus (\d+) Device (\d+): ID ([0-9a-fA-F]+:[0-9a-fA-F]+) (.+MTP.*)$'
-        raw_devices = [match.groups() for match in re.finditer(raw_device_pattern, result.stdout, re.MULTILINE)]
-        return [self._parse_device(raw_device) for raw_device in raw_devices]
+        usb_devices = self._parse_usb_devices(result.stdout.splitlines())
+        mtp_devices = []
+
+        for usb_device in usb_devices:
+            if usb_device.interface == "MTP":
+                mtp_devices.append(MtpDevice(
+                    serial=usb_device.serial,
+                    name=f"{usb_device.manufacturer} {usb_device.product}",
+                ))
+
+        return mtp_devices
 
     @staticmethod
     def _run_lsusb() -> subprocess.CompletedProcess[str]:
         return subprocess.run(
-            args=["lsusb"],
+            args=["lsusb", "-v"],
             capture_output=True,
             text=True,
         )
 
     @staticmethod
-    def _parse_device(raw_device: Tuple[str, ...]) -> MtpDevice:
-        return MtpDevice(
-            busLocation=int(raw_device[0]),
-            devNum=int(raw_device[1]),
-            id=raw_device[2],
-            name=raw_device[3],
-        )
+    def _parse_usb_devices(usb_lines: List[str]) -> List["_UsbDevice"]:
+        device_header_pattern = r'^Bus \d+ Device \d+.*$'
+        device_property_pattern = r'^ +(\w+) +\d+ (.+)$'
+
+        usb_devices = []
+        current = None
+
+        for usb_line in usb_lines:
+            if re.match(device_header_pattern, usb_line):
+                if current:
+                    usb_devices.append(current)
+                current = MtpDevicesFactory._UsbDevice()
+
+            property_match = re.match(device_property_pattern, usb_line)
+            if property_match:
+                name, value = property_match.groups()
+                if name == "iManufacturer":
+                    current.manufacturer = value
+                elif name == "iProduct":
+                    current.product = value
+                elif name == "iSerial":
+                    current.serial = value
+                elif name == "iInterface":
+                    current.interface = value
+
+        if current:
+            usb_devices.append(current)
+
+        return usb_devices
+
+    @dataclass
+    class _UsbDevice:
+        manufacturer: str = ""
+        product: str = ""
+        serial: str = ""
+        interface: str = ""
 
 
 class MountableDevicesFactory:
@@ -426,18 +460,13 @@ class MountableDevicesFactory:
         return MountableMtpDevice(
             name=name,
             mount_point=mount_point,
-            busLocation=device.busLocation,
-            devNum=device.devNum,
+            serial=device.serial,
         )
 
     @staticmethod
     def _resolve_mount_point(prefix: str, device_name: str):
-        match = re.compile("^.*/([a-z0-9-]+)$").match(device_name)
-        if match:
-            return f"{prefix}-{match.group(1)}"
-        else:
-            suffix = hashlib.md5(device_name.encode()).hexdigest()[:3]
-            return f"{prefix}-{suffix}"
+        suffix = hashlib.md5(device_name.encode()).hexdigest()[:3]
+        return f"{prefix}-{suffix}"
 
 
 def rescan_pci_devices(sudo_runner: SudoRunner) -> Result:
