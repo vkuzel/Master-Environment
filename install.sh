@@ -379,7 +379,7 @@ install_apt_package gimp
 install_apt_package gvfs-backends
 install_apt_package gvfs-fuse
 install_apt_package mtp-tools
-install_apt_package jmtpfs
+install_apt_package go-mtpfs
 
 # Presentation
 install_apt_package python3-tk

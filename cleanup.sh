@@ -56,6 +56,7 @@ purge_apt_package vim
 purge_apt_package neovim
 purge_apt_package neovim-qt
 purge_apt_package neovim-runtime
+purge_apt_package jmtpfs
 remove_dir "$HOME/.local/share/gedit"
 remove_dir "$HOME/.local/config/gedit"
 remove_dir "$HOME/.config/nvim"
