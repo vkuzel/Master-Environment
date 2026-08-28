@@ -180,28 +180,54 @@ class MountableMtpDevice(MountableDevice):
         if isinstance(result, Error):
             return result
 
-        result = subprocess.run(
-            args=["jmtpfs", f"-device={self.busLocation},{self.devNum}", self.mount_point],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            self._cleanup_mount_point(sudo_runner)
-            return Error(f"Cannot mount: {result.stderr}")
+        with open(f"/tmp/go-mtpfs-{os.getpid()}.log", "w+") as log_file:
+            process = subprocess.Popen(
+                args=["go-mtpfs", "-dev", self.serial, self.mount_point],
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                text=True,
+                start_new_session=True,
+            )
 
-        path = Path(self.mount_point)
-        try:
-            path.stat()
-        except OSError:
-            # Device may be busy, try dismount for a few times
-            for i in range(1, 3):
-                if isinstance(self.unmount(sudo_runner), Success):
-                    break
-                else:
-                    time.sleep(1)
-            return Error("Mounted device not accessible, enable MTP on your phone and try it again!")
+            if not self._is_mounted(process):
+                if process.poll() is None:
+                    process.terminate()
+                self._cleanup_mount_point(sudo_runner)
+                message = self._resolve_mount_error_message(log_file)
+                return Error(message)
+
+        if not self._wait_for_mounted_content():
+            self.unmount(sudo_runner)
+            return Error("Mounted device is empty, enable USB file transfer on your phone and try it again!")
 
         return Success()
+
+    def _is_mounted(self, process) -> bool:
+        for _ in range(60):
+            if process.poll() is not None:
+                # go-mtpfs exited before mounting, i.e. it failed
+                return False
+            if os.path.ismount(self.mount_point):
+                return True
+            time.sleep(0.5)
+        return False
+
+    @staticmethod
+    def _resolve_mount_error_message(log_file) -> str:
+        log_file.seek(0)
+        log_message = log_file.read().strip()
+        message = log_message if log_message else "enable MTP on your phone and try it again!"
+        return f"Cannot mount: {message}"
+
+    def _wait_for_mounted_content(self) -> bool:
+        for _ in range(10):
+            try:
+                if os.listdir(self.mount_point):
+                    return True
+            except OSError:
+                pass
+            time.sleep(0.5)
+        return False
 
     def unmount(self, sudo_runner: SudoRunner):
         result = sudo_runner.run(["fusermount", "-u", self.mount_point])
