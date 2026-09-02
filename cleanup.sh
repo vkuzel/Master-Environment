@@ -39,6 +39,17 @@ remove_dir() {
   fi
 }
 
+remove_group() {
+  local groupName=$1
+
+  info "=== Remove group $groupName ==="
+  if id -nG "$USER" | grep -qw docker; then
+    sudo gpasswd -d "$USER" "$groupName" || true
+  else
+    info "Already removed"
+  fi
+}
+
 purge_apt_package() {
 	local pkgName=$1
 
@@ -64,3 +75,4 @@ remove_link "$HOME/.vimrc"
 remove_link "$HOME/.local/bin/mountui.sh"
 remove_link "$HOME/.local/bin/start-me-apps"
 remove_link "$HOME/.local/bin/view-images.sh"
+remove_group docker
