@@ -880,14 +880,15 @@ class UI:
 
     def delete(self):
         if self._is_detail_mode:
-            return
+            self._detail_model = None
 
         deleted_image = self._overview_model.delete_selected_image()
         if deleted_image is None:
             return
 
-        self._renderer.render_overview(self._overview_model)
         self._image_loader.delete_image(deleted_image.image_file)
+        self._renderer.render_overview(self._overview_model)
+        self._set_window_title()
 
     def toggle_preview(self):
         if self._is_detail_mode:
