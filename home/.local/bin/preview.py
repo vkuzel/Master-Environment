@@ -140,6 +140,14 @@ class OverviewImage:
     def contains_position(self, position: Position) -> bool:
         return self.outer_rect.contains_position(position)
 
+    def to_overview_deleted_image(self) -> "OverviewDeletedImage":
+        return OverviewDeletedImage(
+            image_file=self.image_file,
+            position=self.position,
+            dimensions=self.dimensions,
+            selected=self.selected,
+        )
+
 
 @dataclass
 class OverviewLoadedImage(OverviewImage):
@@ -175,6 +183,11 @@ class OverviewImagePlaceholder(OverviewImage):
             selected=self.selected,
             photo_image=photo_image,
         )
+
+
+@dataclass
+class OverviewDeletedImage(OverviewImage):
+    pass
 
 
 @dataclass
@@ -332,6 +345,15 @@ class OverviewModel:
         else:
             return selected_image, None
 
+    def delete_selected_image(self) -> Optional[OverviewImage]:
+        index = self._find_selected_image_index()
+        if index is None:
+            return None
+
+        selected_image = self.images[index]
+        self.images[index] = selected_image.to_overview_deleted_image()
+        return selected_image
+
     def _find_selected_image_index(self) -> Optional[int]:
         for i, image in enumerate(self.images):
             if image.selected:
@@ -403,6 +425,7 @@ class ImageFilesScanner:
         return files
 
 
+# TODO Should be renamed to image IO
 class ImageLoader:
     def __init__(self):
         self._in_queue: Queue[LoadImageRequest] = Queue()
@@ -467,6 +490,10 @@ class ImageLoader:
         image = Image.open(image_file.name)
         image = ImageLoader._resize_image(image, dimensions, Resampling.LANCZOS)
         return ImageTk.PhotoImage(image)
+
+    @staticmethod
+    def delete_image(image_file: ImageFile):
+        Path(image_file.name).unlink()
 
     @staticmethod
     def _resize_image(
@@ -553,6 +580,9 @@ class Renderer:
             if isinstance(image, OverviewLoadedImage):
                 self.render_overview_image(image)
 
+            if isinstance(image, OverviewDeletedImage):
+                self._render_deleted_image(image)
+
             self.render_overview_image_highlight(image)
 
     def render_overview_image(self, image: OverviewLoadedImage):
@@ -583,6 +613,23 @@ class Renderer:
             anchor='nw',
         )
 
+    def _render_deleted_image(self, image: OverviewDeletedImage):
+        self._canvas.create_line(
+            image.inner_rect.x1,
+            image.inner_rect.y1,
+            image.inner_rect.x2,
+            image.inner_rect.y2,
+            fill="red",
+            width=2,
+        )
+        self._canvas.create_line(
+            image.inner_rect.x1,
+            image.inner_rect.y2,
+            image.inner_rect.x2,
+            image.inner_rect.y1,
+            fill="red",
+            width=2,
+        )
 
 class WindowManager:
     def __init__(self, root: Tk):
@@ -831,6 +878,17 @@ class UI:
         else:
             return False
 
+    def delete(self):
+        if self._is_detail_mode:
+            return
+
+        deleted_image = self._overview_model.delete_selected_image()
+        if deleted_image is None:
+            return
+
+        self._renderer.render_overview(self._overview_model)
+        self._image_loader.delete_image(deleted_image.image_file)
+
     def toggle_preview(self):
         if self._is_detail_mode:
             self._detail_model = None
@@ -966,6 +1024,8 @@ def main():
     root.bind('<Right>', lambda _: ui.select_next())
     root.bind('<Up>', lambda _: ui.select_above())
     root.bind('<Down>', lambda _: ui.select_below())
+
+    root.bind('d', lambda _: ui.delete())
 
     root.bind('<space>', lambda e: ui.toggle_preview())
 
