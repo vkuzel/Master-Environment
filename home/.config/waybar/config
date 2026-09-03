@@ -70,7 +70,7 @@
         "format-icons": ["", "", "", "", "", "", "", "", ""]
     },
     "cpu": {
-        "format": "{usage}% ",
+        "format": "{usage}% <span size='x-large'></span>",
         "tooltip": false,
         "states": {
             "warning": 80,
