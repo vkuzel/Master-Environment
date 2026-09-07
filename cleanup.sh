@@ -75,4 +75,5 @@ remove_link "$HOME/.vimrc"
 remove_link "$HOME/.local/bin/mountui.sh"
 remove_link "$HOME/.local/bin/start-me-apps"
 remove_link "$HOME/.local/bin/view-images.sh"
+remove_link "$HOME/.local/bin/dockershell.sh"
 remove_group docker
