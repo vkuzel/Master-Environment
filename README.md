@@ -13,10 +13,10 @@ Center display:
 * Workspace #3: IDE (IntelliJ IDEA)
 * Workspace #4:
 * Workspace #5:
-* Workspace #6:
 
 Right display:
-* Workspace #7: Notes (Micro)
+* Workspace #6: Notes (Micro)
+* Workspace #7:
 * Workspace #8:
 * Workspace #9:
 

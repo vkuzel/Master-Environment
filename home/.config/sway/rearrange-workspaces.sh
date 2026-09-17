@@ -27,7 +27,7 @@ rearrange_workspaces() {
 	  workspace 3; move workspace to output $output1;
 	  workspace 4; move workspace to output $output1;
 	  workspace 5; move workspace to output $output1;
-	  workspace 6; move workspace to output $output1;
+	  workspace 6; move workspace to output $output2;
 	  workspace 7; move workspace to output $output2;
 	  workspace 8; move workspace to output $output2;
 	  workspace 9; move workspace to output $output2;

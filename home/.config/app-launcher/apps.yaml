@@ -14,12 +14,12 @@
   check_pattern: jetbrains-idea
   cmd: gtk-launch jetbrains-idea-ef52faa1-3035-4ceb-a7cb-0dfdcf75b2e1.desktop
 
-- workspace: 7
+- workspace: 6
   check_pattern: microgui
   cwd: $HOME/Documents/
   cmd: microgui.sh tmp.md:100000:1 TODO.md
 
-- workspace: 7
+- workspace: 6
   check_pattern: Blank Box
   cmd: blank-box
 
