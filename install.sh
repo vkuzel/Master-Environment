@@ -220,6 +220,15 @@ install_micro_plugin() {
 	install_plugin_from_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
 }
 
+install_nix() {
+  info "=== Install nix ==="
+	if [[ -d "/nix" ]]; then
+		info "Already installed"
+	else
+	  curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --daemon
+	fi
+}
+
 create_directory_structure() {
 	info "=== Create directory structure ==="
 	local srcDir=$1
@@ -356,6 +365,9 @@ enable_systemctl_service bluetooth
 # Dotfiles
 create_directory_structure $SRC_DIR $DST_DIR
 create_links $SRC_DIR $DST_DIR
+
+#  nix
+install_nix
 
 # Mozilla Thunderbird and Firefox
 install_apt_package software-properties-common
