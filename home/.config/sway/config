@@ -91,7 +91,7 @@ bindsym $mod+f fullscreen
 bindsym $mod+Shift+space floating toggle
 
 
-bindsym $mod+l exec swaylock
+bindsym $mod+l exec $HOME/.config/sway/lock
 
 bindsym XF86MonBrightnessUp exec brightnessctl s 5%+
 bindsym XF86MonBrightnessDown exec brightnessctl s 5%-
