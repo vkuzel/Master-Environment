@@ -370,6 +370,12 @@ enable_systemctl_service bluetooth
 create_directory_structure $SRC_DIR $DST_DIR
 create_links $SRC_DIR $DST_DIR
 
+# Python libs
+install_apt_package python3-tk
+install_apt_package python3-pil
+install_apt_package python3-pil.imagetk
+install_apt_package python3-yaml
+
 #  nix
 install_nix
 
@@ -396,11 +402,6 @@ install_apt_package gvfs-backends
 install_apt_package gvfs-fuse
 install_apt_package mtp-tools
 install_apt_package go-mtpfs
-
-# Presentation
-install_apt_package python3-tk
-install_apt_package python3-pil
-install_apt_package python3-pil.imagetk
 
 # Utils
 install_apt_package libfuse2t64
