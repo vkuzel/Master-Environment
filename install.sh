@@ -226,6 +226,10 @@ install_nix() {
 		info "Already installed"
 	else
 	  curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --daemon
+	  info "Enable experimental features"
+	  echo 'experimental-features = nix-command flakes' | sudo tee -a "$NIX_CONF" >/dev/null
+	  info "Restart nix-daemon"
+	  sudo systemctl restart nix-daemon
 	fi
 }
 
