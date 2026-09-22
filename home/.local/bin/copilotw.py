@@ -9,6 +9,7 @@ import tempfile
 import textwrap
 from contextlib import contextmanager
 from importlib import metadata
+from pathlib import Path
 
 
 class CopilotRunner:
@@ -35,6 +36,9 @@ class CopilotRunner:
         """)
 
         with self._create_instructions_file(instructions) as instructions_file:
+            nix_dir = self._resolve_nix_dir()
+            nix_path = self._resolve_nix_path(nix_dir)
+
             home = os.path.expanduser("~")
             nvm_dir = os.path.join(home, ".nvm")
             copilot_dir = os.path.join(home, ".copilot")
@@ -46,6 +50,9 @@ class CopilotRunner:
             os.makedirs(microsoft_dev_tools_dir, exist_ok=True)
 
             args = [
+                "nix", "develop", f"path:{nix_dir}",
+                "--command",
+
                 "bwrap",
                 # reset environment
                 "--unshare-all",
@@ -62,6 +69,7 @@ class CopilotRunner:
                 "--ro-bind", "/bin", "/bin",
                 "--ro-bind", "/lib", "/lib",
                 "--ro-bind", "/lib64", "/lib64",
+                "--ro-bind", "/nix/store", "/nix/store",
 
                 # environment
                 "--uid", str(os.getuid()),
@@ -69,12 +77,10 @@ class CopilotRunner:
 
                 "--clearenv",
                 "--setenv", "HOME", home,
-                "--setenv", "PATH", env.get("PATH", ""),
-                "--setenv", "NVM_DIR", nvm_dir,
+                "--setenv", "PATH", nix_path,
                 "--setenv", "TERM", env.get("TERM", ""),
                 "--setenv", "COLORTERM", env.get("COLORTERM", ""),
 
-                "--ro-bind", nvm_dir, nvm_dir,
                 "--bind", copilot_dir, copilot_dir,
                 "--bind", copilot_cache_dir, copilot_cache_dir,
                 "--bind", microsoft_dev_tools_dir, microsoft_dev_tools_dir,
@@ -86,14 +92,7 @@ class CopilotRunner:
                 # workspace
                 "--bind" if read_write else "--ro-bind", cwd, cwd,
 
-                "/bin/bash", "-ec",
-                # language=bash
-                """
-                source "$NVM_DIR/nvm.sh" --no-use
-                nvm use default
-                
-                copilot
-                """
+                "bash"
             ]
 
             result = subprocess.run(args)
@@ -137,6 +136,20 @@ class CopilotRunner:
             instructions_file.write(instructions)
             instructions_file.flush()
             yield instructions_file
+
+    @staticmethod
+    def _resolve_nix_dir() -> str:
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        return os.path.join(script_dir, "../..", ".config/nix/copilot")
+
+    @staticmethod
+    def _resolve_nix_path(nix_dir: str):
+        result = subprocess.run(
+            ["nix", "develop", f"path:{nix_dir}", "--command", "printenv", "PATH"],
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout
 
 
 def main():
