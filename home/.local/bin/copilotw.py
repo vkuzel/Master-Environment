@@ -40,7 +40,6 @@ class CopilotRunner:
             nix_path = self._resolve_nix_path(nix_dir)
 
             home = os.path.expanduser("~")
-            nvm_dir = os.path.join(home, ".nvm")
             copilot_dir = os.path.join(home, ".copilot")
             copilot_cache_dir = os.path.join(home, ".cache/copilot")
             microsoft_dev_tools_dir = os.path.join(home, ".cache/Microsoft/DeveloperTools")
