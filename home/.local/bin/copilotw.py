@@ -91,7 +91,7 @@ class CopilotRunner:
                 # workspace
                 "--bind" if read_write else "--ro-bind", cwd, cwd,
 
-                "bash"
+                "copilot"
             ]
 
             result = subprocess.run(args)
