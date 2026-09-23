@@ -16,7 +16,7 @@ Center display:
 
 Right display:
 * Workspace #6: Notes (Micro)
-* Workspace #7:
+* Workspace #7: AI (Copilot)
 * Workspace #8:
 * Workspace #9:
 
