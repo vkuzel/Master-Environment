@@ -54,11 +54,11 @@ class AppLauncher:
         if not app.check_pattern or not app.cmd:
             return
 
-        if self._is_app_running(app.check_pattern):
+        if self._is_app_running(app.check_pattern, app.workspace):
             return
 
         self._start_app_detached(app.cwd, app.cmd)
-        self._wait_for_app_to_start(app.check_pattern)
+        self._wait_for_app_to_start(app.check_pattern, app.workspace)
 
     def _switch_to_workspace(self, workspace: int):
         subprocess.run(
@@ -68,7 +68,7 @@ class AppLauncher:
         self._current_workspace = workspace
 
     @staticmethod
-    def _is_app_running(check_pattern: str) -> bool:
+    def _is_app_running(check_pattern: str, workspace: int) -> bool:
         check_pattern = check_pattern.lower()
 
         result = subprocess.run(
@@ -80,13 +80,19 @@ class AppLauncher:
 
         def search(node):
             if isinstance(node, dict):
-                app_id = (node.get("app_id") or "").lower()
-                name = (node.get("name") or "").lower()
-                title = (node.get("title") or "").lower()
-                window_class = (node.get("class") or "").lower()
+                node_type = (node.get("type") or "").lower()
+                if node_type == "workspace":
+                    num = node.get("num") or -1
+                    if workspace != num:
+                        return False
+                else:
+                    app_id = (node.get("app_id") or "").lower()
+                    name = (node.get("name") or "").lower()
+                    title = (node.get("title") or "").lower()
+                    window_class = (node.get("class") or "").lower()
 
-                if check_pattern in app_id or check_pattern in name or check_pattern in title or check_pattern in window_class:
-                    return True
+                    if check_pattern in app_id or check_pattern in name or check_pattern in title or check_pattern in window_class:
+                        return True
 
                 return any(search(v) for v in node.values())
             elif isinstance(node, list):
@@ -95,8 +101,8 @@ class AppLauncher:
 
         return search(tree)
 
-    def _wait_for_app_to_start(self, pattern: str):
-        while not self._is_app_running(pattern):
+    def _wait_for_app_to_start(self, pattern: str, workspace: int):
+        while not self._is_app_running(pattern, workspace):
             time.sleep(1)
 
     def _start_app_detached(self, cwd: Optional[str], cmd: str):
