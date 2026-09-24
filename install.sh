@@ -165,6 +165,21 @@ uninstall_apt_package() {
 	fi
 }
 
+install_bubblewrap_apparmor_profile() {
+	# The profile should be included in new versions of Ubuntu, but its not in Ubuntu 24.04 yet.
+	# Deets: https://www.staldal.nu/tech/2025/10/19/linux-sandboxing-with-bubblewrap/
+	local source="system/bwrap-userns-restrict"
+	local target="/etc/apparmor.d/bwrap-userns-restrict"
+
+	info "=== Install AppArmor bubblewrap profile ==="
+	if [[ -e "$target" ]]; then
+		info "Already installed"
+	else
+		sudo cp "$source" "$target"
+		sudo service apparmor reload
+	fi
+}
+
 install_starship() {
 	info "=== Install Starship ==="
 	if command -v starship &> /dev/null; then
@@ -375,6 +390,9 @@ install_apt_package python3-tk
 install_apt_package python3-pil
 install_apt_package python3-pil.imagetk
 install_apt_package python3-yaml
+
+# AI isolation
+install_bubblewrap_apparmor_profile
 
 #  nix
 install_nix
