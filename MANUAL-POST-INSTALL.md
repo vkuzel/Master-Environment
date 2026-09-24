@@ -93,3 +93,10 @@
     * Startpage - Private Search Engine
     * uBlock Origin
     * Unhook - Remove YouTube Recommended & Shorts
+
+10. Copilot
+
+	Disable terminal progress notifications by adding into `~/.copilot/settins.json`
+	```json
+	"terminalProgress": false
+	```
