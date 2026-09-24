@@ -27,7 +27,7 @@ class LockManager:
 class DisplayManager:
     lock_manager: LockManager
 
-    _DISPLAY_TIMEOUT_SECONDS = 300
+    _DISPLAY_TIMEOUT_SECONDS = 60
 
     def manage_display(self):
         idle = subprocess.Popen([
