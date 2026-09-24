@@ -33,7 +33,7 @@ class DisplayManager:
     def manage_display(self):
         idle = subprocess.Popen([
             "swayidle", "-w",
-            "timeout", self._DISPLAY_TIMEOUT_SECONDS, 'swaymsg "output * dpms off"',
+            "timeout", f"{self._DISPLAY_TIMEOUT_SECONDS}", 'swaymsg "output * dpms off"',
             "resume", 'swaymsg "output * dpms on"',
         ])
 
