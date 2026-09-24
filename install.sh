@@ -248,6 +248,27 @@ install_nix() {
 	fi
 }
 
+install_nix_packages() {
+	info "=== Install nix packages ==="
+	local flakeRef="path:$(realpath "nix")"
+
+	info "Source default nix profile"
+	local nixProfile="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+	if ! command -v nix > /dev/null && [ -e "$nixProfile" ]; then
+		set +u
+		source "$nixProfile"
+		set -u
+	fi
+
+	info "Remove old apps (if any)"
+	if [ -e "$HOME/.nix-profile" ] || [ -e "${XDG_STATE_HOME:-$HOME/.local/state}/nix/profile" ]; then
+		nix profile remove --all
+	fi
+
+	info "Install new apps (if any)"
+	nix profile add "$flakeRef"
+}
+
 create_directory_structure() {
 	info "=== Create directory structure ==="
 	local srcDir=$1
@@ -396,6 +417,7 @@ install_bubblewrap_apparmor_profile
 
 #  nix
 install_nix
+install_nix_packages
 
 # Mozilla Thunderbird and Firefox
 install_apt_package software-properties-common
@@ -411,7 +433,7 @@ install_apt_package mpv-mpris
 
 # Office utils
 install_apt_package wl-clipboard
-install_apt_package micro
+# Micro is installed by nix, see nix/flake.nix
 install_micro_plugin "https://github.com/vkuzel/Micro-Filemanager-Plugin/archive/refs/heads/main.zip"
 install_apt_package gimp
 
@@ -422,14 +444,12 @@ install_apt_package mtp-tools
 install_apt_package go-mtpfs
 
 # Utils
+# Htop, mc and jq are installed by nix, see nix/flake.nix
 install_apt_package libfuse2t64
-install_apt_package htop
 install_apt_package unzip
 install_apt_package 7zip
 install_apt_package uuid
 install_apt_package whois
 install_apt_package ack
-install_apt_package mc
-install_apt_package jq
 install_apt_package bc
 install_apt_package transmission-cli
