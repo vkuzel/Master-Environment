@@ -19,7 +19,7 @@ print_usage_and_exit() {
 }
 
 java_dir_pattern() {
-  echo "(java|corretto|jdk)-"
+  echo "(java|corretto|azul|jdk)-"
 }
 
 list_java_installations() {
