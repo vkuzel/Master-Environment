@@ -5,7 +5,7 @@ Desktop environment setup for Java / Kotlin developer based on [Ubuntu Server](h
 The workflow is optimized for a laptop with one or two 27-inch external displays. The goal is to create a minimal, productivity-focused environment inspired by [ThePrimeagen](https://github.com/ThePrimeagen/)'s idea of reducing search fatigue. The most common tasks have a fixed place and are accessible with as few keystrokes as possible. Keyboard shortcuts are also designed to be consistent across the system.
 
 Laptop display on the left:
-* Workspace #0: Social apps (mail, ...)
+* Workspace #0: Communication (mail, ...)
 
 Center display:
 * Workspace #1: Terminals (Foot)
