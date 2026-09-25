@@ -71,24 +71,6 @@ configure_dark_mode() {
 	fi
 }
 
-install_nerd_fonts() {
-	info "=== Install Nerd Fonts ==="
-	local targetDir="/usr/share/fonts/truetype/dejavu-nerd"
-	if [ -d "$targetDir" ]; then
-		info "Already installed"
-	else
-		local fontFile="DejaVuSansMono.tar.xz"
-		local fontUrl="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/$fontFile"
-
-		curl --location --output-dir "/tmp/" --remote-name "$fontUrl"
-		sudo mkdir -p "$targetDir"
-		sudo tar -xf "/tmp/$fontFile" -C "$targetDir"
-		info "Refresh font cache"
-		sudo fc-cache -fv
-		# Verify font installed: `fc-list`
-	fi
-}
-
 configure_mozilla_apt_repository() {
 	info "=== Configure Mozilla APT repository ==="
 	if [[ -e "/etc/apt/preferences.d/mozillateamppa" ]]; then
@@ -180,15 +162,6 @@ install_bubblewrap_apparmor_profile() {
 	fi
 }
 
-install_starship() {
-	info "=== Install Starship ==="
-	if command -v starship &> /dev/null; then
-		info "Already installed"
-	else
-		curl -sS https://starship.rs/install.sh | sh
-	fi
-}
-
 install_plugin_from_github_archive() {
 	local pluginName="$1"
 	local pluginUrl="$2"
@@ -217,15 +190,6 @@ install_plugin_from_github_archive() {
 	fi
 }
 
-install_zsh_plugin() {
-	local pluginUrl="$1"
-	local pluginName=$(echo $pluginUrl | grep -Eo "[^/]+/archive" | grep -Eo "^[^/]+")
-	local pluginDir="$HOME/.config/zsh/$pluginName"
-
-	info "=== Install ZSH plugin $pluginName ==="
-	install_plugin_from_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
-}
-
 install_micro_plugin() {
 	local pluginUrl="$1"
 	local pluginName=$(echo $pluginUrl | grep -Eo "[^/]+/archive" | grep -Eo "^[^/]+")
@@ -242,31 +206,67 @@ install_nix() {
 	else
 	  curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --daemon
 	  info "Enable experimental features"
-	  echo 'experimental-features = nix-command flakes' | sudo tee -a "$NIX_CONF" >/dev/null
+	  echo 'experimental-features = nix-command flakes' | sudo tee -a "/etc/nix/nix.conf" >/dev/null
 	  info "Restart nix-daemon"
 	  sudo systemctl restart nix-daemon
 	fi
 }
 
-install_nix_packages() {
-	info "=== Install nix packages ==="
-	local flakeRef="path:$(realpath "nix")"
-
-	info "Source default nix profile"
+source_nix_profile() {
 	local nixProfile="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 	if ! command -v nix > /dev/null && [ -e "$nixProfile" ]; then
+		info "Source default nix profile"
 		set +u
 		source "$nixProfile"
 		set -u
 	fi
+}
 
-	info "Remove old apps (if any)"
-	if [ -e "$HOME/.nix-profile" ] || [ -e "${XDG_STATE_HOME:-$HOME/.local/state}/nix/profile" ]; then
+remove_legacy_nix_profile() {
+	info "=== Remove legacy nix profile ==="
+	# Applications used to be installed by `nix profile add`. They are managed
+	# by home-manager now, so the old generation has to be dropped first.
+	if nix profile list 2>/dev/null | grep -q "master-environment"; then
 		nix profile remove --all
+	else
+		info "Already removed"
 	fi
+}
 
-	info "Install new apps (if any)"
-	nix profile add "$flakeRef"
+install_home_manager() {
+	info "=== Activate home-manager generation ==="
+	# The `path:` reference is used on purpose, a plain path would be resolved
+	# to the git tree and would not see uncommitted changes.
+	local flakeRef="path:$(realpath "nix")"
+	local attribute="$flakeRef#homeConfigurations.master-environment.activationPackage"
+	local features="nix-command flakes"
+
+	info "Lock missing flake inputs (if any)"
+	nix --extra-experimental-features "$features" flake lock "$flakeRef"
+
+	# The configuration reads $USER and $HOME, thus it has to be evaluated
+	# impurely. The activation package is built directly, so the home-manager
+	# command does not have to be installed beforehand.
+	info "Build the home-manager generation"
+	local activationPackage
+	activationPackage=$(nix --extra-experimental-features "$features" \
+		build --impure --no-link --print-out-paths "$attribute")
+
+	info "Activate the home-manager generation"
+	"$activationPackage/activate"
+}
+
+setup_nix_gpu_drivers() {
+	info "=== Setup GPU drivers for nix applications ==="
+	# Nix applications look for GPU drivers in /run/opengl-driver. The setup
+	# command is provided by the home-manager targets.genericLinux module and
+	# has to run as root. It is idempotent and has to be re-run whenever the
+	# drivers in the nix store change.
+	local setupCommand="$HOME/.nix-profile/bin/non-nixos-gpu-setup"
+	if [ ! -x "$setupCommand" ]; then
+		fail "$setupCommand not found, did the home-manager activation succeed?"
+	fi
+	sudo "$setupCommand"
 }
 
 create_directory_structure() {
@@ -328,6 +328,10 @@ chsh_zsh() {
 check_os
 check_working_dir
 
+# The home-manager configuration reads the user from the environment, see
+# nix/flake.nix. The variable is not set in every shell, e.g., under `sudo -i`.
+export USER="${USER:-$(id -un)}"
+
 SRC_DIR=home
 DST_DIR=$HOME
 
@@ -348,34 +352,33 @@ configure_timezone
 install_apt_package network-manager
 configure_network_manager
 
+# Nix
+# Applications and the session environment are managed by home-manager, see
+# nix/home.nix
+install_nix
+source_nix_profile
+remove_legacy_nix_profile
+install_home_manager
+setup_nix_gpu_drivers
+
 # Shell
+# Fonts, Starship and ZSH plugins are installed by nix, see nix/home.nix
+# Fontconfig stays on APT, it renders fonts for the APT applications as well
 install_apt_package fontconfig
-install_nerd_fonts
-install_apt_package fonts-noto-color-emoji
+# ZSH stays on APT, chsh needs a stable path listed in /etc/shells
 install_apt_package zsh
-install_starship
-install_zsh_plugin "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/heads/master.zip"
-install_zsh_plugin "https://github.com/zsh-users/zsh-history-substring-search/archive/refs/heads/master.zip"
-install_zsh_plugin "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.zip"
 chsh_zsh
 
 # Sway
-install_apt_package xwayland
-install_apt_package sway
+# Sway, Xwayland, swayidle, foot, waybar, fuzzel, sway-notification-center,
+# libnotify, brightnessctl, playerctl, grim, slurp and chafa are installed by
+# nix, see nix/home.nix
+# Swaylock stays on APT, it has to be setuid root to read /etc/shadow and nix
+# cannot install setuid binaries into a user profile
 install_apt_package swaylock
-install_apt_package swayidle
-install_apt_package waybar
-install_apt_package fuzzel
-install_apt_package sway-notification-center
-install_apt_package libnotify-bin
-install_apt_package brightnessctl
+install_apt_package desktop-file-utils
 # Add the user into the video group to use brightnessctl
 add_current_user_into_group video
-install_apt_package playerctl
-install_apt_package desktop-file-utils
-install_apt_package grim
-install_apt_package slurp
-install_apt_package chafa
 
 # screen sharing
 # Guidelines: https://wiki.archlinux.org/title/XDG_Desktop_Portal
@@ -415,41 +418,26 @@ install_apt_package python3-yaml
 # AI isolation
 install_bubblewrap_apparmor_profile
 
-#  nix
-install_nix
-install_nix_packages
-
 # Mozilla Thunderbird and Firefox
+# Installed from APT to keep the Mozilla's PPA builds and system integration
 install_apt_package software-properties-common
 configure_mozilla_apt_repository
 install_apt_package firefox
 install_apt_package thunderbird
 
-# Video
-# Current version (Ubuntu 22.04) of MPV does not support PipeWire
-# (`--ao=pipewire`), set it as a default ao as soon as it will.
-install_apt_package mpv
-install_apt_package mpv-mpris
-
 # Office utils
-install_apt_package wl-clipboard
-# Micro is installed by nix, see nix/flake.nix
+# MPV, Micro, GIMP and wl-clipboard are installed by nix, see nix/home.nix
 install_micro_plugin "https://github.com/vkuzel/Micro-Filemanager-Plugin/archive/refs/heads/main.zip"
-install_apt_package gimp
 
 # Android file mount
+# The MTP tools rely on the system FUSE and GVfs setup, thus they stay on APT
 install_apt_package gvfs-backends
 install_apt_package gvfs-fuse
 install_apt_package mtp-tools
 install_apt_package go-mtpfs
 
 # Utils
-# Htop, mc and jq are installed by nix, see nix/flake.nix
+# 7zz, ack, bc, fastfetch, htop, jq, mc, transmission, unzip and whois are
+# installed by nix, see nix/home.nix
 install_apt_package libfuse2t64
-install_apt_package unzip
-install_apt_package 7zip
 install_apt_package uuid
-install_apt_package whois
-install_apt_package ack
-install_apt_package bc
-install_apt_package transmission-cli

@@ -13,9 +13,9 @@ else
 
 	autoload -U compinit && compinit
 
-	source "$HOME/.config/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-	source "$HOME/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
-	source "$HOME/.config/zsh/zsh-history-substring-search/zsh-history-substring-search.zsh"
+	source "$HOME/.nix-profile/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+	source "$HOME/.nix-profile/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+	source "$HOME/.nix-profile/share/zsh-history-substring-search/zsh-history-substring-search.zsh"
 	# mixins
 	[ -f "$HOME/.config/zsh/.zshrc.mixins.zsh" ] && source "$HOME/.config/zsh/.zshrc.mixins.zsh"
 
