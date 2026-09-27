@@ -10,6 +10,7 @@
     ./boot.nix
     ./desktop.nix
     ./fonts.nix
+    ./home-manager.nix
     ./locale.nix
     ./networking.nix
     ./nix.nix
