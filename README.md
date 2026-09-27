@@ -31,10 +31,11 @@ Use an Intel or AMD GPU - sway has issues with NVIDIA drivers.
 
 ```
 flake.nix                  inputs, the single nixosConfiguration, the overlay
-hosts/master/              this machine: hardware, disk layout, HM wiring
+hosts/master/              the laptop: hardware + disk layout
   default.nix
   hardware-configuration.nix   generated per machine
-  disk-config.nix              declarative partitioning (disko)
+  disk-config.nix              declarative partitioning (disko), LUKS + btrfs
+hosts/vm/                  a QEMU/libvirt guest, see INSTALL-VM.md
 modules/nixos/             system concerns, one file per topic
 modules/home/              user concerns (Home Manager), one file per program
 pkgs/                      the overlay: scripts + pinned Copilot CLI
@@ -47,6 +48,10 @@ tree of plain NixOS / Home Manager modules is the smallest thing that does the
 job, and every file can be read without learning a DSL first.
 
 ## Installation
+
+> Trying it out first? [INSTALL-VM.md](INSTALL-VM.md) is a step-by-step guide
+> for installing into a QEMU VM with Virtual Machine Manager, including
+> creating the VM and fetching the ISO.
 
 1. Prerequisites:
    * Computer with an Intel or AMD GPU.
@@ -64,6 +69,8 @@ job, and every file can be read without learning a DSL first.
    # after setting the disk in hosts/master/disk-config.nix
    ./install.sh
    ```
+
+   `./install.sh vm` installs the VM host instead.
 
    Or remotely, from any machine with nix:
 
@@ -92,7 +99,8 @@ job, and every file can be read without learning a DSL first.
 | --- | --- |
 | Apply configuration | `sudo nixos-rebuild switch --flake .#master` |
 | Try without making it the default | `sudo nixos-rebuild test --flake .#master` |
-| Build in a VM | `nixos-rebuild build-vm --flake .#master && ./result/bin/run-*-vm` |
+| Build in a throwaway VM | `nixos-rebuild build-vm --flake .#vm && ./result/bin/run-*-vm` |
+| Install into a libvirt VM | see [INSTALL-VM.md](INSTALL-VM.md) |
 | Update all inputs | `nix flake update` |
 | Update one input | `nix flake update nixpkgs` |
 | Roll back | `sudo nixos-rebuild switch --rollback` |

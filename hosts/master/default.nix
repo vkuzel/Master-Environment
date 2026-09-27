@@ -1,4 +1,6 @@
-{ inputs, user, ... }:
+{ ... }:
+
+# The physical laptop: an Intel/AMD ThinkPad with one or two 27" displays.
 
 {
   imports = [
@@ -9,20 +11,11 @@
 
   networking.hostName = "master";
 
-  # The laptop this environment targets. Replace with the profile matching your
-  # hardware, see https://github.com/NixOS/nixos-hardware#modules
-  # e.g. inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t14-amd-gen4
-  # imports above; kept out of the default import list so a fresh machine
-  # evaluates without picking a wrong profile.
-  _module.args.nixosHardware = inputs.nixos-hardware;
-
-  home-manager = {
-    useGlobalPkgs = true;
-    useUserPackages = true;
-    backupFileExtension = "hm-bak";
-    extraSpecialArgs = { inherit inputs user; };
-    users.${user.name} = import ../../modules/home;
-  };
+  # Optional: pull in the profile matching your machine, see
+  # https://github.com/NixOS/nixos-hardware#modules - e.g.
+  #   inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t14-amd-gen4
+  # Left out of the import list so a fresh machine evaluates without
+  # accidentally picking the wrong profile.
 
   # Never changed after the first install, see
   # https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion

@@ -50,15 +50,24 @@
       };
     in
     {
-      nixosConfigurations.master = nixpkgs.lib.nixosSystem {
-        inherit pkgs system;
-        specialArgs = { inherit inputs user; };
-        modules = [
-          disko.nixosModules.disko
-          home-manager.nixosModules.home-manager
-          ./hosts/master
-        ];
-      };
+      nixosConfigurations =
+        let
+          mkHost = host: nixpkgs.lib.nixosSystem {
+            inherit pkgs system;
+            specialArgs = { inherit inputs user; };
+            modules = [
+              disko.nixosModules.disko
+              home-manager.nixosModules.home-manager
+              host
+            ];
+          };
+        in
+        {
+          # The physical laptop.
+          master = mkHost ./hosts/master;
+          # A QEMU/libvirt guest, see INSTALL-VM.md.
+          vm = mkHost ./hosts/vm;
+        };
 
       # `nix fmt`
       formatter.${system} = pkgs.nixpkgs-fmt;
