@@ -124,33 +124,57 @@ Check networking:
 ping -c3 nixos.org
 ```
 
-## 4. Copy `master-environment-nix` into the guest
+## 4. Get the configuration
 
-From the **host**, in the directory that contains `master-environment-nix`:
+The branch is public, so **nothing has to be copied into the guest** - both
+disko and `nixos-install` take a flake URI directly:
+
+```
+github:vkuzel/Master-Environment/nixos
+```
+
+`hosts/vm/disk-config.nix` already targets `/dev/vda` and
+`hosts/vm/hardware-configuration.nix` already describes a virtio guest, so just
+confirm the disk is there:
+
+```shell
+lsblk      # expect vda, 60G, no partitions
+```
+
+<details><summary>Alternative: a local checkout in the guest</summary>
+
+Only needed if you want to change something before installing (a different user
+name, another disk). Clone it:
+
+```shell
+nix-shell -p git --run \
+  'git clone -b nixos https://github.com/vkuzel/Master-Environment /tmp/master-environment'
+cd /tmp/master-environment
+```
+
+or copy a working tree from the **host** (replace the IP with the one from
+step 3):
 
 ```shell
 rsync -a --exclude result --exclude .git \
-  master-environment-nix/ nixos@192.168.122.42:/tmp/master-environment-nix/
+  ./ nixos@192.168.122.42:/tmp/master-environment/
 ```
 
-(Replace the IP with the one from step 3.)
+</details>
 
-If the repository is in git and pushed somewhere reachable, clone it in the
-guest instead:
+## 5. Adjust the configuration (optional)
 
-```shell
-nix-shell -p git --run 'git clone <url> /tmp/master-environment-nix'
-```
+Installing straight from GitHub uses the committed defaults, which already suit
+a VM - **there is nothing to edit**:
 
-## 5. Adjust the configuration
+| Setting | Default | Defined in |
+| --- | --- | --- |
+| login name | `vkuzel` | `user` in `flake.nix` |
+| bootstrap password | `master` | `user.initialPassword` - change with `passwd` after first boot |
+| target disk | `/dev/vda` | `hosts/vm/disk-config.nix` |
 
-In the **guest**:
-
-```shell
-cd /tmp/master-environment-nix
-```
-
-Set your identity in `flake.nix` - this is the account you will log into:
+A remote flake cannot be edited, so using a different identity means taking the
+local-checkout route in step 4 and changing:
 
 ```nix
 user = {
@@ -160,42 +184,56 @@ user = {
 };
 ```
 
-Edit it with the installer's editor:
-
 ```shell
 nano flake.nix     # or: nix-shell -p micro --run 'micro flake.nix'
 ```
 
-Nothing else needs changing. `hosts/vm/disk-config.nix` already targets
-`/dev/vda` and `hosts/vm/hardware-configuration.nix` already describes a
-virtio guest - confirm the disk is there:
+## 6. Install
+
+Two commands, both reading the configuration straight from GitHub.
+
+**Partition, format and mount** (GPT + 1 GiB ESP + btrfs subvolumes, mounted at
+`/mnt`):
 
 ```shell
-lsblk      # expect vda, 60G, no partitions
+sudo nix --extra-experimental-features 'nix-command flakes' \
+  run github:nix-community/disko -- --mode destroy,format,mount \
+  --flake github:vkuzel/Master-Environment/nixos#vm
 ```
 
-## 6. Install
+> **This erases `/dev/vda` without asking.** The `install.sh` confirmation
+> prompt is not available on this route, because that script needs a local
+> checkout.
+
+**Install the system**, which builds the whole system *and* the Home Manager
+generation:
+
+```shell
+sudo nixos-install --flake github:vkuzel/Master-Environment/nixos#vm \
+  --no-write-lock-file --no-root-password
+```
+
+`--no-write-lock-file` is required: the repository has no committed
+`flake.lock`, and nix refuses to build an unlocked flake it cannot write a lock
+file back to. The trade-off is that the build is not reproducible - every
+install pins whatever the inputs happen to be that day.
+
+`--flake` switches on the `nix-command`/`flakes` features by itself, so
+`nixos-install` needs no `--extra-experimental-features`.
+
+This is where the time goes: several GiB are fetched from `cache.nixos.org`.
+
+<details><summary>Alternative: from a local checkout</summary>
+
+If you cloned in step 4, use the wrapper instead - it validates the host, reads
+the target disk out of `hosts/vm/disk-config.nix` and asks for confirmation
+before erasing anything:
 
 ```shell
 ./install.sh vm
 ```
 
-The script asks for confirmation, then:
-
-1. runs **disko** to partition, format (GPT + 1 GiB ESP + btrfs subvolumes)
-   and mount the disk at `/mnt`,
-2. runs `nixos-install --flake .#vm`, which builds the whole system *and* the
-   Home Manager generation.
-
-This is where the time goes: several GiB are fetched from `cache.nixos.org`.
-
-If you prefer to do it by hand:
-
-```shell
-sudo nix --extra-experimental-features 'nix-command flakes' \
-  run github:nix-community/disko -- --mode destroy,format,mount --flake .#vm
-sudo nixos-install --flake .#vm --no-root-password
-```
+</details>
 
 ## 7. First boot
 
@@ -247,19 +285,30 @@ fastfetch
 
 ## 9. Iterating
 
-The repository is still at `/tmp/master-environment-nix` inside the guest, and
-`/tmp` is wiped on reboot. Move it somewhere permanent:
+Installing from GitHub leaves no repository in the guest. Clone one to work on
+the configuration:
 
 ```shell
 mkdir -p ~/projects
-cp -r /tmp/master-environment-nix ~/projects/
-cd ~/projects/master-environment-nix
+nix-shell -p git --run \
+  'git clone -b nixos https://github.com/vkuzel/Master-Environment ~/projects/Master-Environment'
+cd ~/projects/Master-Environment
 ```
+
+(If you installed from a checkout under `/tmp`, copy that out instead - `/tmp`
+is wiped on reboot.)
 
 From now on, every change is applied with:
 
 ```shell
 sudo nixos-rebuild switch --flake .#vm
+```
+
+To pull the latest commit without keeping a clone at all:
+
+```shell
+sudo nixos-rebuild switch --flake github:vkuzel/Master-Environment/nixos#vm \
+  --no-write-lock-file
 ```
 
 Useful variants:
@@ -285,6 +334,7 @@ it is much faster than reinstalling when an experiment goes wrong.
 | Black screen after tuigreet | Set Video model to **Virtio** in virt-manager; `qxl` does not work well with wlroots. |
 | Tiny 1024x768 screen that will not resize | The spice agent channel is missing. Add Hardware → Channel → `spice agent (spicevmc)`, then reboot. |
 | `error: experimental Nix feature 'nix-command' is disabled` | Prefix with `nix --extra-experimental-features 'nix-command flakes'`; the installer ISO does not enable flakes by default. The installed system does (`modules/nixos/nix.nix`). |
+| `error: cannot write modified lock file of flake 'github:…'` | The repository has no committed `flake.lock`. Add `--no-write-lock-file` to the `nixos-install` / `nixos-rebuild` command (step 6). |
 | `error: path '/nix/store/…' does not exist` during install | Out of disk. 60 GiB is the recommended minimum. |
 | Build killed / OOM | Raise the VM memory, or add `nix.settings.max-jobs = 1;`. |
 | No network in the guest | libvirt's `default` network is down: `sudo virsh net-start default && sudo virsh net-autostart default`. |
