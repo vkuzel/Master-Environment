@@ -1,4 +1,4 @@
-{ pkgs, user, ... }:
+{ lib, pkgs, user, ... }:
 
 # Replaces the whole "Sway" + "screen sharing" section of install.sh, plus
 # `home/sway.sh` (the dbus-run-session wrapper is no longer needed - greetd
@@ -40,7 +40,7 @@
     # File picker dialogs for GTK apps (e.g. Outlook in Chrome).
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     config.sway = {
-      default = [ "wlr" "gtk" ];
+      default = lib.mkForce [ "wlr" "gtk" ];
       "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
     };
   };
@@ -50,7 +50,7 @@
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --cmd sway";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd sway";
         user = "greeter";
       };
     };

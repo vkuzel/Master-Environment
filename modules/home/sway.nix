@@ -159,12 +159,9 @@ in
         command = "${pkgs.masterEnvironmentScripts.sway-lock}/bin/sway-lock";
       }
     ];
-    events = [
-      {
-        event = "before-sleep";
-        command = "${pkgs.masterEnvironmentScripts.sway-lock}/bin/sway-lock";
-      }
-    ];
+    events = {
+      before-sleep = "${pkgs.masterEnvironmentScripts.sway-lock}/bin/sway-lock";
+    };
   };
 
   # Replaces home/.config/swaylock/config.
