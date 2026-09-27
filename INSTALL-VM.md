@@ -101,12 +101,13 @@ Click **Begin Installation**.
 
 The VM boots into the NixOS installer shell as user `nixos`.
 
-Give yourself a password and start SSH, so you can copy the repository in and
-work from a real terminal instead of the virt-manager console:
+Give yourself a password, so you can copy the repository in and work from a
+real terminal instead of the virt-manager console. `sshd` is already running -
+the installer enables it by default - but both accounts ship with an empty
+password, and SSH refuses those, so setting one is what actually unlocks login:
 
 ```shell
 passwd                       # set a password for the `nixos` user
-sudo systemctl start sshd
 ip -brief address            # note the guest IP, e.g. 192.168.122.42
 ```
 
@@ -233,6 +234,29 @@ before erasing anything:
 ./install.sh vm
 ```
 
+This also works over SSH, which is the safest route of all: you keep the
+confirmation prompt *and* the disk checks. The prompt needs a terminal, so
+allocate one with `ssh -t`, and run it under `screen` (present on the ISO) so a
+dropped connection cannot kill a half-finished `nixos-install`:
+
+```shell
+rsync -a --exclude result --exclude .git \
+  ./ nixos@192.168.122.42:/tmp/master-environment/
+ssh -t nixos@192.168.122.42 \
+  'cd /tmp/master-environment && screen -S inst ./install.sh vm'
+```
+
+Reattach after a disconnect with `ssh -t nixos@192.168.122.42 screen -r inst`.
+
+For an unattended run, skip the prompt explicitly - no `-t` needed:
+
+```shell
+ssh nixos@192.168.122.42 'cd /tmp/master-environment && ./install.sh vm --yes'
+```
+
+`sudo` never prompts here: the installer ISO grants the `nixos` user
+passwordless sudo.
+
 </details>
 
 ## 7. First boot
@@ -334,6 +358,8 @@ it is much faster than reinstalling when an experiment goes wrong.
 | Black screen after tuigreet | Set Video model to **Virtio** in virt-manager; `qxl` does not work well with wlroots. |
 | Tiny 1024x768 screen that will not resize | The spice agent channel is missing. Add Hardware → Channel → `spice agent (spicevmc)`, then reboot. |
 | `error: experimental Nix feature 'nix-command' is disabled` | Prefix with `nix --extra-experimental-features 'nix-command flakes'`; the installer ISO does not enable flakes by default. The installed system does (`modules/nixos/nix.nix`). |
+| `nixos-install: unknown option '--extra-experimental-features'` | `nixos-install` has its own option parser and rejects `nix` CLI flags. It enables the flake features itself when given `--flake`, so simply drop them. |
+| `[FAIL] No terminal to confirm on` from `install.sh` | Running it over SSH without a TTY. Use `ssh -t`, or pass `--yes` to skip the prompt. |
 | `error: cannot write modified lock file of flake 'github:…'` | The repository has no committed `flake.lock`. Add `--no-write-lock-file` to the `nixos-install` / `nixos-rebuild` command (step 6). |
 | `error: path '/nix/store/…' does not exist` during install | Out of disk. 60 GiB is the recommended minimum. |
 | Build killed / OOM | Raise the VM memory, or add `nix.settings.max-jobs = 1;`. |
