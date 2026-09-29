@@ -235,6 +235,32 @@ install_micro_plugin() {
 	install_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
 }
 
+install_visualvm() {
+	local appUrl="https://github.com/oracle/visualvm/releases/download/2.2.2/visualvm_222.zip"
+	local appName="visualvm"
+	local appDir="$HOME/.local/share/visualvm"
+	local binPath="$appDir/bin/visualvm"
+	local desktopFilePath="$HOME/.local/share/applications/visualvm.desktop"
+
+	info "=== Install $appName ==="
+	install_github_archive "$appName" "$appUrl" "$appDir"
+
+	if [[ ! -e "$desktopFilePath" ]]; then
+		info "Create desktop file"
+		chmod +x "$binPath"
+		cat > "${desktopFilePath}" <<EOF
+[Desktop Entry]
+Type=Application
+Name=VisualVM
+GenericName=Java Monitoring and Profiling Tool
+Comment=Monitor, troubleshoot and profile Java applications
+Exec=env _JAVA_AWT_WM_NONREPARENTING=1 ${binPath} %U
+Terminal=false
+Categories=Development;Java;Profiling;
+EOF
+	fi
+}
+
 install_nix() {
   info "=== Install nix ==="
 	if [[ -d "/nix" ]]; then
@@ -453,3 +479,4 @@ install_apt_package whois
 install_apt_package ack
 install_apt_package bc
 install_apt_package transmission-cli
+install_visualvm
