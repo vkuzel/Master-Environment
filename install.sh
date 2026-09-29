@@ -189,7 +189,7 @@ install_starship() {
 	fi
 }
 
-install_plugin_from_github_archive() {
+install_from_github_archive() {
 	local pluginName="$1"
 	local pluginUrl="$2"
 	local pluginDir="$3"
@@ -223,7 +223,7 @@ install_zsh_plugin() {
 	local pluginDir="$HOME/.config/zsh/$pluginName"
 
 	info "=== Install ZSH plugin $pluginName ==="
-	install_plugin_from_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
+	install_from_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
 }
 
 install_micro_plugin() {
@@ -232,7 +232,7 @@ install_micro_plugin() {
 	local pluginDir="$HOME/.config/micro/plug/$pluginName"
 
 	info "=== Install Micro plugin $pluginName ==="
-	install_plugin_from_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
+	install_from_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
 }
 
 install_nix() {
