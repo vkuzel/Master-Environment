@@ -77,4 +77,5 @@ remove_link "$HOME/.local/bin/start-me-apps"
 remove_link "$HOME/.local/bin/view-images.sh"
 remove_link "$HOME/.local/bin/dockershell.sh"
 remove_link "$HOME/.local/bin/copilotshell.sh"
+remove_link "$HOME/.local/bin/present"
 remove_group docker
