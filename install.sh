@@ -189,31 +189,31 @@ install_starship() {
 	fi
 }
 
-install_from_github_archive() {
-	local pluginName="$1"
-	local pluginUrl="$2"
-	local pluginDir="$3"
+install_github_archive() {
+	local archiveName="$1"
+	local archiveUrl="$2"
+	local targetDir="$3"
 
-	if [[ -z "$pluginName" ]]; then
-		fail "Plugin name cannot be resolved from $pluginUrl"
+	if [[ -z "$archiveName" ]]; then
+		fail "Archive name cannot be resolved from $archiveUrl"
 	fi
 
-	if [[ -d "$pluginDir" ]]; then
+	if [[ -d "$targetDir" ]]; then
 		info "Already installed"
 	else
-		local pluginArchiveDir=$(mktemp -d --suffix="$pluginName")
+		local archiveTempDir=$(mktemp -d --suffix="$archiveName")
 
-		local pluginArchivePath="$pluginArchiveDir/$pluginName.zip"
-		curl --location --output "$pluginArchivePath" --remote-name "$pluginUrl"
+		local archivePath="$archiveTempDir/$archiveName.zip"
+		curl --location --output "$archivePath" --remote-name "$archiveUrl"
 
-		local pluginUnzipDir="$pluginArchiveDir/content"
-		python3 -m zipfile -e "$pluginArchivePath" "$pluginUnzipDir"
+		local archiveExtractDir="$archiveTempDir/content"
+		python3 -m zipfile -e "$archivePath" "$archiveExtractDir"
 
-		local pluginSrcDir="$pluginUnzipDir/$(ls "$pluginUnzipDir")"
-		mkdir -p $(dirname "$pluginDir")
-		mv "$pluginSrcDir" "$pluginDir"
+		local archiveSrcDir="$archiveExtractDir/$(ls "$archiveExtractDir")"
+		mkdir -p "$(dirname "$targetDir")"
+		mv "$archiveSrcDir" "$targetDir"
 
-		rm -r "$pluginArchiveDir"
+		rm -r "$archiveTempDir"
 	fi
 }
 
@@ -223,7 +223,7 @@ install_zsh_plugin() {
 	local pluginDir="$HOME/.config/zsh/$pluginName"
 
 	info "=== Install ZSH plugin $pluginName ==="
-	install_from_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
+	install_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
 }
 
 install_micro_plugin() {
@@ -232,7 +232,7 @@ install_micro_plugin() {
 	local pluginDir="$HOME/.config/micro/plug/$pluginName"
 
 	info "=== Install Micro plugin $pluginName ==="
-	install_from_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
+	install_github_archive "$pluginName" "$pluginUrl" "$pluginDir"
 }
 
 install_nix() {
