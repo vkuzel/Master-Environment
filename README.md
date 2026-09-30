@@ -38,7 +38,7 @@ hosts/master/              the laptop: hardware + disk layout
 hosts/vm/                  a QEMU/libvirt guest, see INSTALL-VM.md
 modules/nixos/             system concerns, one file per topic
 modules/home/              user concerns (Home Manager), one file per program
-pkgs/                      the overlay: scripts + pinned Copilot CLI
+pkgs/                      the overlay: scripts, pinned Copilot CLI, IDEA
   scripts/src/             the original bash/python helpers, verbatim
 assets/                    raw config data (starship.toml, waybar/swaync CSS)
 ```
@@ -122,6 +122,7 @@ job, and every file can be read without learning a DSL first.
 | `~/.local/bin/*.sh`, `*.py` symlinks | real packages with declared runtime deps (`pkgs/scripts`) |
 | `nix profile add ./nix` | `home.packages` |
 | separate `~/.config/nix/copilot` dev shell | `pkgs/default.nix` overlay, same pinned version |
+| IntelliJ IDEA from JetBrains Toolbox | `pkgs/idea.nix` (`jetbrains.idea-ultimate` + vmoptions) |
 | `chsh`, `usermod -aG video`, `gsettings set` | `modules/nixos/users.nix`, `modules/home/sway.nix` |
 | `bar { swaybar_command waybar }` | waybar as a `sway-session.target` user unit |
 | `sway.sh` (`dbus-run-session sway`) | greetd/tuigreet starts a proper session |
@@ -148,9 +149,6 @@ NixOS they mostly do not.
 * `java-home` still looks in `/usr/lib/jvm` and `~/.jdks`. On NixOS only the
   latter exists (IntelliJ-managed JDKs); add `pkgs.jdk` to `home.packages` and
   point `JAVA_HOME` at it if you want a system JDK.
-* IntelliJ IDEA is still installed through JetBrains Toolbox, as in the
-  Ubuntu setup. Add `jetbrains.idea-ultimate` to `modules/home/editor.nix`
-  and to `allowUnfreePredicate` in `flake.nix` to manage it declaratively.
 * Secrets (Wi-Fi, SSH keys, tokens) are still handled manually. The natural
   next step is [sops-nix](https://github.com/Mic92/sops-nix) with a
   `hashedPasswordFile` instead of `initialPassword`.

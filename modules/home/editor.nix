@@ -38,11 +38,10 @@
   xdg.configFile."micro/plug/filemanager".source =
     pkgs.micro-filemanager-plugin;
 
-  # IntelliJ IDEA is installed through JetBrains Toolbox (see
-  # MANUAL-POST-INSTALL.md), matching the original setup - the desktop-entry
-  # id in assets/apps.yaml is Toolbox-generated. To manage it declaratively
-  # instead, add `jetbrains.idea-ultimate` here and to the
-  # allowUnfreePredicate list in flake.nix.
+  # IntelliJ IDEA, previously installed through JetBrains Toolbox. The
+  # vmoptions live in the package, see pkgs/idea.nix. Plugins and keymap are
+  # still a first-run step, see MANUAL-POST-INSTALL.md.
+  home.packages = [ pkgs.idea-ultimate ];
 
   # `microgui` opens micro in a floating foot window (sway workspace 6).
   xdg.desktopEntries.microgui = {
