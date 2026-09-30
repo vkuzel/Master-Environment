@@ -361,6 +361,7 @@ it is much faster than reinstalling when an experiment goes wrong.
 | `nixos-install: unknown option '--extra-experimental-features'` | `nixos-install` has its own option parser and rejects `nix` CLI flags. It enables the flake features itself when given `--flake`, so simply drop them. |
 | `[FAIL] No terminal to confirm on` from `install.sh` | Running it over SSH without a TTY. Use `ssh -t`, or pass `--yes` to skip the prompt. |
 | `error: cannot write modified lock file of flake 'github:…'` | The repository has no committed `flake.lock`. Add `--no-write-lock-file` to the `nixos-install` / `nixos-rebuild` command (step 6). |
+| Build fails on a bug you already fixed and pushed | Nix caches the `github:…/nixos` branch → commit lookup for `tarball-ttl` (3600 s by default), so it keeps building the previous commit. Pin the exact revision instead: `--flake 'github:vkuzel/Master-Environment/<commit-sha>#vm'`. Alternatively clear the cache with `sudo rm -rf /root/.cache/nix` — it holds only regenerable data, no store paths. Note the cache is per user, and `nixos-install` runs as root. |
 | `error: path '/nix/store/…' does not exist` during install | Out of disk. 60 GiB is the recommended minimum. |
 | Build killed / OOM | Raise the VM memory, or add `nix.settings.max-jobs = 1;`. |
 | No network in the guest | libvirt's `default` network is down: `sudo virsh net-start default && sudo virsh net-autostart default`. |
