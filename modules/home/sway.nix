@@ -1,11 +1,12 @@
-{ lib, pkgs, ... }:
+{ pkgs, ... }:
 
 # Replaces home/.config/sway/config, home/.config/swayidle/config,
 # home/.config/swaylock/config and home/sway.sh.
 #
-# The keybindings and the workspace layout are expressed as Nix data, so the
-# repetitive parts (10 workspaces x 2 bindings, 11 output assignments) are
-# generated instead of copy-pasted.
+# `config.keybindings` and `config.modes` below are plain definitions, not
+# `lib.mkOptionDefault`, so they replace Home Manager's default sway
+# keybindings instead of being merged into them. Everything sway gets is
+# therefore written out in this file.
 
 let
   mod = "Mod4";
@@ -13,39 +14,24 @@ let
 
   scripts = pkgs.masterEnvironmentScripts;
 
-  # Every external monitor gets workspaces 1-9, the laptop panel gets 10.
-  externalOutputs =
-    (map (n: "DP-${toString n}") (lib.range 1 9))
-    ++ [ "HDMI-A-1" "HDMI-A-2" ];
-  laptopOutputs = [ "eDP-1" "eDP-2" ];
-
-  workspaces = lib.range 1 10;
-
-  workspaceOutputAssign =
-    map
-      (ws: {
-        workspace = toString ws;
-        output = if ws == 10 then laptopOutputs else externalOutputs;
-      })
-      workspaces;
-
-  # `$mod+N` switches, `$mod+Shift+N` moves the container. Workspace 10 is
-  # bound to the `0` key.
-  workspaceKeybindings = lib.listToAttrs (lib.concatMap
-    (ws:
-      let key = if ws == 10 then "0" else toString ws; in [
-        {
-          name = "${mod}+${key}";
-          value = "workspace number ${toString ws}";
-        }
-        {
-          name = "${mod}+Shift+${key}";
-          value = "move container to workspace number ${toString ws}";
-        }
-      ])
-    workspaces);
-
   menu = "fuzzel --background=000f27ff --selection-color=eee8d5ff | xargs swaymsg exec --";
+
+  # Every external monitor gets workspaces 1-9, the laptop panel gets 10.
+  # `swaymsg -t get_outputs` lists the names.
+  externals = [
+    "DP-1"
+    "DP-2"
+    "DP-3"
+    "DP-4"
+    "DP-5"
+    "DP-6"
+    "DP-7"
+    "DP-8"
+    "DP-9"
+    "HDMI-A-1"
+    "HDMI-A-2"
+  ];
+  laptop = [ "eDP-1" "eDP-2" ];
 in
 {
   wayland.windowManager.sway = {
@@ -60,13 +46,29 @@ in
       terminal = "foot";
       inherit menu;
 
-      inherit workspaceOutputAssign;
+      workspaceOutputAssign = [
+        { workspace = "1"; output = externals; }
+        { workspace = "2"; output = externals; }
+        { workspace = "3"; output = externals; }
+        { workspace = "4"; output = externals; }
+        { workspace = "5"; output = externals; }
+        { workspace = "6"; output = externals; }
+        { workspace = "7"; output = externals; }
+        { workspace = "8"; output = externals; }
+        { workspace = "9"; output = externals; }
+        { workspace = "10"; output = laptop; }
+      ];
 
       output."*".bg = "#018281 solid_color";
 
-      window.border = 5;
-      floating.border = 5;
-      floating.modifier = mod;
+      # `pixel 5` borders, i.e. no titlebars.
+      window = { border = 5; titlebar = false; };
+      floating = { border = 5; titlebar = false; modifier = mod; };
+
+      # Home Manager's defaults deviate from sway's own defaults here; keep
+      # sway's, the original config did not override them.
+      focus.wrapping = "yes";
+      focus.newWindow = "urgent";
 
       input."*" = {
         xkb_layout = "us,cz(qwerty)";
@@ -78,7 +80,7 @@ in
       # Waybar runs as a user systemd unit, see modules/home/waybar.nix.
       bars = [ ];
 
-      keybindings = lib.mkOptionDefault (workspaceKeybindings // {
+      keybindings = {
         "Print" = "exec ${scripts.sway-screenshot}/bin/sway-screenshot";
         "${alt}+Print" = "exec ${scripts.sway-screenshot}/bin/sway-screenshot --focused-window";
 
@@ -97,6 +99,29 @@ in
         "${mod}+Shift+Down" = "move down";
         "${mod}+Shift+Up" = "move up";
         "${mod}+Shift+Right" = "move right";
+
+        # Workspace 10 is bound to the `0` key.
+        "${mod}+1" = "workspace number 1";
+        "${mod}+2" = "workspace number 2";
+        "${mod}+3" = "workspace number 3";
+        "${mod}+4" = "workspace number 4";
+        "${mod}+5" = "workspace number 5";
+        "${mod}+6" = "workspace number 6";
+        "${mod}+7" = "workspace number 7";
+        "${mod}+8" = "workspace number 8";
+        "${mod}+9" = "workspace number 9";
+        "${mod}+0" = "workspace number 10";
+
+        "${mod}+Shift+1" = "move container to workspace number 1";
+        "${mod}+Shift+2" = "move container to workspace number 2";
+        "${mod}+Shift+3" = "move container to workspace number 3";
+        "${mod}+Shift+4" = "move container to workspace number 4";
+        "${mod}+Shift+5" = "move container to workspace number 5";
+        "${mod}+Shift+6" = "move container to workspace number 6";
+        "${mod}+Shift+7" = "move container to workspace number 7";
+        "${mod}+Shift+8" = "move container to workspace number 8";
+        "${mod}+Shift+9" = "move container to workspace number 9";
+        "${mod}+Shift+0" = "move container to workspace number 10";
 
         "${mod}+b" = "splith";
         "${mod}+v" = "splitv";
@@ -128,7 +153,7 @@ in
         "XF86AudioStop" = "exec playerctl stop";
         "XF86AudioNext" = "exec playerctl next";
         "XF86AudioPrev" = "exec playerctl previous";
-      });
+      };
 
       modes.resize = {
         Left = "resize shrink width 10px";
