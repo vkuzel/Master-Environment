@@ -122,7 +122,7 @@ job, and every file can be read without learning a DSL first.
 | `~/.local/bin/*.sh`, `*.py` symlinks | real packages with declared runtime deps (`pkgs/scripts`) |
 | `nix profile add ./nix` | `home.packages` |
 | separate `~/.config/nix/copilot` dev shell | `pkgs/default.nix` overlay, same pinned version |
-| IntelliJ IDEA from JetBrains Toolbox | `pkgs/idea.nix` (`jetbrains.idea-ultimate` + vmoptions) |
+| IntelliJ IDEA from JetBrains Toolbox | `pkgs/idea.nix` (`jetbrains.idea` + vmoptions) |
 | `chsh`, `usermod -aG video`, `gsettings set` | `modules/nixos/users.nix`, `modules/home/sway.nix` |
 | `bar { swaybar_command waybar }` | waybar as a `sway-session.target` user unit |
 | `sway.sh` (`dbus-run-session sway`) | greetd/tuigreet starts a proper session |

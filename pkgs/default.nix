@@ -32,6 +32,6 @@ final: prev:
 
   micro-filemanager-plugin = prev.callPackage ./micro-filemanager-plugin.nix { };
 
-  # IntelliJ IDEA Ultimate with the vmoptions this environment needs.
-  idea-ultimate = final.callPackage ./idea.nix { };
+  # IntelliJ IDEA with the vmoptions and Wayland flag this environment needs.
+  intellij-idea = final.callPackage ./idea.nix { };
 }

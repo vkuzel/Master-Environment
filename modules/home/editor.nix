@@ -41,7 +41,7 @@
   # IntelliJ IDEA, previously installed through JetBrains Toolbox. The
   # vmoptions live in the package, see pkgs/idea.nix. Plugins and keymap are
   # still a first-run step, see MANUAL-POST-INSTALL.md.
-  home.packages = [ pkgs.idea-ultimate ];
+  home.packages = [ pkgs.intellij-idea ];
 
   # `microgui` opens micro in a floating foot window (sway workspace 6).
   xdg.desktopEntries.microgui = {
