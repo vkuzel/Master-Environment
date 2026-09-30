@@ -13,7 +13,7 @@
 
 - workspace: 3
   check_pattern: jetbrains-idea
-  cmd: idea-ultimate
+  cmd: idea
 
 - workspace: 6
   check_pattern: microgui
