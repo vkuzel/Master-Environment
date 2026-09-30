@@ -44,6 +44,10 @@ that has to be configured through its own UI.
 
 5. IntelliJ IDEA setup
 
+    The IDE itself is installed by `modules/home/editor.nix`
+    (`pkgs/idea.nix` adds the vmoptions). What is left is per-profile state
+    that lives in the JetBrains account / UI:
+
     Plugins:
     * [Tab Management Plugin](https://github.com/vkuzel/IntelliJ-Tab-Management)
 
@@ -51,9 +55,6 @@ that has to be configured through its own UI.
     * Disable: Settings -> Editor -> General -> Smart Keys -> Markdown ->
       Adjust indentation on type
     * Select: Keymap -> Tab Management
-
-    The desktop-entry id used by `assets/apps.yaml` is IDEA-generated; update
-    the `cmd` there after the first launch (`ls ~/.local/share/applications`).
 
 6. Rhythmbox / iPod shuffle
 

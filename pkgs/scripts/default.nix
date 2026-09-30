@@ -1,6 +1,6 @@
 { lib
 , stdenvNoCC
-, makeWrapper
+, makeBinaryWrapper
 , python3
 , bash
 , gobject-introspection
@@ -56,6 +56,13 @@ let
 
   # Builds one script into $out/bin/<name>, rewriting the shebang to a store
   # path and wrapping it with an explicit PATH (and GI typelibs when needed).
+  #
+  # makeBinaryWrapper rather than makeWrapper: the wrapper is a compiled
+  # `exec`, not a second bash process, which is ~1ms cheaper per invocation.
+  # That matters for the scripts bound to sway keys or called in a loop.
+  # It supports a subset of makeWrapper's options (no `--run`); the
+  # `--prefix` calls below are all within it. The hook brings its own
+  # compiler, so stdenvNoCC stays fine and nothing is added at runtime.
   mkScript =
     { name
     , src
@@ -67,7 +74,7 @@ let
     stdenvNoCC.mkDerivation {
       inherit name src;
       dontUnpack = true;
-      nativeBuildInputs = [ makeWrapper ];
+      nativeBuildInputs = [ makeBinaryWrapper ];
 
       installPhase = ''
         runHook preInstall

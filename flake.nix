@@ -43,6 +43,7 @@
         config.allowUnfreePredicate =
           pkg: builtins.elem (nixpkgs.lib.getName pkg) [
             "github-copilot-cli"
+            "idea-ultimate"
             "signal-desktop"
             "twingate"
             "veracrypt"
