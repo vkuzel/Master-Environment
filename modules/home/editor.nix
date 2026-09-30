@@ -14,6 +14,8 @@
     };
   };
 
+  # `tree` and `create` are commands of the Micro-Filemanager-Plugin installed
+  # underneath.
   xdg.configFile."micro/bindings.json".text = builtins.toJSON {
     "Alt-/" = "lua:comment.comment";
     "CtrlUnderscore" = "lua:comment.comment";
@@ -30,11 +32,11 @@
   };
 
   # The Micro-Filemanager-Plugin used to be downloaded from GitHub by
-  # install.sh. Packaging it needs a content hash, which has to be fetched
-  # once - see pkgs/micro-filemanager-plugin.nix - then uncomment:
-  #
-  # xdg.configFile."micro/plug/Micro-Filemanager-Plugin".source =
-  #   pkgs.micro-filemanager-plugin;
+  # install.sh. The directory name is the plugin id micro reports; the
+  # plugin's repo.json names it `filemanager`, and its `tree` command is what
+  # Alt-1 above invokes.
+  xdg.configFile."micro/plug/filemanager".source =
+    pkgs.micro-filemanager-plugin;
 
   # IntelliJ IDEA is installed through JetBrains Toolbox (see
   # MANUAL-POST-INSTALL.md), matching the original setup - the desktop-entry

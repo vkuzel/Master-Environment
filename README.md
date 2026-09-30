@@ -145,9 +145,6 @@ NixOS they mostly do not.
 
 ## Known follow-ups
 
-* `pkgs/micro-filemanager-plugin.nix` needs its source hash filled in once
-  (`nix run nixpkgs#nix-prefetch-github -- vkuzel Micro-Filemanager-Plugin --rev main`),
-  then the `xdg.configFile` line in `modules/home/editor.nix` can be enabled.
 * `java-home` still looks in `/usr/lib/jvm` and `~/.jdks`. On NixOS only the
   latter exists (IntelliJ-managed JDKs); add `pkgs.jdk` to `home.packages` and
   point `JAVA_HOME` at it if you want a system JDK.
