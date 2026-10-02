@@ -457,6 +457,10 @@ install_apt_package thunderbird
 install_apt_package mpv
 install_apt_package mpv-mpris
 
+# Containerization
+install_apt_package qemu-system-x86
+install_apt_package virt-manager
+
 # Office utils
 install_apt_package wl-clipboard
 install_apt_package micro
