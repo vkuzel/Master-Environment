@@ -459,7 +459,7 @@ install_apt_package mpv-mpris
 
 # Office utils
 install_apt_package wl-clipboard
-# Micro is installed by nix, see nix/flake.nix
+install_apt_package micro
 install_micro_plugin "https://github.com/vkuzel/Micro-Filemanager-Plugin/archive/refs/heads/main.zip"
 install_apt_package gimp
 
@@ -470,13 +470,15 @@ install_apt_package mtp-tools
 install_apt_package go-mtpfs
 
 # Utils
-# Htop, mc and jq are installed by nix, see nix/flake.nix
 install_apt_package libfuse2t64
+install_apt_package htop
 install_apt_package unzip
 install_apt_package 7zip
 install_apt_package uuid
 install_apt_package whois
 install_apt_package ack
+install_apt_package mc
+install_apt_package jq
 install_apt_package bc
 install_apt_package transmission-cli
 install_visualvm
