@@ -55,7 +55,8 @@ let
   ]);
 
   # Builds one script into $out/bin/<name>, rewriting the shebang to a store
-  # path and wrapping it with an explicit PATH (and GI typelibs when needed).
+  # path and, when the script needs them, wrapping it with an explicit PATH
+  # (and GI typelibs / GStreamer plugin paths).
   #
   # makeBinaryWrapper rather than makeWrapper: the wrapper is a compiled
   # `exec`, not a second bash process, which is ~1ms cheaper per invocation.
@@ -71,10 +72,25 @@ let
     , needsGi ? false
     , gstPlugins ? [ ]
     }:
+    let
+      # Every flag has to expand to all three of its arguments or be dropped
+      # entirely. makeCWrapper validates arity, so an empty search path would
+      # leave `--prefix PATH :` looking like a two-argument flag and abort the
+      # build. (Bash makeWrapper silently accepted the missing argument.)
+      wrapperArgs =
+        lib.optional (runtimeInputs != [ ])
+          "--prefix PATH : ${lib.makeBinPath runtimeInputs}"
+        ++ lib.optional needsGi
+          "--prefix GI_TYPELIB_PATH : ${lib.makeSearchPath "lib/girepository-1.0" [
+            gobject-introspection glib gst_all_1.gstreamer gst_all_1.gst-plugins-base
+          ]}"
+        ++ lib.optional (gstPlugins != [ ])
+          "--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : ${lib.makeSearchPath "lib/gstreamer-1.0" gstPlugins}";
+    in
     stdenvNoCC.mkDerivation {
       inherit name src;
       dontUnpack = true;
-      nativeBuildInputs = [ makeBinaryWrapper ];
+      nativeBuildInputs = lib.optional (wrapperArgs != [ ]) makeBinaryWrapper;
 
       installPhase = ''
         runHook preInstall
@@ -86,14 +102,8 @@ let
         } > $out/bin/${name}
         chmod +x $out/bin/${name}
 
-        wrapProgram $out/bin/${name} \
-          --prefix PATH : ${lib.makeBinPath runtimeInputs} \
-          ${lib.optionalString needsGi
-            "--prefix GI_TYPELIB_PATH : ${lib.makeSearchPath "lib/girepository-1.0" [
-              gobject-introspection glib gst_all_1.gstreamer gst_all_1.gst-plugins-base
-            ]}"} \
-          ${lib.optionalString (gstPlugins != [ ])
-            "--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : ${lib.makeSearchPath "lib/gstreamer-1.0" gstPlugins}"}
+        ${lib.optionalString (wrapperArgs != [ ])
+          "wrapProgram $out/bin/${name} ${lib.concatStringsSep " " wrapperArgs}"}
 
         runHook postInstall
       '';
