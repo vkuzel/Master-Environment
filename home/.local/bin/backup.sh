@@ -64,6 +64,7 @@ rsync \
 	--exclude="build" \
 	"$HOME/Documents" \
 	"$HOME/projects" \
+	"$HOME/slop" \
 	"$HOME/Music" \
 	"$HOME/Videos" \
 	"$HOME/Pictures" \
