@@ -4,6 +4,10 @@
 # PATH (the others ship the same binary names); every version is symlinked into
 # ~/.jdks so `java-home VERSION` and IntelliJ find it next to the JDKs IntelliJ
 # downloads itself.
+#
+# The links and JAVA_HOME point at `.home` ($out/lib/openjdk), not at $out -
+# $out only carries bin/ symlinks, so tools looking for lib/modules fail with
+# "No class roots are found in the JDK path".
 
 let
   jdks = {
@@ -16,9 +20,9 @@ in
 {
   home.packages = [ defaultJdk ];
 
-  home.sessionVariables.JAVA_HOME = "${defaultJdk}";
+  home.sessionVariables.JAVA_HOME = defaultJdk.home;
 
   home.file = pkgs.lib.mapAttrs'
-    (version: jdk: pkgs.lib.nameValuePair ".jdks/jdk-${version}" { source = "${jdk}"; })
+    (version: jdk: pkgs.lib.nameValuePair ".jdks/jdk-${version}" { source = jdk.home; })
     jdks;
 }
