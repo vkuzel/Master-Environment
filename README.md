@@ -123,6 +123,7 @@ job, and every file can be read without learning a DSL first.
 | `nix profile add ./nix` | `home.packages` |
 | separate `~/.config/nix/copilot` dev shell | `pkgs/default.nix` overlay, same pinned version |
 | IntelliJ IDEA from JetBrains Toolbox | `pkgs/idea.nix` (`jetbrains.idea` + vmoptions) |
+| JDKs downloaded by IntelliJ into `~/.jdks` | `modules/home/java.nix` (17, 21, 25; 25 is the default on `PATH` and in `JAVA_HOME`) |
 | `chsh`, `usermod -aG video`, `gsettings set` | `modules/nixos/users.nix`, `modules/home/sway.nix` |
 | `bar { swaybar_command waybar }` | waybar as a `sway-session.target` user unit |
 | `sway.sh` (`dbus-run-session sway`) | greetd/tuigreet starts a proper session |
@@ -146,9 +147,6 @@ NixOS they mostly do not.
 
 ## Known follow-ups
 
-* `java-home` still looks in `/usr/lib/jvm` and `~/.jdks`. On NixOS only the
-  latter exists (IntelliJ-managed JDKs); add `pkgs.jdk` to `home.packages` and
-  point `JAVA_HOME` at it if you want a system JDK.
 * Secrets (Wi-Fi, SSH keys, tokens) are still handled manually. The natural
   next step is [sops-nix](https://github.com/Mic92/sops-nix) with a
   `hashedPasswordFile` instead of `initialPassword`.

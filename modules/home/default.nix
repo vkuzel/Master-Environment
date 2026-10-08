@@ -8,6 +8,7 @@
   imports = [
     ./desktop-apps.nix
     ./editor.nix
+    ./java.nix
     ./media.nix
     ./packages.nix
     ./scripts.nix
