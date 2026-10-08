@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, user, ... }:
 
 # Everything that install.sh installed through apt or `nix profile add`
 # (nix/flake.nix) and that is not configured by a dedicated module.
@@ -36,6 +36,8 @@
   programs.git = {
     enable = true;
     settings = {
+      user.name = user.fullName;
+      user.email = user.email;
       init.defaultBranch = "main";
       pull.rebase = true;
     };

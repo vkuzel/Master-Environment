@@ -33,6 +33,7 @@
       user = {
         name = "vkuzel";
         fullName = "Vaclav Kuzel";
+        email = "vkuzel@gmail.com";
         # Generate with: mkpasswd --method=yescrypt
         initialPassword = "master";
       };
