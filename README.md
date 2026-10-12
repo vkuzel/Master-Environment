@@ -76,6 +76,13 @@ job, and every file can be read without learning a DSL first.
 
    `./install.sh vm` installs the VM host instead.
 
+   Or without a checkout at all, from a booted installer ISO:
+
+   ```shell
+   curl -sSfL https://raw.githubusercontent.com/vkuzel/Master-Environment/nixos/bootstrap.sh \
+     | sudo bash -s -- master
+   ```
+
    Or remotely, from any machine with nix:
 
    ```shell

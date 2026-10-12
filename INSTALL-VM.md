@@ -191,7 +191,18 @@ nano flake.nix     # or: nix-shell -p micro --run 'micro flake.nix'
 
 ## 6. Install
 
-Two commands, both reading the configuration straight from GitHub.
+Two commands, both reading the configuration straight from GitHub. Or one, if
+you let `bootstrap.sh` run them for you:
+
+```shell
+curl -sSfL https://raw.githubusercontent.com/vkuzel/Master-Environment/nixos/bootstrap.sh \
+  | sudo bash -s -- vm
+```
+
+It aborts unless `/etc/os-release` reports `VARIANT_ID=installer`, so it cannot
+wipe an already installed system by mistake, and it requires UEFI plus 8 GiB of
+RAM. `FLAKE=github:vkuzel/Master-Environment/<sha>` pins a revision. There is no
+confirmation prompt.
 
 **Partition, format and mount** (GPT + 1 GiB ESP + btrfs subvolumes, mounted at
 `/mnt`):

@@ -88,7 +88,6 @@ nix-shell -p git --run 'git add -A'
 The script reads the disk out of `hosts/master/disk-config.nix`, refuses to run
 on `CHANGE-ME`, confirms, then runs disko (`destroy,format,mount`) followed by
 `nixos-install --no-root-password`.
-
 **disko prompts for the LUKS passphrase twice** — this is the passphrase you
 will type at every boot. The console is US QWERTY at that point; avoid
 characters whose position differs on your layout.
@@ -98,6 +97,22 @@ Expect several GiB of downloads from `cache.nixos.org`.
 <details><summary>Straight from GitHub, no checkout</summary>
 
 Only works once the disk and hardware config are committed and pushed:
+
+```shell
+curl -sSfL https://raw.githubusercontent.com/vkuzel/Master-Environment/nixos/bootstrap.sh \
+  | sudo bash -s -- master
+```
+
+`bootstrap.sh` runs the same two steps and refuses to start unless
+`/etc/os-release` says `VARIANT_ID=installer`, so it cannot be run against an
+installed system or another distribution by accident. It also requires UEFI and
+at least 8 GiB of RAM. Pin a revision with
+`FLAKE=github:vkuzel/Master-Environment/<sha>`.
+
+> **No confirmation prompt** - it erases the disk configured for the host
+> immediately.
+
+The equivalent by hand:
 
 ```shell
 sudo nix --extra-experimental-features 'nix-command flakes' \
