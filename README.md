@@ -49,6 +49,9 @@ job, and every file can be read without learning a DSL first.
 
 ## Installation
 
+> Full run-book for a physical machine booted from the minimal ISO:
+> [INSTALL.md](INSTALL.md).
+>
 > Trying it out first? [INSTALL-VM.md](INSTALL-VM.md) is a step-by-step guide
 > for installing into a QEMU VM with Virtual Machine Manager, including
 > creating the VM and fetching the ISO.
@@ -67,6 +70,7 @@ job, and every file can be read without learning a DSL first.
 
    ```shell
    # after setting the disk in hosts/master/disk-config.nix
+   # and staging the edits - flakes ignore untracked files
    ./install.sh
    ```
 
