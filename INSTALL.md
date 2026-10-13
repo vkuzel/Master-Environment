@@ -106,8 +106,9 @@ curl -sSfL https://raw.githubusercontent.com/vkuzel/Master-Environment/nixos/boo
 `bootstrap.sh` runs the same two steps and refuses to start unless
 `/etc/os-release` says `VARIANT_ID=installer`, so it cannot be run against an
 installed system or another distribution by accident. It also requires UEFI and
-at least 8 GiB of RAM. Pin a revision with
-`FLAKE=github:vkuzel/Master-Environment/<sha>`.
+at least 8 GiB of RAM. It always installs the head of the `nixos` branch - to
+pin a revision, use the manual commands below with
+`github:vkuzel/Master-Environment/<sha>`.
 
 > **No confirmation prompt** - it erases the disk configured for the host
 > immediately.
@@ -116,14 +117,20 @@ The equivalent by hand:
 
 ```shell
 sudo nix --extra-experimental-features 'nix-command flakes' \
-  run github:nix-community/disko -- --mode destroy,format,mount \
+  run --inputs-from github:vkuzel/Master-Environment/nixos disko -- \
+  --mode destroy,format,mount \
   --flake github:vkuzel/Master-Environment/nixos#master
 sudo nixos-install --flake github:vkuzel/Master-Environment/nixos#master \
   --no-write-lock-file --no-root-password
 ```
 
-`--no-write-lock-file` is required while the repository has no committed
-`flake.lock`.
+`--inputs-from` resolves the bare `disko` installable through the committed
+`flake.lock`, so the partitioning tool matches the disko module the system is
+built with; a plain `github:nix-community/disko` would fetch its master head.
+
+`--no-write-lock-file` is a safety net: the repository has a committed
+`flake.lock`, so nix has nothing to write, and the flag turns a stale or
+incomplete lock into an error instead of a silent re-resolve.
 
 </details>
 
@@ -206,7 +213,7 @@ sudo cryptsetup luksDump   /dev/disk/by-id/<disk>-part2   # check the key slots
 | Secure Boot refuses to start the bootloader | Disable Secure Boot, or adopt [lanzaboote](https://github.com/nix-community/lanzaboote). |
 | Disk missing from `lsblk` | Firmware is in RAID/RST mode; switch it to AHCI/NVMe. |
 | Passphrase rejected at boot but accepted during install | Keyboard layout differs at the initrd prompt (US QWERTY there). |
-| `error: cannot write modified lock file of flake 'github:…'` | Add `--no-write-lock-file`; the repository has no committed `flake.lock`. |
+| `error: cannot write modified lock file of flake 'github:…'` | The committed `flake.lock` is stale or missing an input. Re-run `nix flake update`, commit and push; `--no-write-lock-file` only turns this into an error instead of a silent re-resolve. |
 | Build killed / OOM | `nix.settings.max-jobs = 1;`, or add swap before installing. |
 | No Wi-Fi in the installer | `sudo systemctl start wpa_supplicant` first, then `wpa_cli` / `nmcli`. |
 | Forgot the LUKS passphrase | Nothing to do — reinstall from step 4. |

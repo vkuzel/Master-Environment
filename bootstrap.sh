@@ -64,13 +64,18 @@ check_tty() {
 }
 
 partition_disk() {
-  local flake="$1"
+  local repository="$1"
+  local flake="$2"
 
   info "=== Partition, format and mount (disko) ==="
+  # `--inputs-from` resolves the bare `disko` installable through this
+  # repository's flake.lock, so the tool matches the disko module the system is
+  # built with. Without it nix would fetch disko's master head.
+  #
   # Under `curl | bash` stdin is the script itself, so disko's "Type 'yes' to
   # continue" prompt would read a line of bash instead of the answer.
   nix --extra-experimental-features 'nix-command flakes' \
-    run github:nix-community/disko -- --mode destroy,format,mount \
+    run --inputs-from "$repository" disko -- --mode destroy,format,mount \
     --flake "$flake" < /dev/tty
 }
 
@@ -82,7 +87,8 @@ install_os() {
 }
 
 host=${1:-}
-flake="github:vkuzel/Master-Environment/nixos#$host"
+repository="github:vkuzel/Master-Environment/nixos"
+flake="$repository#$host"
 
 check_host "$host"
 
@@ -94,7 +100,7 @@ check_nixos_installer
 check_efi
 check_memory
 check_tty
-partition_disk "$flake"
+partition_disk "$repository" "$flake"
 install_os "$flake"
 
 info "=== Done - reboot, log in and run 'passwd' ==="
