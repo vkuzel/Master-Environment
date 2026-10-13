@@ -5,7 +5,7 @@
 #   ls -l /dev/disk/by-id/
 #
 # Wipe and install with:
-#   sudo nix run github:nix-community/disko -- --mode disko ./hosts/master/disk-config.nix
+#   sudo nix run --inputs-from . disko -- --mode disko ./hosts/master/disk-config.nix
 
 {
   disko.devices.disk.main = {

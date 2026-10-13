@@ -201,17 +201,23 @@ curl -sSfL https://raw.githubusercontent.com/vkuzel/Master-Environment/nixos/boo
 
 It aborts unless `/etc/os-release` reports `VARIANT_ID=installer`, so it cannot
 wipe an already installed system by mistake, and it requires UEFI plus 8 GiB of
-RAM. `FLAKE=github:vkuzel/Master-Environment/<sha>` pins a revision. There is no
-confirmation prompt.
+RAM. It always installs the head of the `nixos` branch - to pin a revision, use
+the two manual commands below with `github:vkuzel/Master-Environment/<sha>`.
+There is no confirmation prompt.
 
 **Partition, format and mount** (GPT + 1 GiB ESP + btrfs subvolumes, mounted at
 `/mnt`):
 
 ```shell
 sudo nix --extra-experimental-features 'nix-command flakes' \
-  run github:nix-community/disko -- --mode destroy,format,mount \
+  run --inputs-from github:vkuzel/Master-Environment/nixos disko -- \
+  --mode destroy,format,mount \
   --flake github:vkuzel/Master-Environment/nixos#vm
 ```
+
+`--inputs-from` resolves the bare `disko` installable through the committed
+`flake.lock`, so the partitioning tool matches the disko module the system is
+built with; a plain `github:nix-community/disko` would fetch its master head.
 
 > **This erases `/dev/vda` without asking.** The `install.sh` confirmation
 > prompt is not available on this route, because that script needs a local
@@ -225,10 +231,11 @@ sudo nixos-install --flake github:vkuzel/Master-Environment/nixos#vm \
   --no-write-lock-file --no-root-password
 ```
 
-`--no-write-lock-file` is required: the repository has no committed
-`flake.lock`, and nix refuses to build an unlocked flake it cannot write a lock
-file back to. The trade-off is that the build is not reproducible - every
-install pins whatever the inputs happen to be that day.
+`--no-write-lock-file` is a safety net: the repository has a committed
+`flake.lock`, so nix has nothing to write. The flag turns a stale or incomplete
+lock into an error instead of letting nix silently re-resolve the inputs, which
+is what makes the install reproducible - every host gets exactly the revisions
+in the lock file.
 
 `--flake` switches on the `nix-command`/`flakes` features by itself, so
 `nixos-install` needs no `--extra-experimental-features`.
@@ -371,7 +378,7 @@ it is much faster than reinstalling when an experiment goes wrong.
 | `error: experimental Nix feature 'nix-command' is disabled` | Prefix with `nix --extra-experimental-features 'nix-command flakes'`; the installer ISO does not enable flakes by default. The installed system does (`modules/nixos/nix.nix`). |
 | `nixos-install: unknown option '--extra-experimental-features'` | `nixos-install` has its own option parser and rejects `nix` CLI flags. It enables the flake features itself when given `--flake`, so simply drop them. |
 | `[FAIL] No terminal to confirm on` from `install.sh` | Running it over SSH without a TTY. Use `ssh -t`, or pass `--yes` to skip the prompt. |
-| `error: cannot write modified lock file of flake 'github:…'` | The repository has no committed `flake.lock`. Add `--no-write-lock-file` to the `nixos-install` / `nixos-rebuild` command (step 6). |
+| `error: cannot write modified lock file of flake 'github:…'` | The committed `flake.lock` is stale or missing an input. Re-run `nix flake update`, commit and push; `--no-write-lock-file` only turns this into an error instead of a silent re-resolve. |
 | Build fails on a bug you already fixed and pushed | Nix caches the `github:…/nixos` branch → commit lookup for `tarball-ttl` (3600 s by default), so it keeps building the previous commit. Pin the exact revision instead: `--flake 'github:vkuzel/Master-Environment/<commit-sha>#vm'`. Alternatively clear the cache with `sudo rm -rf /root/.cache/nix` — it holds only regenerable data, no store paths. Note the cache is per user, and `nixos-install` runs as root. |
 | `error: path '/nix/store/…' does not exist` during install | Out of disk. 60 GiB is the recommended minimum. |
 | Build killed / OOM | Raise the VM memory, or add `nix.settings.max-jobs = 1;`. |

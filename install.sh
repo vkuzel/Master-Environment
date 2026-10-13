@@ -67,7 +67,9 @@ else
 fi
 
 info "=== Partition, format and mount (disko) ==="
-sudo nix "${NIX_FLAGS[@]}" run github:nix-community/disko -- \
+# `--inputs-from .` resolves the bare `disko` installable through flake.lock, so
+# the tool matches the disko module the system is built with.
+sudo nix "${NIX_FLAGS[@]}" run --inputs-from . disko -- \
 	--mode destroy,format,mount \
 	--flake ".#$host"
 
