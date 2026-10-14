@@ -40,12 +40,6 @@ check_nixos_installer() {
   fi
 }
 
-check_efi() {
-  if [[ ! -d /sys/firmware/efi ]]; then
-    fail "Booted in BIOS mode; systemd-boot needs UEFI."
-  fi
-}
-
 check_memory() {
   local memGiB
   memGiB=$(( $(awk '/MemTotal/ {print $2}' /proc/meminfo) / 1024 / 1024 ))
@@ -97,7 +91,6 @@ info "=== Flake: $flake"
 
 check_root
 check_nixos_installer
-check_efi
 check_memory
 check_tty
 partition_disk "$repository" "$flake"
