@@ -10,7 +10,7 @@
 {
   disko.devices.disk.main = {
     type = "disk";
-    device = "/dev/disk/by-id/CHANGE-ME";
+    device = "/dev/sda";
     content = {
       type = "gpt";
       partitions = {
