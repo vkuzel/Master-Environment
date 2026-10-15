@@ -55,16 +55,18 @@
       # which is exactly what Firefox does. With no chooser left to run the
       # portal fails the request without ever showing a picker and the
       # browser reports "NotAllowedError: The request is not allowed by the
-      # user agent or the platform in the current context."
+      # user agent or the platform in the current context." On Ubuntu this
+      # worked by accident, because /usr/bin is always on $PATH.
       #
-      # On Ubuntu this worked by accident because /usr/bin is always on
-      # $PATH. Point the portal at an absolute store path instead; `dmenu`
-      # mode lists both monitors and individual windows, so single-window
-      # sharing works too.
+      # `sway-share-picker` is the chooser: it takes the portal's list of
+      # sources, looks their geometry up in the sway tree and lets them be
+      # picked by pointing at them - a window if the cursor is over one,
+      # otherwise the monitor underneath. `dmenu` is the chooser protocol it
+      # speaks (a list of labels in, one label out), not its UI.
       settings.screencast = {
         chooser_type = "dmenu";
         chooser_cmd =
-          "${pkgs.fuzzel}/bin/fuzzel --dmenu --lines 10 --prompt 'Share: '";
+          "${pkgs.masterEnvironmentScripts.sway-share-picker}/bin/sway-share-picker";
       };
     };
   };
