@@ -23,6 +23,7 @@
 , swaylock
 , slurp
 , grim
+, fuzzel
 , libnotify
 , foot
 , micro
@@ -242,6 +243,14 @@ let
       src = ./src/screenshot.sh;
       interpreter = sh;
       runtimeInputs = [ sway jq slurp grim libnotify gnused coreutils ];
+    };
+
+    # Spawned by xdg-desktop-portal-wlr, see modules/nixos/desktop.nix.
+    sway-share-picker = mkScript {
+      name = "sway-share-picker";
+      src = ./src/share-picker.py;
+      interpreter = py;
+      runtimeInputs = [ sway slurp fuzzel ];
     };
   };
 in
