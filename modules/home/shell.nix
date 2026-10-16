@@ -52,10 +52,10 @@ in
 
     history = {
       size = 50000;
-      save = 50000;
+      save = 0;
       path = "${config.xdg.stateHome}/zsh/history";
       ignoreDups = true;
-      share = true;
+      share = false;
     };
 
     initContent = lib.mkMerge [
@@ -65,6 +65,8 @@ in
       '')
       (lib.mkOrder 1000 ''
         source "${zdotDir}/.zshrc.key-bindings.zsh"
+
+        unset HISTFILE
 
         # mixins - machine local, never committed
         [ -f "${zdotDir}/.zshrc.mixins.zsh" ] && source "${zdotDir}/.zshrc.mixins.zsh"
