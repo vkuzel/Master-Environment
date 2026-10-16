@@ -31,7 +31,7 @@ Use an Intel or AMD GPU - sway has issues with NVIDIA drivers.
 
 ```
 flake.nix                  inputs, the single nixosConfiguration, the overlay
-hosts/master/              the laptop: hardware + disk layout
+hosts/europa/              the laptop: hardware + disk layout
   default.nix
   hardware-configuration.nix   generated per machine
   disk-config.nix              declarative partitioning (disko), LUKS + btrfs
@@ -62,14 +62,14 @@ job, and every file can be read without learning a DSL first.
 
 2. Clone this repository and adjust:
    * `flake.nix` → `user` (name, full name, initial password).
-   * `hosts/master/disk-config.nix` → `device` (`ls -l /dev/disk/by-id/`).
-   * `hosts/master/hardware-configuration.nix` → replace with the output of
+   * `hosts/europa/disk-config.nix` → `device` (`ls -l /dev/disk/by-id/`).
+   * `hosts/europa/hardware-configuration.nix` → replace with the output of
      `sudo nixos-generate-config --no-filesystems --show-hardware-config`.
 
 3. Partition, format and install:
 
    ```shell
-   # after setting the disk in hosts/master/disk-config.nix
+   # after setting the disk in hosts/europa/disk-config.nix
    # and staging the edits - flakes ignore untracked files
    ./install.sh
    ```
@@ -80,13 +80,13 @@ job, and every file can be read without learning a DSL first.
 
    ```shell
    curl -sSfL https://raw.githubusercontent.com/vkuzel/Master-Environment/nixos/bootstrap.sh \
-     | sudo bash -s -- master
+     | sudo bash -s -- europa
    ```
 
    Or remotely, from any machine with nix:
 
    ```shell
-   nix run github:nix-community/nixos-anywhere -- --flake .#master root@<ip>
+   nix run github:nix-community/nixos-anywhere -- --flake .#europa root@<ip>
    ```
 
 4. Reboot, log in, change the bootstrap password with `passwd`.
@@ -94,7 +94,7 @@ job, and every file can be read without learning a DSL first.
 5. Afterwards, every change to the environment is applied with:
 
    ```shell
-   sudo nixos-rebuild switch --flake .#master
+   sudo nixos-rebuild switch --flake .#europa
    ```
 
    This is the replacement for re-running `install.sh`. There is no
@@ -108,8 +108,8 @@ job, and every file can be read without learning a DSL first.
 
 | Task | Command |
 | --- | --- |
-| Apply configuration | `sudo nixos-rebuild switch --flake .#master` |
-| Try without making it the default | `sudo nixos-rebuild test --flake .#master` |
+| Apply configuration | `sudo nixos-rebuild switch --flake .#europa` |
+| Try without making it the default | `sudo nixos-rebuild test --flake .#europa` |
 | Build in a throwaway VM | `nixos-rebuild build-vm --flake .#vm && ./result/bin/run-*-vm` |
 | Install into a libvirt VM | see [INSTALL-VM.md](INSTALL-VM.md) |
 | Update all inputs | `nix flake update` |

@@ -9,7 +9,7 @@
     ../../modules/nixos
   ];
 
-  networking.hostName = "master";
+  networking.hostName = "europa";
 
   # Optional: pull in the profile matching your machine, see
   # https://github.com/NixOS/nixos-hardware#modules - e.g.

@@ -3,7 +3,7 @@
 #
 # Run from a NixOS installer ISO:
 #
-#   ./install.sh          # the laptop, see hosts/master/disk-config.nix
+#   ./install.sh          # the laptop, see hosts/europa/disk-config.nix
 #   ./install.sh vm       # a QEMU/libvirt guest, see INSTALL-VM.md
 #
 # Over SSH the confirmation prompt needs a terminal, so either allocate one
@@ -45,7 +45,7 @@ for arg in "$@"; do
 			;;
 	esac
 done
-host="${host:-master}"
+host="${host:-europa}"
 
 diskConfig="hosts/$host/disk-config.nix"
 [ -f "$diskConfig" ] || fail "Unknown host '$host' (no $diskConfig)"
