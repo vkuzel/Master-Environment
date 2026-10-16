@@ -21,22 +21,23 @@ let
     bindkey '^[[B' history-substring-search-down
   '';
 
-  aliases = {
-    ls = "ls --color=auto";
-    l = "ls -l";
-    ll = "ls -lA";
-    grep = "grep --color=auto";
-    vi = "micro";
-    mi = "micro";
-    bc = "bc -l";
-    # Most servers do not recognize the "foot" terminal
-    ssh = "TERM=xterm-256color ssh";
-    uuidgen-lower = "uuidgen | tr '[:upper:]' '[:lower:]'";
-    cdd = "cd $HOME/Downloads";
-    cdD = "cd $HOME/Documents";
-    cdp = "cd $HOME/projects";
-    cds = "cd $HOME/slop";
-  };
+  aliases = ''
+    alias cl='clear'
+    alias ls='ls --color=auto'
+    alias l="ls -l"
+    alias ll='ls -lA'
+    alias grep='grep --color=auto'
+    alias vi='micro'
+    alias mi='micro'
+    alias bc='bc -l'
+    # Most servers do not recognize "foot" terminal
+    alias ssh='TERM=xterm-256color ssh'
+    alias uuidgen-lower="uuidgen | tr '[:upper:]' '[:lower:]'"
+    alias cdd="cd $HOME/Downloads"
+    alias cdD="cd $HOME/Documents"
+    alias cdp="cd $HOME/projects"
+    alias cds="cd $HOME/slop"
+  '';
 in
 {
   programs.zsh = {
@@ -84,9 +85,7 @@ in
   # `dockershell` sources these two files inside the container shell, so they
   # must exist as standalone files and not only inlined in .zshrc.
   xdg.configFile."zsh/.zshrc.key-bindings.zsh".text = keyBindings;
-  xdg.configFile."zsh/.zshrc.aliases.zsh".text =
-    lib.concatStringsSep "\n"
-      (lib.mapAttrsToList (name: value: "alias ${name}=${lib.escapeShellArg value}") aliases);
+  xdg.configFile."zsh/.zshrc.aliases.zsh".text = aliases;
 
   programs.starship = {
     enable = true;
