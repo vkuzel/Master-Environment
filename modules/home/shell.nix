@@ -38,48 +38,57 @@ let
     alias cdp="cd $HOME/projects"
     alias cds="cd $HOME/slop"
   '';
+
+  # The original ~/.config/zsh/.zshrc, with Ubuntu paths replaced by store
+  # paths and the few lines home-manager would otherwise generate.
+  zshrc = ''
+    source "${zdotDir}/.zshrc.key-bindings.zsh"
+    source "${zdotDir}/.zshrc.aliases.zsh"
+
+    # To speed-up mc's startup time we disable some advanced features
+    if [ -n "$MC_SID" ]; then
+        PROMPT='[%F{red}mc%f]%F{green}%n@%m%f:%F{yellow}%~%f %# '
+    else
+        # Completions shipped by nix profiles.
+        typeset -U path cdpath fpath manpath
+        for profile in ''${(z)NIX_PROFILES}; do
+            fpath+=($profile/share/zsh/site-functions $profile/share/zsh/$ZSH_VERSION/functions $profile/share/zsh/vendor-completions)
+        done
+
+        # History lives in memory only, nothing is written to disk.
+        HISTSIZE=50000
+        SAVEHIST=0
+        setopt HIST_IGNORE_DUPS
+
+        autoload -U colors && colors
+        eval "$(${pkgs.coreutils}/bin/dircolors -b)"
+
+        autoload -U compinit && compinit
+
+        source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+        source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+        source ${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search/zsh-history-substring-search.zsh
+        # mixins
+        [ -f "${zdotDir}/.zshrc.mixins.zsh" ] && source "${zdotDir}/.zshrc.mixins.zsh"
+
+        # starship prompt, STARSHIP_CONFIG is exported from .zshenv
+        if [[ $TERM != "dumb" ]]; then
+            eval "$(${lib.getExe pkgs.starship} init zsh)"
+        fi
+    fi
+  '';
 in
 {
   programs.zsh = {
     enable = true;
     dotDir = zdotDir;
 
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
-    historySubstringSearch.enable = true;
+    # Only for the nix-zsh-completions package, compinit is called by `zshrc`.
     enableCompletion = true;
 
-    history = {
-      size = 50000;
-      save = 0;
-      path = "${config.xdg.stateHome}/zsh/history";
-      ignoreDups = true;
-      share = false;
-    };
-
-    initContent = lib.mkMerge [
-      # As in the Ubuntu .zshrc: a Midnight Commander subshell returns here,
-      # before compinit, the plugins and starship are loaded.
-      (lib.mkOrder 500 ''
-        source "${zdotDir}/.zshrc.key-bindings.zsh"
-        source "${zdotDir}/.zshrc.aliases.zsh"
-
-        if [ -n "$MC_SID" ]; then
-          PROMPT='[%F{red}mc%f]%F{green}%n@%m%f:%F{yellow}%~%f %# '
-          return
-        fi
-      '')
-      (lib.mkOrder 550 ''
-        autoload -U colors && colors
-        eval "$(${pkgs.coreutils}/bin/dircolors -b)"
-      '')
-      (lib.mkOrder 1000 ''
-        unset HISTFILE
-
-        # mixins - machine local, never committed
-        [ -f "${zdotDir}/.zshrc.mixins.zsh" ] && source "${zdotDir}/.zshrc.mixins.zsh"
-      '')
-    ];
+    # mkForce drops every snippet home-manager would inject into .zshrc, so the
+    # file is exactly `zshrc` - as the Ubuntu one was.
+    initContent = lib.mkForce zshrc;
   };
 
   # `dockershell` sources these two files inside the container shell, so they
@@ -89,7 +98,8 @@ in
 
   programs.starship = {
     enable = true;
-    enableZshIntegration = true;
+    # `zshrc` runs `starship init zsh` itself.
+    enableZshIntegration = false;
     # The original ~/.config/starship/starship.toml, verbatim.
     settings = builtins.fromTOML (builtins.readFile ../../assets/starship.toml);
   };
