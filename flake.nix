@@ -66,7 +66,7 @@
         in
         {
           # The physical laptop.
-          master = mkHost ./hosts/master;
+          europa = mkHost ./hosts/europa;
           # A QEMU/libvirt guest, see INSTALL-VM.md.
           vm = mkHost ./hosts/vm;
         };

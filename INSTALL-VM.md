@@ -388,14 +388,14 @@ it is much faster than reinstalling when an experiment goes wrong.
 
 Same procedure, with three differences:
 
-1. Use the `master` host, which adds LUKS full-disk encryption.
-2. Set the real disk in `hosts/master/disk-config.nix`
+1. Use the `europa` host, which adds LUKS full-disk encryption.
+2. Set the real disk in `hosts/europa/disk-config.nix`
    (`ls -l /dev/disk/by-id/`) - replace `CHANGE-ME`.
-3. Replace `hosts/master/hardware-configuration.nix` with the machine's own:
+3. Replace `hosts/europa/hardware-configuration.nix` with the machine's own:
 
    ```shell
    sudo nixos-generate-config --no-filesystems --show-hardware-config \
-     > hosts/master/hardware-configuration.nix
+     > hosts/europa/hardware-configuration.nix
    ```
 
 Then `./install.sh` (no argument) and continue with

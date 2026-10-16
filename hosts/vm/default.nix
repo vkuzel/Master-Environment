@@ -1,7 +1,7 @@
 { lib, ... }:
 
 # A QEMU/libvirt guest (Virtual Machine Manager), for trying the environment
-# out before touching real hardware. Identical to `master` except for the
+# out before touching real hardware. Identical to `europa` except for the
 # virtual hardware and the things a VM has no use for.
 
 {

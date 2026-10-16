@@ -1,6 +1,6 @@
 # Installing on real hardware
 
-Run-book for the `master` host: a plain machine booted from the **NixOS minimal
+Run-book for the `europa` host: a plain machine booted from the **NixOS minimal
 (non-GUI) ISO**. Result is a LUKS-encrypted btrfs system with sway, greetd and
 the full Home Manager generation.
 
@@ -61,17 +61,17 @@ Three edits (`nix-shell -p micro --run 'micro <file>'`):
 
 | File | Change |
 | --- | --- |
-| `hosts/master/disk-config.nix` | `device` → the `by-id` path from step 2, replacing `CHANGE-ME` |
-| `hosts/master/hardware-configuration.nix` | replace with this machine's, see below |
+| `hosts/europa/disk-config.nix` | `device` → the `by-id` path from step 2, replacing `CHANGE-ME` |
+| `hosts/europa/hardware-configuration.nix` | replace with this machine's, see below |
 | `flake.nix` | `user` — name, full name, email, `initialPassword` |
 
 ```shell
 sudo nixos-generate-config --no-filesystems --show-hardware-config \
-  > hosts/master/hardware-configuration.nix
+  > hosts/europa/hardware-configuration.nix
 ```
 
 Optionally add the matching [nixos-hardware](https://github.com/NixOS/nixos-hardware#modules)
-profile to the `imports` in `hosts/master/default.nix`.
+profile to the `imports` in `hosts/europa/default.nix`.
 
 **Stage the edits — flakes ignore untracked files in a git repository:**
 
@@ -85,7 +85,7 @@ nix-shell -p git --run 'git add -A'
 ./install.sh                    # add --yes to skip the confirmation prompt
 ```
 
-The script reads the disk out of `hosts/master/disk-config.nix`, refuses to run
+The script reads the disk out of `hosts/europa/disk-config.nix`, refuses to run
 on `CHANGE-ME`, confirms, then runs disko (`destroy,format,mount`) followed by
 `nixos-install --no-root-password`.
 **disko prompts for the LUKS passphrase twice** — this is the passphrase you
@@ -100,7 +100,7 @@ Only works once the disk and hardware config are committed and pushed:
 
 ```shell
 curl -sSfL https://raw.githubusercontent.com/vkuzel/Master-Environment/nixos/bootstrap.sh \
-  | sudo bash -s -- master
+  | sudo bash -s -- europa
 ```
 
 `bootstrap.sh` runs the same two steps and refuses to start unless
@@ -137,7 +137,7 @@ incomplete lock into an error instead of a silent re-resolve.
 <details><summary>Remotely, from a machine that already runs nix</summary>
 
 ```shell
-nix run github:nix-community/nixos-anywhere -- --flake .#master root@<ip>
+nix run github:nix-community/nixos-anywhere -- --flake .#europa root@<ip>
 ```
 
 Needs a root SSH login on the target and a `disko.devices.disk.main.content.…
@@ -188,7 +188,7 @@ Keys: `Mod+Return` terminal, `Mod+Space` launcher, `Mod+1`…`Mod+0` workspaces,
 
 ```shell
 cd ~/projects/Master-Environment
-sudo nixos-rebuild switch --flake .#master     # every later change
+sudo nixos-rebuild switch --flake .#europa     # every later change
 sudo nixos-rebuild switch --rollback           # undo
 ```
 
@@ -207,7 +207,7 @@ sudo cryptsetup luksDump   /dev/disk/by-id/<disk>-part2   # check the key slots
 
 | Symptom | Cause / fix |
 | --- | --- |
-| `Set the target disk in hosts/master/disk-config.nix first!` | `device` is still `CHANGE-ME`. |
+| `Set the target disk in hosts/europa/disk-config.nix first!` | `device` is still `CHANGE-ME`. |
 | disko or `nixos-install` builds the *old* configuration | Edits are untracked; flakes only see staged files — `git add -A`. |
 | systemd-boot fails, `Not a EFI system` | Booted in BIOS/CSM mode. Reboot into UEFI and redo step 4. |
 | Secure Boot refuses to start the bootloader | Disable Secure Boot, or adopt [lanzaboote](https://github.com/nix-community/lanzaboote). |

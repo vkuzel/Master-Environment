@@ -15,9 +15,9 @@ check_host() {
   local host="$1"
 
   case "$host" in
-    master | vm) ;;
-    "") fail "Usage: ... | sudo bash -s -- <master|vm>" ;;
-    *) fail "Unknown host '$host' (expected 'master' or 'vm')" ;;
+    europa | vm) ;;
+    "") fail "Usage: ... | sudo bash -s -- <europa|vm>" ;;
+    *) fail "Unknown host '$host' (expected 'europa' or 'vm')" ;;
   esac
 }
 
