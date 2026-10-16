@@ -48,8 +48,6 @@ in
     historySubstringSearch.enable = true;
     enableCompletion = true;
 
-    shellAliases = aliases;
-
     history = {
       size = 50000;
       save = 0;
@@ -59,22 +57,26 @@ in
     };
 
     initContent = lib.mkMerge [
+      # As in the Ubuntu .zshrc: a Midnight Commander subshell returns here,
+      # before compinit, the plugins and starship are loaded.
+      (lib.mkOrder 500 ''
+        source "${zdotDir}/.zshrc.key-bindings.zsh"
+        source "${zdotDir}/.zshrc.aliases.zsh"
+
+        if [ -n "$MC_SID" ]; then
+          PROMPT='[%F{red}mc%f]%F{green}%n@%m%f:%F{yellow}%~%f %# '
+          return
+        fi
+      '')
       (lib.mkOrder 550 ''
         autoload -U colors && colors
         eval "$(${pkgs.coreutils}/bin/dircolors -b)"
       '')
       (lib.mkOrder 1000 ''
-        source "${zdotDir}/.zshrc.key-bindings.zsh"
-
         unset HISTFILE
 
         # mixins - machine local, never committed
         [ -f "${zdotDir}/.zshrc.mixins.zsh" ] && source "${zdotDir}/.zshrc.mixins.zsh"
-
-        # Midnight Commander subshell: keep the prompt cheap.
-        if [ -n "$MC_SID" ]; then
-          PROMPT='[%F{red}mc%f]%F{green}%n@%m%f:%F{yellow}%~%f %# '
-        fi
       '')
     ];
   };
@@ -110,9 +112,4 @@ in
     --ignore-dir=out
     --ignore-dir=.idea
   '';
-
-  programs.fzf = {
-    enable = true;
-    enableZshIntegration = true;
-  };
 }
