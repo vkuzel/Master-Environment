@@ -70,7 +70,7 @@ Open **Virtual Machine Manager** → **File → New Virtual Machine**.
    floor → Forward.
 4. **Disk: 60 GiB.** The store grows quickly - a full desktop closure plus
    IntelliJ and Firefox is comfortably over 20 GiB → Forward.
-5. Name it `master-vm`, and **tick "Customize configuration before install"**
+5. Name it `europa-vm`, and **tick "Customize configuration before install"**
    → Finish.
 
 In the configuration window that opens:

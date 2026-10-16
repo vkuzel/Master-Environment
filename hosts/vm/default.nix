@@ -11,7 +11,7 @@
     ../../modules/nixos
   ];
 
-  networking.hostName = "master-vm";
+  networking.hostName = "europa-vm";
 
   # QEMU integration: clipboard sharing, dynamic resolution, clean shutdown
   # from virt-manager.
