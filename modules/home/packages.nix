@@ -18,16 +18,7 @@
     unzip
     util-linux # uuidgen
     whois
-    wl-clipboard
     bubblewrap
-
-    # Sway tooling used by keybindings and scripts
-    brightnessctl
-    chafa
-    fuzzel
-    grim
-    libnotify
-    slurp
   ];
 
   programs.git = {
