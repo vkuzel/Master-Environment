@@ -55,9 +55,7 @@ let
             fpath+=($profile/share/zsh/site-functions $profile/share/zsh/$ZSH_VERSION/functions $profile/share/zsh/vendor-completions)
         done
 
-        # History lives in memory only, nothing is written to disk.
         HISTSIZE=50000
-        SAVEHIST=0
         setopt HIST_IGNORE_DUPS
 
         autoload -U colors && colors
