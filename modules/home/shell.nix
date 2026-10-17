@@ -49,12 +49,6 @@ let
     if [ -n "$MC_SID" ]; then
         PROMPT='[%F{red}mc%f]%F{green}%n@%m%f:%F{yellow}%~%f %# '
     else
-        # Completions shipped by nix profiles.
-        typeset -U path cdpath fpath manpath
-        for profile in ''${(z)NIX_PROFILES}; do
-            fpath+=($profile/share/zsh/site-functions $profile/share/zsh/$ZSH_VERSION/functions $profile/share/zsh/vendor-completions)
-        done
-
         HISTSIZE=50000
         setopt HIST_IGNORE_DUPS
 
