@@ -19,6 +19,9 @@ let
     source "${zdotDir}/.zshrc.key-bindings.zsh"
     source "${zdotDir}/.zshrc.aliases.zsh"
 
+    unset HISTFILE
+    SAVEHIST=0
+
     # To speed-up mc's startup time we disable some advanced features
     if [ -n "$MC_SID" ]; then
         PROMPT='[%F{red}mc%f]%F{green}%n@%m%f:%F{yellow}%~%f %# '
