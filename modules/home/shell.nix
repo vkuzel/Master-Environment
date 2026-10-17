@@ -10,6 +10,40 @@ let
   # The original setup keeps zsh dotfiles in ~/.config/zsh (ZDOTDIR).
   zdotDir = "${config.xdg.configHome}/zsh";
 
+  zshenv = ''
+    export ZDOTDIR="${zdotDir}"
+    source "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh"
+  '';
+
+  zshrc = ''
+    source "${zdotDir}/.zshrc.key-bindings.zsh"
+    source "${zdotDir}/.zshrc.aliases.zsh"
+
+    # To speed-up mc's startup time we disable some advanced features
+    if [ -n "$MC_SID" ]; then
+        PROMPT='[%F{red}mc%f]%F{green}%n@%m%f:%F{yellow}%~%f %# '
+    else
+        HISTSIZE=50000
+        setopt HIST_IGNORE_DUPS
+
+        autoload -U colors && colors
+        eval "$(${pkgs.coreutils}/bin/dircolors -b)"
+
+        autoload -U compinit && compinit
+
+        source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+        source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+        source ${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search/zsh-history-substring-search.zsh
+        # mixins
+        [ -f "${zdotDir}/.zshrc.mixins.zsh" ] && source "${zdotDir}/.zshrc.mixins.zsh"
+
+        # starship prompt, STARSHIP_CONFIG is exported from .zshenv
+        if [[ $TERM != "dumb" ]]; then
+            eval "$(${lib.getExe pkgs.starship} init zsh)"
+        fi
+    fi
+  '';
+
   keyBindings = ''
     # get keys by running `showkey -a`
     bindkey -e
@@ -41,63 +75,14 @@ let
     alias cds="cd $HOME/slop"
   '';
 
-  zshrc = ''
-    source "${zdotDir}/.zshrc.key-bindings.zsh"
-    source "${zdotDir}/.zshrc.aliases.zsh"
-
-    # To speed-up mc's startup time we disable some advanced features
-    if [ -n "$MC_SID" ]; then
-        PROMPT='[%F{red}mc%f]%F{green}%n@%m%f:%F{yellow}%~%f %# '
-    else
-        HISTSIZE=50000
-        setopt HIST_IGNORE_DUPS
-
-        autoload -U colors && colors
-        eval "$(${pkgs.coreutils}/bin/dircolors -b)"
-
-        autoload -U compinit && compinit
-
-        source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-        source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-        source ${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search/zsh-history-substring-search.zsh
-        # mixins
-        [ -f "${zdotDir}/.zshrc.mixins.zsh" ] && source "${zdotDir}/.zshrc.mixins.zsh"
-
-        # starship prompt, STARSHIP_CONFIG is exported from .zshenv
-        if [[ $TERM != "dumb" ]]; then
-            eval "$(${lib.getExe pkgs.starship} init zsh)"
-        fi
-    fi
+  ackrc = ''
+    --ignore-case
+    --ignore-dir=build
+    --ignore-dir=out
+    --ignore-dir=.idea
   '';
 in
 {
-  home.packages = [
-    pkgs.zsh
-    pkgs.nix-zsh-completions
-  ];
-
-  home.file.".zshenv".text = ''
-    export ZDOTDIR="${zdotDir}"
-    source "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh"
-  '';
-
-  xdg.configFile."zsh/.zshrc".text = zshrc;
-
-  # `dockershell` sources these two files inside the container shell, so they
-  # must exist as standalone files and not only inlined in .zshrc.
-  xdg.configFile."zsh/.zshrc.key-bindings.zsh".text = keyBindings;
-  xdg.configFile."zsh/.zshrc.aliases.zsh".text = aliases;
-
-  programs.starship = {
-    enable = true;
-    # `zshrc` runs `starship init zsh` itself.
-    enableZshIntegration = false;
-    # The original ~/.config/starship/starship.toml, verbatim.
-    settings = builtins.fromTOML (builtins.readFile ../../assets/starship.toml);
-  };
-
-  # Replaces the exports from home/.zshenv. `~/.local/bin` is on PATH via
-  # home.sessionPath, the nix-daemon profile sourcing is unnecessary on NixOS.
   home.sessionVariables = {
     EDITOR = "micro";
     VISUAL = "micro";
@@ -106,11 +91,17 @@ in
 
   home.sessionPath = [ "$HOME/.local/bin" ];
 
-  # Replaces home/.ackrc.
-  home.file.".ackrc".text = ''
-    --ignore-case
-    --ignore-dir=build
-    --ignore-dir=out
-    --ignore-dir=.idea
-  '';
+  home.file.".zshenv".text = zshenv;
+
+  xdg.configFile."zsh/.zshrc".text = zshrc;
+  xdg.configFile."zsh/.zshrc.key-bindings.zsh".text = keyBindings;
+  xdg.configFile."zsh/.zshrc.aliases.zsh".text = aliases;
+
+  programs.starship = {
+    enable = true;
+    enableZshIntegration = false; # Enabled manually in zshrc
+    settings = builtins.fromTOML (builtins.readFile ../../assets/starship.toml);
+  };
+
+  home.file.".ackrc".text = ackrc;
 }
