@@ -2,7 +2,9 @@
 
 # Replaces home/.zshenv, home/.config/zsh/* and install.sh `install_zsh_plugin`
 # / `install_starship` - plugins now come from nixpkgs and are pinned by the
-# flake lock instead of being downloaded from GitHub master.
+# flake lock instead of being downloaded from GitHub master. The dotfiles are
+# written by hand, home-manager's `programs.zsh` module would add blocks of its
+# own (HISTFILE, HELPDIR, setopt, ...) to .zshrc.
 
 let
   # The original setup keeps zsh dotfiles in ~/.config/zsh (ZDOTDIR).
@@ -39,8 +41,6 @@ let
     alias cds="cd $HOME/slop"
   '';
 
-  # The original ~/.config/zsh/.zshrc, with Ubuntu paths replaced by store
-  # paths and the few lines home-manager would otherwise generate.
   zshrc = ''
     source "${zdotDir}/.zshrc.key-bindings.zsh"
     source "${zdotDir}/.zshrc.aliases.zsh"
@@ -79,17 +79,17 @@ let
   '';
 in
 {
-  programs.zsh = {
-    enable = true;
-    dotDir = zdotDir;
+  home.packages = [
+    pkgs.zsh
+    pkgs.nix-zsh-completions
+  ];
 
-    # Only for the nix-zsh-completions package, compinit is called by `zshrc`.
-    enableCompletion = true;
+  home.file.".zshenv".text = ''
+    export ZDOTDIR="${zdotDir}"
+    source "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh"
+  '';
 
-    # mkForce drops every snippet home-manager would inject into .zshrc, so the
-    # file is exactly `zshrc` - as the Ubuntu one was.
-    initContent = lib.mkForce zshrc;
-  };
+  xdg.configFile."zsh/.zshrc".text = zshrc;
 
   # `dockershell` sources these two files inside the container shell, so they
   # must exist as standalone files and not only inlined in .zshrc.
