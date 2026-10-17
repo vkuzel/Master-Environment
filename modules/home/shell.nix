@@ -104,7 +104,7 @@ in
   programs.starship = {
     enable = true;
     enableZshIntegration = false; # Enabled manually in zshrc
-    settings = builtins.fromTOML (builtins.readFile ../../assets/starship.toml);
+    settings = builtins.fromTOML (builtins.readFile shell/starship.toml);
   };
 
   home.file.".ackrc".text = ackrc;
