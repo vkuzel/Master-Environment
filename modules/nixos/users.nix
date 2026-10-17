@@ -22,7 +22,6 @@
       "audio"
       "input"
       "networkmanager"
-      "docker" # dockershell
       "scanner"
       "lp"
     ];
