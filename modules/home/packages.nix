@@ -27,10 +27,6 @@
     grim
     libnotify
     slurp
-
-    # AI
-    bubblewrap
-    github-copilot-cli
   ];
 
   programs.git = {
