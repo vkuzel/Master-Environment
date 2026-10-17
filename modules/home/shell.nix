@@ -93,6 +93,7 @@ in
 
   home.file.".zshenv".text = zshenv;
 
+  # TODO zoxide + fzf
   xdg.configFile."zsh/.zshrc".text = zshrc;
   xdg.configFile."zsh/.zshrc.key-bindings.zsh".text = keyBindings;
   xdg.configFile."zsh/.zshrc.aliases.zsh".text = aliases;
