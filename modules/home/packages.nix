@@ -11,7 +11,7 @@
     jq
     mc
 
-    # Office utils
+    # Utils
     ack
     bc
     p7zip
@@ -19,6 +19,7 @@
     util-linux # uuidgen
     whois
     wl-clipboard
+    bubblewrap
 
     # Sway tooling used by keybindings and scripts
     brightnessctl
