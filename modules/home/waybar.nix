@@ -11,10 +11,10 @@
     # wayland.windowManager.sway.systemd.enable.
     systemd.enable = true;
 
-    # Generated from the original JSONC config, see assets/waybar-settings.nix.
-    settings.mainBar = import ../../assets/waybar-settings.nix;
+    # Generated from the original JSONC config, see waybar/waybar-settings.nix.
+    settings.mainBar = import waybar/waybar-settings.nix;
 
-    style = builtins.readFile ../../assets/waybar-style.css;
+    style = builtins.readFile waybar/waybar-style.css;
   };
 
   # Modules referenced by the bar.

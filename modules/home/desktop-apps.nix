@@ -65,5 +65,5 @@
   };
 
   # Workspace layout consumed by `start-apps`.
-  xdg.configFile."app-launcher/apps.yaml".source = ../../assets/apps.yaml;
+  xdg.configFile."app-launcher/apps.yaml".source = desktop-apps/apps.yaml;
 }

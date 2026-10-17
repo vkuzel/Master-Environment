@@ -38,9 +38,9 @@ hosts/europa/              the laptop: hardware + disk layout
 hosts/vm/                  a QEMU/libvirt guest, see INSTALL-VM.md
 modules/nixos/             system concerns, one file per topic
 modules/home/              user concerns (Home Manager), one file per program
+  <program>/               raw config data for it (CSS, TOML, YAML)
 pkgs/                      the overlay: scripts, pinned Copilot CLI, IDEA
   scripts/src/             the original bash/python helpers, verbatim
-assets/                    raw config data (starship.toml, waybar/swaync CSS)
 ```
 
 There is no configuration framework (no denix, snowfall, flake-parts). A flat
@@ -127,7 +127,7 @@ job, and every file can be read without learning a DSL first.
 | Nerd Font downloaded with curl + `fc-cache` | `modules/nixos/fonts.nix` (`nerd-fonts.dejavu-sans-mono`) |
 | `fonts.conf` | `fonts.fontconfig.defaultFonts` |
 | zsh plugins unzipped from GitHub `master` | `programs.zsh.{autosuggestion,syntaxHighlighting,historySubstringSearch}` - pinned by `flake.lock` |
-| `curl starship.rs/install.sh \| sh` | `programs.starship`, config from `assets/starship.toml` |
+| `curl starship.rs/install.sh \| sh` | `programs.starship`, config from `modules/home/shell/starship.toml` |
 | Mozilla PPA + apt pinning | `programs.firefox` / `programs.thunderbird` |
 | `create_links` symlink farm | Home Manager generated files |
 | `~/.local/bin/*.sh`, `*.py` symlinks | real packages with declared runtime deps (`pkgs/scripts`) |

@@ -18,6 +18,6 @@
       script-fail-notify = true;
       widgets = [ "title" "dnd" "notifications" ];
     };
-    style = builtins.readFile ../../assets/swaync-style.css;
+    style = builtins.readFile swaync/swaync-style.css;
   };
 }
