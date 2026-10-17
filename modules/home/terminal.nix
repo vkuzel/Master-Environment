@@ -1,8 +1,5 @@
 { ... }:
 
-# Replaces home/.config/foot/foot.ini. The `monospace` alias resolves to the
-# Nerd Font configured in modules/nixos/fonts.nix.
-
 {
   programs.foot = {
     enable = true;
