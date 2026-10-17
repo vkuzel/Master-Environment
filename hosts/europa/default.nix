@@ -11,6 +11,11 @@
 
   networking.hostName = "europa";
 
+  # HOTFIX: https://github.com/tuigreet/tuigreet/issues/190
+  boot.consoleLogLevel = 0;
+  boot.initrd.verbose = false;
+  boot.kernelParams = [ "quiet" "udev.log_level=3" ];
+
   # Optional: pull in the profile matching your machine, see
   # https://github.com/NixOS/nixos-hardware#modules - e.g.
   #   inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t14-amd-gen4
