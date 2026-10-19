@@ -1,8 +1,5 @@
 { ... }:
 
-# Replaces install.sh `install_nix` - on NixOS the daemon and the experimental
-# features are part of the system itself.
-
 {
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
@@ -20,7 +17,4 @@
     dates = "weekly";
     options = "--delete-older-than 30d";
   };
-
-  # `nixos-rebuild` on a flake needs git in $PATH.
-  programs.git.enable = true;
 }
