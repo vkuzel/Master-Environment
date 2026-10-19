@@ -1,8 +1,5 @@
 { ... }:
 
-# Every system-level concern of the Master Environment. One file per topic,
-# each file is a plain NixOS module - no framework, no indirection.
-
 {
   imports = [
     ./audio.nix
