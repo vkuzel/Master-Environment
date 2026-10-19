@@ -1,7 +1,5 @@
 { ... }:
 
-# Replaces install.sh `configure_timezone`.
-
 {
   time.timeZone = "Europe/Prague";
 
