@@ -1,8 +1,5 @@
 { pkgs, ... }:
 
-# Replaces install.sh `install_nerd_fonts` (a curl + tar + fc-cache dance) and
-# home/.config/fontconfig/fonts.conf.
-
 {
   fonts = {
     packages = with pkgs; [
