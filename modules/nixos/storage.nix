@@ -1,10 +1,10 @@
 { pkgs, ... }:
 
-# Replaces the "Android file mount" apt packages and supports
-# `mountui` / `backup-phone` (go-mtpfs, veracrypt, gvfs).
-
 {
-  services.gvfs.enable = true;
+  # TODO Consider rewriting mountui to use gvfs / udisk, then gvfs
+  #  could be system-wide enabled, and Rhythmbox's wrapper removed
+  services.dbus.packages = [ pkgs.gvfs ];
+  systemd.packages = [ pkgs.gvfs ];
   services.udisks2.enable = true;
 
   programs.fuse.userAllowOther = true;
