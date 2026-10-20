@@ -7,6 +7,7 @@
 
   services.twingate.enable = true;
 
+  # TODO Consider not installing Twingate on systems which don't need it.
   # The daemon exits with an error until `twingate setup` fills in network.conf,
   # and `Restart=always` turns that into a crash loop failing `nixos-rebuild`.
   systemd.services.twingate.serviceConfig.ExecCondition = pkgs.writeShellScript "twingate-configured" ''
