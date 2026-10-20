@@ -92,8 +92,6 @@ in
     PAGER = "less";
   };
 
-  home.sessionPath = [ "$HOME/.local/bin" ];
-
   home.file.".zshenv".text = zshenv;
 
   # TODO zoxide + fzf

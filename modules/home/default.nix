@@ -1,8 +1,4 @@
-{ user, ... }:
-
-# The user side of the Master Environment. Everything that used to be a
-# symlink created by `install.sh create_links` now lives in one of these
-# modules, generated and activated by Home Manager.
+{ ... }:
 
 {
   imports = [
@@ -19,10 +15,6 @@
     ./waybar.nix
   ];
 
-  home.username = user.name;
-  home.homeDirectory = "/home/${user.name}";
-
-  # Directories the workflow expects (sway workspaces, backup scripts, ...).
   home.file = {
     "Documents/.keep".text = "";
     "Downloads/.keep".text = "";
@@ -31,8 +23,7 @@
   };
 
   xdg.enable = true;
-
-  programs.home-manager.enable = true;
+  xdg.localBinInPath = true;
 
   home.stateVersion = "26.05";
 }
