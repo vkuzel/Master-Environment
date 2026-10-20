@@ -1,12 +1,11 @@
 { ... }:
 
-# Replaces MANUAL-POST-INSTALL step 3 (Docker) - `dockershell` relies on the
-# `docker` group existing.
-
 {
   virtualisation.docker = {
     enable = true;
-    autoPrune.enable = true;
-    autoPrune.dates = "weekly";
+    # TODO Consider enabling prune (it may accidentally delete / break w/ kind)
+    # autoPrune.enable = true;
+    # autoPrune.dates = "monthly";
+    # TODO Consider `virtualisation.docker.rootless.enable = true` to avoid dockershell
   };
 }
