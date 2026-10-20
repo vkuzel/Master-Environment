@@ -15,7 +15,6 @@
 , gnused
 , procps
 , util-linux
-, sudo
 , rsync
 , jq
 , sway
@@ -72,15 +71,22 @@ let
     , runtimeInputs ? [ ]
     , needsGi ? false
     , gstPlugins ? [ ]
+    , needsSudo ? false
     }:
     let
+      # The store copy of sudo is not setuid, only the one NixOS links into
+      # security.wrapperDir is. It has to come first in PATH.
+      binPath = lib.concatStringsSep ":" (
+        lib.optional needsSudo "/run/wrappers/bin"
+        ++ lib.optional (runtimeInputs != [ ]) (lib.makeBinPath runtimeInputs)
+      );
       # Every flag has to expand to all three of its arguments or be dropped
       # entirely. makeCWrapper validates arity, so an empty search path would
       # leave `--prefix PATH :` looking like a two-argument flag and abort the
       # build. (Bash makeWrapper silently accepted the missing argument.)
       wrapperArgs =
-        lib.optional (runtimeInputs != [ ])
-          "--prefix PATH : ${lib.makeBinPath runtimeInputs}"
+        lib.optional (binPath != "")
+          "--prefix PATH : ${binPath}"
         ++ lib.optional needsGi
           "--prefix GI_TYPELIB_PATH : ${lib.makeSearchPath "lib/girepository-1.0" [
             gobject-introspection glib gst_all_1.gstreamer gst_all_1.gst-plugins-base
@@ -158,7 +164,8 @@ let
       name = "dockershell";
       src = ./src/dockershell.py;
       interpreter = py;
-      runtimeInputs = [ sudo util-linux zsh glibc ];
+      runtimeInputs = [ util-linux zsh glibc ];
+      needsSudo = true;
     };
 
     java-home = mkScript {
@@ -186,7 +193,8 @@ let
       name = "mountui";
       src = ./src/mountui.py;
       interpreter = py;
-      runtimeInputs = [ sudo util-linux fuse go-mtpfs usbutils veracrypt coreutils ];
+      runtimeInputs = [ util-linux fuse go-mtpfs usbutils veracrypt coreutils ];
+      needsSudo = true;
     };
 
     nmcli-device-wifi-list = mkScript {
