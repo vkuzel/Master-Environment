@@ -1,7 +1,5 @@
 { pkgs, ... }:
 
-# Replaces MANUAL-POST-INSTALL step 2 (CUPS + Brother DCP-L2532DW + scanner).
-
 {
   services.printing = {
     enable = true;
