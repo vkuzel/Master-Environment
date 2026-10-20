@@ -13,7 +13,7 @@ import tty
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Dict, Tuple
-
+# TODO Consider rewriting the script to utilize gvfs / udisk
 
 @dataclass(frozen=True)
 class Success:
