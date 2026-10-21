@@ -31,6 +31,7 @@
       "networkmanager"
       "scanner"
       "lp"
+      "libvirtd"
     ];
   };
 }
