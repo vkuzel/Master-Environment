@@ -44,7 +44,8 @@
 # symlink that silently breaks when an apt package is missing.
 #
 # The sources are kept verbatim in ./src so they stay easy to diff against the
-# Ubuntu version; only the interpreter and PATH are injected at build time.
+# Ubuntu version; only the file names match the package names and the
+# interpreter and PATH are injected at build time.
 
 let
   pythonEnv = python3.withPackages (ps: with ps; [
@@ -177,7 +178,7 @@ let
 
     kill-app = mkScript {
       name = "kill-app";
-      src = ./src/kill.sh;
+      src = ./src/kill-app.sh;
       interpreter = sh;
       runtimeInputs = [ procps gnugrep gawk findutils coreutils ];
     };
@@ -234,21 +235,21 @@ let
 
     sway-lock = mkScript {
       name = "sway-lock";
-      src = ./src/lock.py;
+      src = ./src/sway-lock.py;
       interpreter = py;
       runtimeInputs = [ swaylock swayidle sway procps ];
     };
 
     sway-rearrange-workspaces = mkScript {
       name = "sway-rearrange-workspaces";
-      src = ./src/rearrange-workspaces.sh;
+      src = ./src/sway-rearrange-workspaces.sh;
       interpreter = sh;
       runtimeInputs = [ sway jq gnugrep gawk coreutils ];
     };
 
     sway-screenshot = mkScript {
       name = "sway-screenshot";
-      src = ./src/screenshot.sh;
+      src = ./src/sway-screenshot.sh;
       interpreter = sh;
       runtimeInputs = [ sway jq slurp grim libnotify gnused coreutils ];
     };
@@ -256,7 +257,7 @@ let
     # Spawned by xdg-desktop-portal-wlr, see modules/nixos/desktop.nix.
     sway-share-picker = mkScript {
       name = "sway-share-picker";
-      src = ./src/share-picker.py;
+      src = ./src/sway-share-picker.py;
       interpreter = py;
       runtimeInputs = [ sway slurp fuzzel ];
     };

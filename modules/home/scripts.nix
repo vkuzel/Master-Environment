@@ -1,14 +1,5 @@
 { pkgs, ... }:
 
-# Replaces install.sh `create_links` for home/.local/bin - instead of
-# symlinking mutable scripts into $HOME, every script is a package with
-# declared runtime dependencies (see pkgs/scripts/default.nix).
-#
-# Renames compared to the Ubuntu layout:
-#   kill.sh                  -> kill-app   (`kill` would shadow the builtin)
-#   .config/sway/lock.py     -> sway-lock
-#   .config/sway/*.sh        -> sway-*
-
 let
   scripts = pkgs.masterEnvironmentScripts;
 in
