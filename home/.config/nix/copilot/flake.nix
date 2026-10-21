@@ -15,10 +15,10 @@
       };
 
       github-copilot-cli = pkgs.github-copilot-cli.overrideAttrs (old: {
-        version = "1.0.89-0";
+        version = "1.0.101";
         src = pkgs.fetchurl {
-          url = "https://github.com/github/copilot-cli/releases/download/v1.0.89-0/github-copilot-1.0.89-0-linux-x64.tgz";
-          hash = "sha256-h8ZCuXWk27rUlroehYBvS3qywi6P7B/ySnAJvJ0HE5I=";
+          url = "https://github.com/github/copilot-cli/releases/download/v1.0.101/github-copilot-1.0.101-linux-x64.tgz";
+          hash = "sha256-IfdUNgu+pHFivX3otJbBanyvGZu3LImeMcC7VTNexYU=";
         };
         autoPatchelfIgnoreMissingDeps = old.autoPatchelfIgnoreMissingDeps ++ [
           "libwebkit2gtk-4.1.so.0"
@@ -31,6 +31,9 @@
           "libwayland-client.so.0"
           "libdbus-1.so.3"
           "libxdo.so.3"
+          # Foundry Local (local model runtime) prebuilds, unused by the CLI.
+          "libonnxruntime-genai.so"
+          "libonnxruntime.so.1"
         ];
       });
     in {
