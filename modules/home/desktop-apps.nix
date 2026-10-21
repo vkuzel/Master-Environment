@@ -45,14 +45,16 @@
     transmission_4
   ];
 
-  # Signal renders a blank window with the default GPU path on sway.
-  xdg.desktopEntries.signal-desktop = {
+  xdg.desktopEntries.signal = {
     name = "Signal";
+    comment = "Private messaging from your desktop";
+    # Disable GPU hotfix for sway
     exec = "${pkgs.signal-desktop}/bin/signal-desktop --disable-gpu %U";
     icon = "signal-desktop";
     terminal = false;
-    categories = [ "Network" "InstantMessaging" ];
-    mimeType = [ "x-scheme-handler/sgnl" ];
+    categories = [ "Network" "InstantMessaging" "Chat" ];
+    mimeType = [ "x-scheme-handler/sgnl" "x-scheme-handler/signalcaptcha" ];
+    settings.StartupWMClass = "signal";
   };
 
   # Replaces home/.local/share/applications/blank-box.desktop.
