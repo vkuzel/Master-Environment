@@ -18,9 +18,13 @@ class LockManager:
             start_new_session=True,
         )
 
-    @staticmethod
-    def is_locked() -> bool:
-        return subprocess.run(["pgrep", "-x", "swaylock"], stdout=subprocess.DEVNULL).returncode == 0
+    _SWAYLOCK_PATTERN = r"(^|/)swaylock( |$)"
+
+    @classmethod
+    def is_locked(cls) -> bool:
+        return subprocess.run(
+            ["pgrep", "-f", cls._SWAYLOCK_PATTERN], stdout=subprocess.DEVNULL
+        ).returncode == 0
 
 
 @dataclass
@@ -28,8 +32,13 @@ class DisplayManager:
     lock_manager: LockManager
 
     _DISPLAY_TIMEOUT_SECONDS = 60
+    _POLL_INTERVAL_SECONDS = 2
+    _LOCK_WAIT_SECONDS = 10
 
     def manage_display(self):
+        if not self._wait_for_lock():
+            return
+
         idle = subprocess.Popen([
             "swayidle", "-w",
             "timeout", f"{self._DISPLAY_TIMEOUT_SECONDS}", 'swaymsg "output * dpms off"',
@@ -37,10 +46,19 @@ class DisplayManager:
         ])
 
         while self.lock_manager.is_locked():
-            time.sleep(2)
+            time.sleep(self._POLL_INTERVAL_SECONDS)
 
         idle.terminate()
+        idle.wait()
         subprocess.run(["swaymsg", "output * dpms on"])
+
+    def _wait_for_lock(self) -> bool:
+        deadline = time.monotonic() + self._LOCK_WAIT_SECONDS
+        while not self.lock_manager.is_locked():
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(0.2)
+        return True
 
 
 def main():
