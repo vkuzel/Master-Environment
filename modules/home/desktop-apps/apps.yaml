@@ -5,7 +5,7 @@
 
 - workspace: 10
   check_pattern: signal
-  cmd: signal-desktop --disable-gpu
+  cmd: signal-desktop
 
 - workspace: 2
   check_pattern: firefox
