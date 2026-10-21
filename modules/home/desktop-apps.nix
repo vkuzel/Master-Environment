@@ -40,19 +40,6 @@
     transmission_4
   ];
 
-  # HOTFIX: Disable GPU for sway - otherwise custom desktop entry wouldn't be needed
-  #  apps.yaml repeats the --disable-gpu option
-  xdg.desktopEntries.signal = {
-    name = "Signal";
-    comment = "Private messaging from your desktop";
-    exec = "${pkgs.signal-desktop}/bin/signal-desktop --disable-gpu %U";
-    icon = "signal-desktop";
-    terminal = false;
-    categories = [ "Network" "InstantMessaging" "Chat" ];
-    mimeType = [ "x-scheme-handler/sgnl" "x-scheme-handler/signalcaptcha" ];
-    settings.StartupWMClass = "signal";
-  };
-
   xdg.desktopEntries.blank-box = {
     name = "Blank Box";
     exec = "${pkgs.masterEnvironmentScripts.blank-box}/bin/blank-box";
