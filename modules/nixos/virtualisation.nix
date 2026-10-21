@@ -8,4 +8,7 @@
     # autoPrune.dates = "monthly";
     # TODO Consider `virtualisation.docker.rootless.enable = true` to avoid dockershell
   };
+
+  virtualisation.libvirtd.enable = true;
+  programs.virt-manager.enable = true;
 }
