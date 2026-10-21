@@ -1,13 +1,6 @@
 { config, pkgs, lib, ... }:
 
-# Replaces home/.zshenv, home/.config/zsh/* and install.sh `install_zsh_plugin`
-# / `install_starship` - plugins now come from nixpkgs and are pinned by the
-# flake lock instead of being downloaded from GitHub master. The dotfiles are
-# written by hand, home-manager's `programs.zsh` module would add blocks of its
-# own (HISTFILE, HELPDIR, setopt, ...) to .zshrc.
-
 let
-  # The original setup keeps zsh dotfiles in ~/.config/zsh (ZDOTDIR).
   zdotDir = "${config.xdg.configHome}/zsh";
 
   zshenv = ''
