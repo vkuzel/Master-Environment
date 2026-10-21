@@ -1,13 +1,4 @@
-{ pkgs, ... }:
-
-# System JDKs for the Java / Kotlin workflow. Only the default JDK is put on
-# PATH (the others ship the same binary names); every version is symlinked into
-# ~/.jdks so `java-home VERSION` and IntelliJ find it next to the JDKs IntelliJ
-# downloads itself.
-#
-# The links and JAVA_HOME point at `.home` ($out/lib/openjdk), not at $out -
-# $out only carries bin/ symlinks, so tools looking for lib/modules fail with
-# "No class roots are found in the JDK path".
+{ lib, pkgs, ... }:
 
 let
   jdks = {
@@ -22,7 +13,7 @@ in
 
   home.sessionVariables.JAVA_HOME = defaultJdk.home;
 
-  home.file = pkgs.lib.mapAttrs'
-    (version: jdk: pkgs.lib.nameValuePair ".jdks/jdk-${version}" { source = jdk.home; })
+  home.file = lib.mapAttrs'
+    (version: jdk: lib.nameValuePair ".jdks/jdk-${version}" { source = jdk.home; })
     jdks;
 }
