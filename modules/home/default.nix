@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 
 {
   imports = [
@@ -15,15 +15,25 @@
     ./waybar.nix
   ];
 
-  home.file = {
-    "Documents/.keep".text = "";
-    "Downloads/.keep".text = "";
-    "projects/.keep".text = "";
-    "slop/.keep".text = "";
-  };
+  xdg = {
+    enable = true;
+    localBinInPath = true;
 
-  xdg.enable = true;
-  xdg.localBinInPath = true;
+    userDirs = {
+      enable = true;
+      createDirectories = true;
+      documents = "${config.home.homeDirectory}/Documents";
+      download = "${config.home.homeDirectory}/Downloads";
+      projects = "${config.home.homeDirectory}/projects";
+      extraConfig.SLOP = "${config.home.homeDirectory}/slop";
+      desktop = null;
+      music = "${config.home.homeDirectory}/Music";
+      pictures = "${config.home.homeDirectory}/Pictures";
+      publicShare = null;
+      templates = null;
+      videos = "${config.home.homeDirectory}/Videos";
+    };
+  };
 
   home.stateVersion = "26.05";
 }
