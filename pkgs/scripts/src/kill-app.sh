@@ -7,7 +7,7 @@ if [[ -z "$appName" ]]; then
   exit 1
 fi
 
-apps=$(ps auxww | grep -i "$appName" | grep -Ev "kill.sh|grep -i")
+apps=$(ps auxww | grep -i "$appName" | grep -Ev "kill-app|grep -i")
 if [[ -z "$apps" ]]; then
   echo "No processes found"
   exit 1
