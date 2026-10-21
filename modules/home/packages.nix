@@ -1,12 +1,7 @@
 { pkgs, user, ... }:
 
-# Everything that install.sh installed through apt or `nix profile add`
-# (nix/flake.nix) and that is not configured by a dedicated module.
-
 {
   home.packages = with pkgs; [
-    # Shell / CLI (previously nix/flake.nix)
-    fastfetch
     htop
     jq
     mc
