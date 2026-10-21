@@ -45,7 +45,6 @@
           pkg: builtins.elem (nixpkgs.lib.getName pkg) [
             "github-copilot-cli"
             "idea"
-            "signal-desktop"
             "twingate"
             "veracrypt"
           ];

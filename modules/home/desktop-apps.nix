@@ -1,13 +1,8 @@
 { pkgs, ... }:
 
-# Replaces the Firefox/Thunderbird PPA dance, the Signal/LibreOffice/Rhythmbox
-# MANUAL-POST-INSTALL steps, and home/.local/share/applications/blank-box.desktop
-# plus home/.config/app-launcher/apps.yaml.
-
 {
   programs.firefox = {
     enable = true;
-    # No Mozilla PPA and no apt pinning needed - nixpkgs ships upstream builds.
     policies = {
       DisableTelemetry = true;
       DisablePocket = true;
@@ -45,10 +40,11 @@
     transmission_4
   ];
 
+  # HOTFIX: Disable GPU for sway - otherwise custom desktop entry wouldn't be needed
+  #  apps.yaml repeats the --disable-gpu option
   xdg.desktopEntries.signal = {
     name = "Signal";
     comment = "Private messaging from your desktop";
-    # Disable GPU hotfix for sway
     exec = "${pkgs.signal-desktop}/bin/signal-desktop --disable-gpu %U";
     icon = "signal-desktop";
     terminal = false;
@@ -57,7 +53,6 @@
     settings.StartupWMClass = "signal";
   };
 
-  # Replaces home/.local/share/applications/blank-box.desktop.
   xdg.desktopEntries.blank-box = {
     name = "Blank Box";
     exec = "${pkgs.masterEnvironmentScripts.blank-box}/bin/blank-box";
@@ -66,6 +61,5 @@
     settings.StartupNotify = "false";
   };
 
-  # Workspace layout consumed by `start-apps`.
   xdg.configFile."app-launcher/apps.yaml".source = desktop-apps/apps.yaml;
 }
