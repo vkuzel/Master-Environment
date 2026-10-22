@@ -1,8 +1,5 @@
 { ... }:
 
-# Replaces home/.config/swaync/config.json and home/.config/swaync/style.css
-# (the `sway-notification-center` apt package).
-
 {
   services.swaync = {
     enable = true;
