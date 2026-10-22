@@ -28,6 +28,12 @@ The environment is intended for an Intel-based ThinkPads. Sway has issues with N
    * Computer with an Intel or AMD GPU.
    * Booted [NixOS minimal ISO](https://nixos.org/download/#nixos-iso).
 
+   TODO Consider generating hardware config file
+   ```shell
+   sudo nixos-generate-config --no-filesystems --show-hardware-config \
+     > hosts/<host>/hardware-configuration.nix
+   ```
+
 2. Partition, format and install:
 
    ```shell
@@ -36,6 +42,8 @@ The environment is intended for an Intel-based ThinkPads. Sway has issues with N
    ```
 
 3. Reboot and log in. Initial password: `master`
+
+   Follow [MANUAL-POST-INSTALL.md](MANUAL-POST-INSTALL.md)
 
 ## Maintenance
 
