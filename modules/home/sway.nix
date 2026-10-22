@@ -30,6 +30,8 @@ in
     # what provides the session, the wrapper and the polkit/dbus glue.
     package = null;
     checkConfig = false;
+    systemd.enable = true;
+    systemd.variables = [ "--all" ];
 
     config = {
       modifier = mod;
@@ -152,10 +154,6 @@ in
     extraConfig = ''
       include /etc/sway/config.d/*
     '';
-
-    # Make the user systemd units (waybar, swayidle, swaync) aware of the running session.
-    systemd.enable = true;
-    systemd.variables = [ "--all" ];
   };
 
   services.swayidle = {
