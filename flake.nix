@@ -1,5 +1,5 @@
 {
-  description = "The Master Environment - a declarative NixOS port of the Ubuntu setup";
+  description = "The Master Environment - Java / Kotlin dev setup with NixOS + sway";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
@@ -18,43 +18,32 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
+    { nixpkgs
     , home-manager
     , disko
     , nixos-hardware
-    ,
+    , ...
     }@inputs:
     let
       system = "x86_64-linux";
 
-      # Single place where the identity of the machine's owner is defined.
-      # Every module reads it from `specialArgs`, nothing is hard-coded.
       user = {
         name = "vkuzel";
         fullName = "Vaclav Kuzel";
         email = "vkuzel@gmail.com";
-        # Generate with: mkpasswd --method=yescrypt
+        # TODO Generate with: mkpasswd --method=yescrypt
         initialPassword = "master";
       };
 
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [ (import ./pkgs) ];
-        config.allowUnfreePredicate =
-          pkg: builtins.elem (nixpkgs.lib.getName pkg) [
-            "github-copilot-cli"
-            "idea"
-            "twingate"
-            "veracrypt"
-          ];
-      };
+      # Only for this flake's own outputs below; the hosts get the same overlay
+      # and config through `modules/nixos/nixpkgs.nix`.
+      pkgs = import nixpkgs ({ inherit system; }
+        // import ./pkgs/nixpkgs-config.nix nixpkgs.lib);
     in
     {
       nixosConfigurations =
         let
           mkHost = host: nixpkgs.lib.nixosSystem {
-            inherit pkgs system;
             specialArgs = { inherit inputs user; };
             modules = [
               disko.nixosModules.disko
@@ -64,21 +53,17 @@
           };
         in
         {
-          # The physical laptop.
           europa = mkHost ./hosts/europa;
-          # A QEMU/libvirt guest, see INSTALL-VM.md.
           vm = mkHost ./hosts/vm;
         };
 
-      # `nix fmt`
+      # TODO Put `nix fmt` into just
       formatter.${system} = pkgs.nixpkgs-fmt;
 
-      # `nix develop` - tooling for working on this repository itself.
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [ nixpkgs-fmt nil nix-tree ];
       };
 
-      # `nix build .#master-environment-scripts` - all helper scripts.
       packages.${system} = {
         inherit (pkgs) master-environment-scripts;
         default = pkgs.master-environment-scripts;
