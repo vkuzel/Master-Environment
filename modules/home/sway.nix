@@ -1,13 +1,5 @@
 { pkgs, ... }:
 
-# Replaces home/.config/sway/config, home/.config/swayidle/config,
-# home/.config/swaylock/config and home/sway.sh.
-#
-# `config.keybindings` and `config.modes` below are plain definitions, not
-# `lib.mkOptionDefault`, so they replace Home Manager's default sway
-# keybindings instead of being merged into them. Everything sway gets is
-# therefore written out in this file.
-
 let
   mod = "Mod4";
   alt = "Mod1";
@@ -16,8 +8,7 @@ let
 
   menu = "fuzzel --background=000f27ff --selection-color=eee8d5ff | xargs swaymsg exec --";
 
-  # Every external monitor gets workspaces 1-9, the laptop panel gets 10.
-  # `swaymsg -t get_outputs` lists the names.
+  laptop = [ "eDP-1" "eDP-2" ];
   externals = [
     "DP-1"
     "DP-2"
@@ -31,7 +22,6 @@ let
     "HDMI-A-1"
     "HDMI-A-2"
   ];
-  laptop = [ "eDP-1" "eDP-2" ];
 in
 {
   wayland.windowManager.sway = {
@@ -61,7 +51,7 @@ in
 
       output."*".bg = "#018281 solid_color";
 
-      # `pixel 5` borders, i.e. no titlebars.
+      # no title-bars.
       window = { border = 5; titlebar = false; };
       floating = { border = 5; titlebar = false; modifier = mod; };
 
@@ -77,7 +67,7 @@ in
         repeat_rate = "40";
       };
 
-      # Waybar runs as a user systemd unit, see modules/home/waybar.nix.
+      # Waybar runs as a user systemd unit.
       bars = [ ];
 
       keybindings = {
@@ -100,7 +90,6 @@ in
         "${mod}+Shift+Up" = "move up";
         "${mod}+Shift+Right" = "move right";
 
-        # Workspace 10 is bound to the `0` key.
         "${mod}+1" = "workspace number 1";
         "${mod}+2" = "workspace number 2";
         "${mod}+3" = "workspace number 3";
@@ -169,13 +158,11 @@ in
       include /etc/sway/config.d/*
     '';
 
-    # Make the user systemd units (waybar, swayidle, swaync) aware of the
-    # running session.
+    # Make the user systemd units (waybar, swayidle, swaync) aware of the running session.
     systemd.enable = true;
     systemd.variables = [ "--all" ];
   };
 
-  # Replaces home/.config/swayidle/config.
   services.swayidle = {
     enable = true;
     timeouts = [
@@ -189,7 +176,6 @@ in
     };
   };
 
-  # Replaces home/.config/swaylock/config.
   programs.swaylock = {
     enable = true;
     settings = {
@@ -200,8 +186,6 @@ in
     };
   };
 
-  # Dark mode, replaces install.sh `configure_dark_mode` (gsettings) and
-  # home/.config/gtk-3.0/settings.ini.
   gtk = {
     enable = true;
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
