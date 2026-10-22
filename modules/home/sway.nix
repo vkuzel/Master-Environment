@@ -55,11 +55,6 @@ in
       window = { border = 5; titlebar = false; };
       floating = { border = 5; titlebar = false; modifier = mod; };
 
-      # Home Manager's defaults deviate from sway's own defaults here; keep
-      # sway's, the original config did not override them.
-      focus.wrapping = "yes";
-      focus.newWindow = "urgent";
-
       input."*" = {
         xkb_layout = "us,cz(qwerty)";
         xkb_options = "grp:alt_space_toggle";
