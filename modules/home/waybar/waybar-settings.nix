@@ -1,5 +1,3 @@
-# Generated from the original ~/.config/waybar/config (JSONC).
-# Consumed by modules/home/waybar.nix as programs.waybar.settings.mainBar.
 {
   layer = "top";
   position = "top";
