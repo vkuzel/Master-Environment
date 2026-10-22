@@ -103,13 +103,9 @@
     format-linked = "󰈁";
     format-disconnected = "󰪎";
     format-icons = [ "󰤯" "󰤟" "󰤢" "󰤥" "󰤨" ];
-    tooltip-format-ethernet = "󰈀  {ifname}
-  {ipaddr}/{cidr}
-󰈁  {gwaddr}";
-    tooltip-format-wifi = "󰤨  {essid}
-  {signalStrength}% ({signaldBm} dBm)
-  {ifname}  {ipaddr}/{cidr}
-󰈁  {gwaddr}";
+    tooltip-format-ethernet = "󰈀  {ifname}\n  {ipaddr}/{cidr}\n󰈁  {gwaddr}";
+    tooltip-format-wifi = "󰤨  {essid}\n  {signalStrength}% ({signaldBm} dBm)\n  {ifname}  {ipaddr}/{cidr}\n󰈁  {gwaddr}";
+    tooltip-format = "󰈁  {ifname}\nNo IPv4 address";
     tooltip-format-disconnected = "Disconnected";
   };
   clock = {
