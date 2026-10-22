@@ -11,6 +11,7 @@
     ./locale.nix
     ./networking.nix
     ./nix.nix
+    ./nixpkgs.nix
     ./power.nix
     ./printing.nix
     ./storage.nix
