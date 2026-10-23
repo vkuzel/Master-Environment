@@ -1,15 +1,10 @@
 final: prev:
 
-# A single overlay carrying everything that is not in nixpkgs as-is.
-# Applied in flake.nix, so `pkgs.<name>` works in every module.
-
 {
-  # All helper scripts from home/.local/bin, packaged with real dependencies.
   masterEnvironmentScripts = final.callPackage ./scripts { };
 
   master-environment-scripts = final.masterEnvironmentScripts.all;
 
-  # Pinned Copilot CLI, ported 1:1 from home/.config/nix/copilot/flake.nix.
   github-copilot-cli = prev.github-copilot-cli.overrideAttrs (old: {
     version = "1.0.89-0";
     src = prev.fetchurl {
