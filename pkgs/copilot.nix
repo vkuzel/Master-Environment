@@ -25,5 +25,8 @@ github-copilot-cli.overrideAttrs (old: {
     "libwayland-client.so.0"
     "libdbus-1.so.3"
     "libxdo.so.3"
+    # Bundled foundry-local-sdk (on-device models); onnxruntime-genai is not in nixpkgs.
+    "libonnxruntime.so.1"
+    "libonnxruntime-genai.so"
   ];
 })
