@@ -39,14 +39,6 @@
 , gtk3
 }:
 
-# Every helper from the original `home/.local/bin` and `home/.config/sway`
-# becomes a real package with *declared* runtime dependencies, instead of a
-# symlink that silently breaks when an apt package is missing.
-#
-# The sources are kept verbatim in ./src so they stay easy to diff against the
-# Ubuntu version; only the file names match the package names and the
-# interpreter and PATH are injected at build time.
-
 let
   pythonEnv = python3.withPackages (ps: with ps; [
     pillow
@@ -55,16 +47,6 @@ let
     tkinter
   ]);
 
-  # Builds one script into $out/bin/<name>, rewriting the shebang to a store
-  # path and, when the script needs them, wrapping it with an explicit PATH
-  # (and GI typelibs / GStreamer plugin paths).
-  #
-  # makeBinaryWrapper rather than makeWrapper: the wrapper is a compiled
-  # `exec`, not a second bash process, which is ~1ms cheaper per invocation.
-  # That matters for the scripts bound to sway keys or called in a loop.
-  # It supports a subset of makeWrapper's options (no `--run`); the
-  # `--prefix` calls below are all within it. The hook brings its own
-  # compiler, so stdenvNoCC stays fine and nothing is added at runtime.
   mkScript =
     { name
     , src
