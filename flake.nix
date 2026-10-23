@@ -57,6 +57,7 @@
         in
         {
           europa = mkHost ./hosts/europa;
+          metis = mkHost ./hosts/metis;
           veritas = mkHost ./hosts/veritas;
         };
 

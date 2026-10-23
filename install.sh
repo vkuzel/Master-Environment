@@ -4,6 +4,7 @@
 # Run from a NixOS installer ISO:
 #
 #   ./install.sh          # the laptop, see hosts/europa/disk-config.nix
+#   ./install.sh metis    # the T14s laptop, see hosts/metis/disk-config.nix
 #   ./install.sh veritas  # a QEMU/libvirt guest, see INSTALL-VM.md
 #
 # Over SSH the confirmation prompt needs a terminal, so either allocate one
