@@ -17,6 +17,7 @@ in
     mountui
     nmcli-device-wifi-list
     preview
+    restore
     screencast-test
     start-apps
     sway-lock

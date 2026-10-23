@@ -123,6 +123,13 @@ let
       runtimeInputs = [ rsync coreutils gnugrep ];
     };
 
+    restore = mkScript {
+      name = "restore";
+      src = ./src/restore.sh;
+      interpreter = sh;
+      runtimeInputs = [ rsync coreutils findutils gnugrep git ];
+    };
+
     blank-box = mkScript {
       name = "blank-box";
       src = ./src/blank-box.py;
