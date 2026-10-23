@@ -1,11 +1,5 @@
 { ... }:
 
-# The same layout as the laptop, minus LUKS - there is no point encrypting a
-# throwaway guest, and it keeps the boot unattended.
-#
-# `/dev/vda` is the first virtio disk; that is what Virtual Machine Manager
-# creates by default.
-
 {
   disko.devices.disk.main = {
     type = "disk";
