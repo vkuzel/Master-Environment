@@ -27,6 +27,15 @@ upgrade() {
   fi
 
   git --no-pager diff HEAD -- flake.lock
+
+  local answer
+  read -r -p "Do you want to apply? [y/N] " answer || answer=""
+  if [[ ! "$answer" =~ ^[Yy]$ ]]; then
+    git restore --source=HEAD --staged --worktree -- flake.lock
+    info "=== Discarded, flake.lock restored ==="
+    return
+  fi
+
   git add flake.lock
   git commit -m "Upgrade packages to latest versions"
 }
