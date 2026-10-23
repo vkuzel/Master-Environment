@@ -50,5 +50,5 @@ The environment is intended for an Intel-based ThinkPads. Sway has issues with N
 - Update
 
    ```shell
-   ./update.sh europa
+   ./update.sh
    ```
