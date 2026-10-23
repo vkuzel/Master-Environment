@@ -1,9 +1,5 @@
 { ... }:
 
-# Declarative disk layout (disko). Replaces the manual Ubuntu Server installer
-# step. Adjust `device` to match the target machine:
-#   ls -l /dev/disk/by-id/
-#
 # Wipe and install with:
 #   sudo nix run --inputs-from . disko -- --mode disko ./hosts/europa/disk-config.nix
 
