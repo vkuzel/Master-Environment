@@ -1,9 +1,9 @@
 { github-copilot-cli, fetchurl }:
 
 let
-  version = "1.0.89-0";
+  version = "1.0.101";
   # nix store prefetch-file --json <url> | jq -r .hash
-  hash = "sha256-h8ZCuXWk27rUlroehYBvS3qywi6P7B/ySnAJvJ0HE5I=";
+  hash = "sha256-IfdUNgu+pHFivX3otJbBanyvGZu3LImeMcC7VTNexYU=";
 in
 
 github-copilot-cli.overrideAttrs (old: {
