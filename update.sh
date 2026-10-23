@@ -11,16 +11,6 @@ fail() {
   exit 1;
 }
 
-check_host() {
-  local host="$1"
-
-  case "$host" in
-    europa | veritas) ;;
-    "") fail "Usage: ./update.sh <europa|veritas>" ;;
-    *) fail "Unknown host '$host' (expected 'europa' or 'veritas')" ;;
-  esac
-}
-
 check_repository_root() {
   if [[ ! -f flake.nix ]]; then
     fail "Run this script from the repository root!"
@@ -28,10 +18,8 @@ check_repository_root() {
 }
 
 rebuild() {
-  local host="$1"
-
-  info "=== Rebuild and switch to '$host' ==="
-  sudo nixos-rebuild switch --flake ".#$host"
+  info "=== Rebuild and switch ==="
+  sudo nixos-rebuild switch --flake "."
 }
 
 fix_lock_file_owner() {
@@ -41,11 +29,8 @@ fix_lock_file_owner() {
   fi
 }
 
-host=${1:-}
-
-check_host "$host"
 check_repository_root
-rebuild "$host"
+rebuild
 fix_lock_file_owner
 
 info "=== Done ==="
