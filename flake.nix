@@ -54,7 +54,7 @@
         in
         {
           europa = mkHost ./hosts/europa;
-          vm = mkHost ./hosts/vm;
+          veritas = mkHost ./hosts/veritas;
         };
 
       # TODO Put `nix fmt` into just

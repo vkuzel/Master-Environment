@@ -15,9 +15,9 @@ check_host() {
   local host="$1"
 
   case "$host" in
-    europa | vm) ;;
-    "") fail "Usage: ... | sudo bash -s -- <europa|vm>" ;;
-    *) fail "Unknown host '$host' (expected 'europa' or 'vm')" ;;
+    europa | veritas) ;;
+    "") fail "Usage: ... | sudo bash -s -- <europa|veritas>" ;;
+    *) fail "Unknown host '$host' (expected 'europa' or 'veritas')" ;;
   esac
 }
 

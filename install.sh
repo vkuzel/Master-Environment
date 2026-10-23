@@ -4,13 +4,13 @@
 # Run from a NixOS installer ISO:
 #
 #   ./install.sh          # the laptop, see hosts/europa/disk-config.nix
-#   ./install.sh vm       # a QEMU/libvirt guest, see INSTALL-VM.md
+#   ./install.sh veritas  # a QEMU/libvirt guest, see INSTALL-VM.md
 #
 # Over SSH the confirmation prompt needs a terminal, so either allocate one
 # or skip the prompt explicitly:
 #
-#   ssh -t nixos@host 'cd /tmp/master-environment && ./install.sh vm'
-#   ssh    nixos@host 'cd /tmp/master-environment && ./install.sh vm --yes'
+#   ssh -t nixos@host 'cd /tmp/master-environment && ./install.sh veritas'
+#   ssh    nixos@host 'cd /tmp/master-environment && ./install.sh veritas --yes'
 #
 # Everything afterwards is a rebuild, not a re-install:
 #   sudo nixos-rebuild switch --flake ".#$host"
