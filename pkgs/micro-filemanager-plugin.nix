@@ -1,10 +1,5 @@
 { lib, stdenvNoCC, fetchFromGitHub }:
 
-# Replaces install.sh `install_micro_plugin` (curl + unzip of a GitHub archive).
-#
-# Installed by modules/home/editor.nix into ~/.config/micro/plug/filemanager,
-# which is what provides micro's `tree` command (bound to Alt-1).
-
 stdenvNoCC.mkDerivation {
   pname = "micro-filemanager-plugin";
   version = "0-unstable-2026-08-11";
@@ -16,9 +11,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-UPZl61JK4F78SEO+yS/+vhmRFiKu+zgneOW+x0G/Rzc=";
   };
 
-  # micro reads the plugin directory directly: every *.lua file is a source,
-  # repo.json provides the plugin name and syntax.yaml is pulled in at runtime
-  # by config.AddRuntimeFile.
   installPhase = ''
     runHook preInstall
     mkdir -p $out
