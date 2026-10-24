@@ -7,6 +7,7 @@
     ./java.nix
     ./media.nix
     ./packages.nix
+    ./python.nix
     ./scripts.nix
     ./shell.nix
     ./sway.nix
