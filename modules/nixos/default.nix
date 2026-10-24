@@ -6,6 +6,7 @@
     ./bluetooth.nix
     ./boot.nix
     ./desktop.nix
+    ./fhs-compat.nix
     ./fonts.nix
     ./home-manager.nix
     ./locale.nix
