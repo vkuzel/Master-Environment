@@ -42,6 +42,12 @@ that has to be configured through its own UI.
     * Disable: Settings -> Editor -> General -> Smart Keys -> Markdown -> Adjust indentation on type
     * Select: Keymap -> Tab Management
 
+   Toolbar:
+   - Fetch
+   - VCS ...
+   - Update Project
+   - Push...
+
 6. Rhythmbox / iPod shuffle
 
     Connecting iPod:
@@ -57,6 +63,4 @@ that has to be configured through its own UI.
 
 8. Firefox extensions
 
-    Startpage, uBlock Origin and Unhook are installed by policy
-    (`modules/home/desktop-apps.nix`); they only need to be enabled once in
-    `about:addons`.
+    * Disable passwords and payment methods save/autofill in settings.
