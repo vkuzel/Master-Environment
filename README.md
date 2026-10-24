@@ -25,14 +25,9 @@ The environment is intended for an Intel-based ThinkPads. Sway has issues with N
 ## Installation
 
 1. Prerequisites:
+
    * Computer with an Intel or AMD GPU.
    * Booted [NixOS minimal ISO](https://nixos.org/download/#nixos-iso).
-
-   TODO Consider generating hardware config file
-   ```shell
-   sudo nixos-generate-config --no-filesystems --show-hardware-config \
-     > hosts/<host>/hardware-configuration.nix
-   ```
 
 2. Partition, format and install:
 
