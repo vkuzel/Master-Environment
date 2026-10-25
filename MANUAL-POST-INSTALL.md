@@ -64,3 +64,4 @@ that has to be configured through its own UI.
 8. Firefox extensions
 
     * Disable passwords and payment methods save/autofill in settings.
+    * Disable notifications for all websites. 
