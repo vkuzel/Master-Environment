@@ -1,6 +1,12 @@
 default:
     @just --list
 
+format:
+    nix fmt .
+
+check:
+    nix flake check --print-build-logs
+
 # Rebuild and switch to the current configuration
 update:
     ./.just/update.sh
