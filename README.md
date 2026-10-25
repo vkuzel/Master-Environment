@@ -39,17 +39,3 @@ The environment is intended for an Intel-based ThinkPads. Sway has issues with N
 3. Reboot and log in. Initial password: `master`
 
    Follow [MANUAL-POST-INSTALL.md](MANUAL-POST-INSTALL.md)
-
-## Maintenance
-
-- Update
-
-   ```shell
-   just update
-   ```
-
-- Upgrade
-
-   ```shell
-   just upgrade
-   ```
