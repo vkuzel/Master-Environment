@@ -16,4 +16,13 @@ in
   home.file = lib.mapAttrs'
     (version: jdk: lib.nameValuePair ".jdks/jdk-${version}" { source = jdk.home; })
     jdks;
+
+  xdg.desktopEntries.visualvm = {
+    name = "VisualVM";
+    genericName = "Java Troubleshooting Tool";
+    comment = "Visual interface for viewing information about Java applications";
+    exec = "${pkgs.visualvm}/bin/visualvm";
+    terminal = false;
+    categories = [ "Development" "Java" ];
+  };
 }
