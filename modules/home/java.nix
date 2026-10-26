@@ -9,7 +9,7 @@ let
   defaultJdk = jdks."25";
 in
 {
-  home.packages = [ defaultJdk ];
+  home.packages = [ defaultJdk pkgs.visualvm ];
 
   home.sessionVariables.JAVA_HOME = defaultJdk.home;
 
