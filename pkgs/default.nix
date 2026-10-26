@@ -22,4 +22,9 @@ final: prev:
 
   # IntelliJ IDEA with the vmoptions and Wayland flag this environment needs.
   intellij-idea = final.callPackage ./idea.nix { };
+
+  # VisualVM wrapped so its AWT windows work under Sway.
+  visualvm = prev.callPackage ./visualvm.nix {
+    inherit (prev) visualvm;
+  };
 }
