@@ -6,6 +6,7 @@
     ./editor.nix
     ./java.nix
     ./media.nix
+    ./midnight-commander.nix
     ./packages.nix
     ./python.nix
     ./scripts.nix

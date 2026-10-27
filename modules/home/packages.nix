@@ -6,7 +6,6 @@
     htop
     jq
     just
-    mc
 
     # Utils
     ack
