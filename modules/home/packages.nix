@@ -3,7 +3,7 @@
 {
   home.packages = with pkgs; [
     fastfetch
-    htop
+    btop
     jq
     just
 
