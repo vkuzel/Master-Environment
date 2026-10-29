@@ -3,7 +3,6 @@
 {
   home.packages = with pkgs; [
     fastfetch
-    btop
     jq
     just
 
@@ -29,4 +28,12 @@
 
   programs.bash.enable = true;
   programs.less.enable = true;
+
+  programs.btop = {
+    enable = true;
+    settings = {
+      show_disks = false;
+      proc_sorting = "cpu lazy";
+    };
+  };
 }
