@@ -26,12 +26,30 @@
     };
   };
 
+  # TODO Consider removing.
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "application/xhtml+xml" = [ "firefox.desktop" ];
+      "application/x-extension-htm" = [ "firefox.desktop" ];
+      "application/x-extension-html" = [ "firefox.desktop" ];
+      "application/x-extension-shtml" = [ "firefox.desktop" ];
+      "application/x-extension-xht" = [ "firefox.desktop" ];
+      "application/x-extension-xhtml" = [ "firefox.desktop" ];
+      "text/html" = [ "firefox.desktop" ];
+      "x-scheme-handler/ftp" = [ "firefox.desktop" ];
+      "x-scheme-handler/http" = [ "firefox.desktop" ];
+      "x-scheme-handler/https" = [ "firefox.desktop" ];
+    };
+  };
+
   programs.thunderbird = {
     enable = true;
     profiles.default.isDefault = true;
   };
 
   home.packages = with pkgs; [
+    google-chrome
     gimp3
     libreoffice
     rhythmbox # iPod shuffle
