@@ -26,14 +26,34 @@
     };
   };
 
+  # Pin following mime types to Firefox to prevent other applications from taking over
+  xdg.mimeApps =
+    let
+      browserMimeTypes = [
+        "text/html"
+        "text/xml"
+        "application/xhtml+xml"
+        "application/xml"
+        "application/rss+xml"
+        "application/rdf+xml"
+        "application/pdf"
+        "image/gif"
+        "image/jpeg"
+        "image/png"
+        "image/webp"
+        "x-scheme-handler/http"
+        "x-scheme-handler/https"
+      ];
+      pinnedToFirefox = lib.genAttrs browserMimeTypes (_: [ "firefox.desktop" ]);
+    in
+    {
+      enable = true;
+      associations.added = pinnedToFirefox;
+      defaultApplications = pinnedToFirefox;
+    };
+
   programs.google-chrome = {
     enable = true;
-    # Chrome is only a secondary browser, so it must not claim any mime types.
-    package = pkgs.google-chrome.overrideAttrs (old: {
-      postInstall = (old.postInstall or "") + ''
-        sed -i '/^MimeType=/d' $out/share/applications/*.desktop
-      '';
-    });
     commandLineArgs = [ "--no-default-browser-check" ];
   };
 
