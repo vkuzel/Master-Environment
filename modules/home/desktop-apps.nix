@@ -6,6 +6,15 @@
     policies = {
       DisableTelemetry = true;
       DisablePocket = true;
+      PasswordManagerEnabled = false;
+      OfferToSaveLogins = false;
+      AutofillCreditCardEnabled = false;
+      DisableFormHistory = true;
+      FirefoxSuggest = {
+        OnlineEnabled = false;
+        Locked = true;
+      };
+
       ExtensionSettings = {
         # uBlock Origin
         "uBlock0@raymondhill.net" = {
