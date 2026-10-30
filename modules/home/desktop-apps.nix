@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
   programs.firefox = {
@@ -26,21 +26,20 @@
     };
   };
 
-  # TODO Consider removing.
+  # Pin following mime types to Firefox to prevent Chrome from taking over
   xdg.mimeApps = {
     enable = true;
-    defaultApplications = {
-      "application/xhtml+xml" = [ "firefox.desktop" ];
-      "application/x-extension-htm" = [ "firefox.desktop" ];
-      "application/x-extension-html" = [ "firefox.desktop" ];
-      "application/x-extension-shtml" = [ "firefox.desktop" ];
-      "application/x-extension-xht" = [ "firefox.desktop" ];
-      "application/x-extension-xhtml" = [ "firefox.desktop" ];
-      "text/html" = [ "firefox.desktop" ];
-      "x-scheme-handler/ftp" = [ "firefox.desktop" ];
-      "x-scheme-handler/http" = [ "firefox.desktop" ];
-      "x-scheme-handler/https" = [ "firefox.desktop" ];
-    };
+    defaultApplications = lib.genAttrs [
+      "text/html"
+      "application/xhtml+xml"
+      "x-scheme-handler/http"
+      "x-scheme-handler/https"
+    ] (_: [ "firefox.desktop" ]);
+  };
+
+  programs.google-chrome = {
+    enable = true;
+    commandLineArgs = [ "--no-default-browser-check" ];
   };
 
   programs.thunderbird = {
@@ -49,7 +48,6 @@
   };
 
   home.packages = with pkgs; [
-    google-chrome
     gimp3
     libreoffice
     rhythmbox # iPod shuffle
