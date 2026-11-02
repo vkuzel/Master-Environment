@@ -119,30 +119,51 @@ class RegionParser:
         return json.loads(out)
 
 
-def choose(command, stdin, labels):
-    """Run a chooser, return the label it selected, or None when cancelled."""
-    try:
-        result = subprocess.run(
-            command, input=stdin, capture_output=True, text=True)
-    except OSError:
-        return None
-    if result.returncode != 0 or not result.stdout:
-        return None
+class RegionSelector:
 
-    # The portal matches the answer against its own labels verbatim, so always
-    # reply with the original line - a label can end in a space (an output
-    # without a description) and choosers tend to trim that away.
-    selected = result.stdout.splitlines()[0]
-    for label in labels:
-        if label.description.rstrip() == selected.rstrip():
-            return label
-    return None
+    def select(self, labels: List[Label], regions: List[Region]) -> Optional[Label]:
+        if regions:
+            # -r restricts the selection to the rectangles read from stdin, -f %l
+            # prints the label of the one that was picked.
+            lines = [region.description for region in regions]
+            return self._choose(
+                command=["slurp", "-r", "-f", "%l"],
+                stdin="\n".join(lines) + "\n",
+                labels=labels,
+            )
+        else:
+            return self._choose(
+                command=["fuzzel", "--dmenu", "--lines", "10", "--prompt", "Share: "],
+                stdin="\n".join(labels) + "\n",
+                labels=labels,
+            )
+
+    @staticmethod
+    def _choose(command, stdin, labels: List[Label]) -> Optional[Label]:
+        """Run a chooser, return the label it selected, or None when cancelled."""
+        try:
+            result = subprocess.run(
+                command, input=stdin, capture_output=True, text=True)
+        except OSError:
+            return None
+        if result.returncode != 0 or not result.stdout:
+            return None
+
+        # The portal matches the answer against its own labels verbatim, so always
+        # reply with the original line - a label can end in a space (an output
+        # without a description) and choosers tend to trim that away.
+        selected = result.stdout.splitlines()[0]
+        for label in labels:
+            if label.description.rstrip() == selected.rstrip():
+                return label
+        return None
 
 
 # TODO Rename to sway-region-selector.py
 def main():
     label_parser = LabelParser()
     region_parser = RegionParser()
+    region_selector = RegionSelector()
 
     stdin = sys.stdin.read()
     labels = label_parser.parse(stdin)
@@ -151,24 +172,10 @@ def main():
 
     regions = region_parser.parse(labels)
 
-    if regions:
-        # -r restricts the selection to the rectangles read from stdin, -f %l
-        # prints the label of the one that was picked.
-        lines = [region.description for region in regions]
-        label = choose(
-            command=["slurp", "-r", "-f", "%l"],
-            stdin="\n".join(lines) + "\n",
-            labels=labels,
-        )
-    else:
-        label = choose(
-            command=["fuzzel", "--dmenu", "--lines", "10", "--prompt", "Share: "],
-            stdin="\n".join(labels) + "\n",
-            labels=labels,
-        )
-
+    label = region_selector.select(labels, regions)
     if label is None:
         return 0
+
     print(label.description)
     return 0
 
