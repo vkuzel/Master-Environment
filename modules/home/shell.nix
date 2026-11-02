@@ -36,6 +36,17 @@ let
         # starship prompt, STARSHIP_CONFIG is exported from .zshenv
         if [[ $TERM != "dumb" ]]; then
             eval "$(${lib.getExe pkgs.starship} init zsh)"
+
+            # Foot window title (OSC 2) to make region selector work
+            autoload -Uz add-zsh-hook
+            _set_window_title() { print -Pn "\e]2;%~\a" }
+            _set_window_title_cmd() {
+                print -Pn "\e]2;%~ - "
+                print -rn -- "''${1%%$'\n'*}"
+                print -n "\a"
+            }
+            add-zsh-hook precmd _set_window_title
+            add-zsh-hook preexec _set_window_title_cmd
         fi
     fi
   '';
