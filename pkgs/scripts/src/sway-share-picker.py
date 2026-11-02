@@ -132,9 +132,10 @@ class RegionSelector:
                 labels=labels,
             )
         else:
+            lines = [label.description for label in labels]
             return self._choose(
                 command=["fuzzel", "--dmenu", "--lines", "10", "--prompt", "Share: "],
-                stdin="\n".join(labels) + "\n",
+                stdin="\n".join(lines) + "\n",
                 labels=labels,
             )
 
