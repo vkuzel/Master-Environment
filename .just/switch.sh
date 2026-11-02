@@ -17,7 +17,7 @@ check_repository_root() {
   fi
 }
 
-rebuild() {
+switch() {
   info "=== Rebuild and switch ==="
   sudo nixos-rebuild switch --flake "."
 }
@@ -30,7 +30,7 @@ fix_lock_file_owner() {
 }
 
 check_repository_root
-rebuild
+switch
 fix_lock_file_owner
 
 info "=== Done ==="
