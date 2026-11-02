@@ -109,10 +109,9 @@ in
         "${mod}+Shift+9" = "move container to workspace number 9";
         "${mod}+Shift+0" = "move container to workspace number 10";
 
+        "${mod}+w" = "layout toggle tabbed splith splitv";
         "${mod}+b" = "splith";
         "${mod}+v" = "splitv";
-        "${mod}+w" = "layout tabbed";
-        "${mod}+e" = "layout toggle split";
 
         "${mod}+Shift+r" = "exec ${scripts.sway-rearrange-workspaces}/bin/sway-rearrange-workspaces";
 
