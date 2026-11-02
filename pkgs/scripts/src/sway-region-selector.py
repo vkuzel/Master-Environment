@@ -79,7 +79,7 @@ class RegionParser:
                     # Several windows can share a title; hand them out in order so
                     # each label still ends up on a rectangle of its own.
                     candidates = windows.get(match.group("title"))
-                    if candidates:
+                    if len(candidates) == 1:
                         rect = candidates.pop(0)
 
             if rect and rect["width"] > 0 and rect["height"] > 0:
