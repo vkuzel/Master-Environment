@@ -1,2 +1,0 @@
-timeout 3600 '$HOME/.config/sway/lock'
-before-sleep '$HOME/.config/sway/lock'

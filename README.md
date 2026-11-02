@@ -1,11 +1,11 @@
-# The Master Environment Setup
+# The Master Environment Setup (NixOS)
 
-Desktop environment setup for Java / Kotlin developer based on [Ubuntu Server](https://ubuntu.com/download/server) and the tilling window manager [sway](https://swaywm.org/).
+Desktop environment setup for a Java / Kotlin developer, based on [NixOS](https://nixos.org/) and the tiling window manager [sway](https://swaywm.org/).
 
 The workflow is optimized for a laptop with one or two 27-inch external displays. The goal is to create a minimal, productivity-focused environment inspired by [ThePrimeagen](https://github.com/ThePrimeagen/)'s idea of reducing search fatigue. The most common tasks have a fixed place and are accessible with as few keystrokes as possible. Keyboard shortcuts are also designed to be consistent across the system.
 
 Laptop display on the left:
-* Workspace #0: Communication (mail, ...)
+* Workspace #0: Communication (mail, Signal, ...)
 
 Center display:
 * Workspace #1: Terminals (Foot)
@@ -20,20 +20,22 @@ Right display:
 * Workspace #8:
 * Workspace #9:
 
-The environment is usually installed on an Intel-based ThinkPads. Sway has issues with Nvidia drivers (both open source and proprietary), so it is recommended to use Intel or AMD based GPUs. Ubuntu Server is used as a basis for the environment because it doesn't contain desktop-related clutter.  
+The environment is intended for an Intel-based ThinkPads. Sway has issues with Nvidia drivers (both open source and proprietary), so it is recommended to use Intel or AMD based GPUs. If you want to use it don't forget to adjust `flake.nix` (name, password, ...).
 
 ## Installation
 
 1. Prerequisites:
-   * Computer w/ Intel or AMD GPU.
-   * Ubuntu Server 24.04 installed on the machine.
 
-2. Clone the project into a directory.
+   * Computer with an Intel or AMD GPU.
+   * Booted [NixOS minimal ISO](https://nixos.org/download/#nixos-iso).
 
-3. Run `install.sh` script. You can re-run the script to update the environment.
+2. Partition, format and install:
 
-    The script installs APT packages, create symlinks into your home directory and download/copy relevant files.
+   ```shell
+   curl -sSfL https://raw.githubusercontent.com/vkuzel/Master-Environment/nixos/bootstrap.sh \
+     | sudo bash -s -- europa
+   ```
 
-    After application is removed from this project, cleanup may be performed by the `./cleanup.sh` script. Take note, this is just an experiment functionality and the proper cleanup is not guaranteed.
+3. Reboot and log in. Initial password: `master`
 
-4. After first installation go through the [MANUAL-POST-INSTALL.md](MANUAL-POST-INSTALL.md) and complete manual steps.
+   Follow [MANUAL-POST-INSTALL.md](MANUAL-POST-INSTALL.md)

@@ -1,102 +1,67 @@
-# Ubuntu server post-install steps
+# NixOS post-install steps
 
-1. Suspend on lid close
+Most of what the Ubuntu version needed here is now declarative. What is left
+is either data that cannot live in a public repository, or vendor software
+that has to be configured through its own UI.
 
-	1. Configure `/etc/systemd/logind.conf`
-		```
-		HandleLidSwitch=suspend
-		HandleLidSwitchDocked=ignore
-		HandleLidSwitchExternalPower=suspend
-		```
+1. Set a real password
 
-		And reload logind
-		```shell
-		sudo systemctl restart systemd-logind
-		```
+    ```shell
+    passwd
+    ```
 
-		Verify logind registers lid-close event
-		```shell
-		sudo journalctl -u systemd-logind -f
-		``` 
+    TODO Switch to `hashedPasswordFile` backed by [sops-nix](https://github.com/Mic92/sops-nix) and drop `initialPassword`.
 
-	2. Automated power optimizer TLP
+2. Wi-Fi
 
-		```shell
-		apt install tlp
-		systemctl enable tlp --now
-		```
+    ```shell
+    nmcli device wifi list
+    nmcli device wifi connect <SSID> --ask
+    ```
 
-2. Printer & scanner
+3. Printer & scanner
 
-	Install [CUPS](https://ubuntu.com/server/docs/service-cups)
-	```shell
-	sudo apt install cups
-	```
-	Install Brother DCP-L2532DW Linux drivers (use Driver Install Tool)
+    Add the Brother DCP-L2532DW at <http://localhost:631/admin> - it is auto-discovered over mDNS. Scanning works through `simple-scan`.
 
-	https://support.brother.com/g/b/downloadtop.aspx?c=eu_ot&lang=en&prod=dcpl2532dw_eu
-
-	> Input model name: DCP-L2532DW
-
-	Install Simple scan (Document Scanner)
-	```shell
-	apt install simple-scan
-	```
-
-3. Docker
-
-	1. Install: https://docs.docker.com/engine/install/ubuntu/
-
-	2. Post install: https://docs.docker.com/engine/install/linux-postinstall/
+    _If `brlaser` renders badly, replace it in `printing.nix` with the vendor driver package from nixpkgs (`cups-brother-*`)._
 
 4. Twingate VPN
 
-	1. Install: https://www.twingate.com/docs/linux
+    The service is enabled; authenticate once:
 
-5. Signal
+    ```shell
+    sudo twingate setup
+    ```
 
-	Install: https://signal.org/download/linux/
+5. IntelliJ IDEA setup
 
-	To prevent app window turning blank, add `--disable-gpu` into `/usr/share/applications/signal-desktop.desktop`. I.e.,
-	```
-	Exec=/opt/Signal/signal-desktop %U --disable-gpu
-	```
-
-6. LibreOffice
-
-	```shell
-	sudo apt install libreoffice
-	```
-
-7. Rhythmbox
-
-	For connecting iPod shuffle
-	```shell
-	sudo apt install rhythmbox 
-	```
-    
-    Connecting:
-    1. Open GTK file dialog: Rhythmbox -> Preferences -> Music -> Browse
-    2. Open iPod
-
-8. IntelliJ IDEA setup:
-
-   Plugins:
-	* [Tab Management Plugin](https://github.com/vkuzel/IntelliJ-Tab-Management) for advanced tab management
+    Plugins:
+    * [Tab Management Plugin](https://github.com/vkuzel/IntelliJ-Tab-Management)
 
     Settings:
     * Disable: Settings -> Editor -> General -> Smart Keys -> Markdown -> Adjust indentation on type
     * Select: Keymap -> Tab Management
 
-9. Firefox focus extensions
+   Toolbar:
+   - Fetch
+   - VCS ...
+   - Update Project
+   - Push...
 
-    * Startpage - Private Search Engine
-    * uBlock Origin
-    * Unhook - Remove YouTube Recommended & Shorts
+6. Rhythmbox / iPod shuffle
 
-10. Copilot
+    Connecting iPod:
+    1. Open GTK file dialog: Rhythmbox -> Preferences -> Music -> Browse
+    2. Open iPod
 
-	Disable terminal progress notifications by adding into `~/.copilot/settins.json`
-	```json
-	"terminalProgress": false
-	```
+7. Copilot
+
+    Disable terminal progress notifications by adding into `~/.copilot/settins.json`
+    ```
+    "terminalProgress": false
+    ```
+
+8. Firefox extensions
+
+    * Disable passwords and payment methods save/autofill in settings.
+    * Disable notifications for all websites. 

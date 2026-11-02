@@ -1,0 +1,28 @@
+# Workspace layout for `start-apps`. Installed to ~/.config/app-launcher/apps.yaml.
+- workspace: 10
+  check_pattern: thunderbird
+  cmd: thunderbird
+
+- workspace: 10
+  check_pattern: signal
+  cmd: signal-desktop
+
+- workspace: 2
+  check_pattern: firefox
+  cmd: firefox
+
+- workspace: 3
+  check_pattern: jetbrains-idea
+  cmd: idea
+
+- workspace: 6
+  check_pattern: microgui
+  cwd: $HOME/Documents/
+  cmd: microgui tmp.md:100000:1 TODO.md
+
+- workspace: 6
+  check_pattern: Blank Box
+  cmd: blank-box
+
+- workspace: 2
+
