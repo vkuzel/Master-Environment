@@ -81,7 +81,7 @@ install_os() {
 }
 
 host=${1:-}
-repository="github:vkuzel/Master-Environment/nixos"
+repository="github:vkuzel/Master-Environment/main"
 flake="$repository#$host"
 
 check_host "$host"

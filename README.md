@@ -32,7 +32,7 @@ The environment is intended for an Intel-based ThinkPads. Sway has issues with N
 2. Partition, format and install:
 
    ```shell
-   curl -sSfL https://raw.githubusercontent.com/vkuzel/Master-Environment/nixos/bootstrap.sh \
+   curl -sSfL https://raw.githubusercontent.com/vkuzel/Master-Environment/main/bootstrap.sh \
      | sudo bash -s -- europa
    ```
 
