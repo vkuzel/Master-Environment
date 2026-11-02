@@ -134,7 +134,7 @@ class RegionSelector:
         else:
             lines = [label.description for label in labels]
             return self._choose(
-                command=["fuzzel", "--background=000f27ff", "--selection-color=eee8d5ff", "--dmenu", "--lines", "10", "--prompt", "Share: "],
+                command=["fuzzel", "--background=000f27ff", "--selection-color=eee8d5ff", "--dmenu", "--lines", "10"],
                 stdin="\n".join(lines) + "\n",
                 labels=labels,
             )
