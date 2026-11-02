@@ -17,8 +17,8 @@ check_repository_root() {
   fi
 }
 
-upgrade() {
-  info "=== Upgrade ==="
+update() {
+  info "=== Update ==="
   nix flake update
 
   if git diff --quiet HEAD -- flake.lock; then
@@ -37,10 +37,10 @@ upgrade() {
   fi
 
   git add flake.lock
-  git commit -m "Upgrade packages to latest versions"
+  git commit -m "Update packages to latest versions"
 }
 
 check_repository_root
-upgrade
+update
 
 info "=== Done ==="
