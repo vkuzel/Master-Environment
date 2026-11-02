@@ -45,7 +45,14 @@ class LabelParser:
 
 @dataclass(frozen=True)
 class Region:
-    description: str
+    label: Label
+    x: int
+    y: int
+    width: int
+    height: int
+
+    def to_slurp_line(self) -> str:
+        return f"{self.x},{self.y} {self.width}x{self.height} {self.label.description}"
 
 
 class RegionParser:
@@ -60,7 +67,7 @@ class RegionParser:
         except (OSError, ValueError, KeyError, subprocess.CalledProcessError):
             return []
 
-        lines = []
+        regions = []
         for label in labels:
             rect = None
             if label.description.startswith(self._MONITOR_PREFIX):
@@ -76,10 +83,14 @@ class RegionParser:
                         rect = candidates.pop(0)
 
             if rect and rect["width"] > 0 and rect["height"] > 0:
-                lines.append(
-                    f"{rect['x']},{rect['y']} "
-                    f"{rect['width']}x{rect['height']} {label.description}")
-        return [Region(line) for line in lines]
+                regions.append(Region(
+                    label=label,
+                    x=rect["x"],
+                    y=rect["y"],
+                    width=rect["width"],
+                    height=rect["height"],
+                ))
+        return regions
 
     @staticmethod
     def _window_rects():
@@ -125,7 +136,7 @@ class RegionSelector:
         if regions:
             # -r restricts the selection to the rectangles read from stdin, -f %l
             # prints the label of the one that was picked.
-            lines = [region.description for region in regions]
+            lines = [region.to_slurp_line() for region in regions]
             return self._choose(
                 command=["slurp", "-r", "-f", "%l"],
                 stdin="\n".join(lines) + "\n",
