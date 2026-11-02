@@ -160,7 +160,6 @@ class RegionSelector:
         return None
 
 
-# TODO Rename to sway-region-selector.py
 def main():
     label_parser = LabelParser()
     region_parser = RegionParser()
@@ -185,5 +184,5 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except Exception as error:  # never exit 127, that means "no chooser"
-        print(f"share-picker: {error}", file=sys.stderr)
+        print(f"region-selector: {error}", file=sys.stderr)
         sys.exit(1)

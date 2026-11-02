@@ -244,9 +244,9 @@ let
     };
 
     # Spawned by xdg-desktop-portal-wlr, see modules/nixos/desktop.nix.
-    sway-share-picker = mkScript {
-      name = "sway-share-picker";
-      src = ./src/sway-share-picker.py;
+    sway-region-selector = mkScript {
+      name = "sway-region-selector";
+      src = ./src/sway-region-selector.py;
       interpreter = py;
       runtimeInputs = [ sway slurp fuzzel ];
     };

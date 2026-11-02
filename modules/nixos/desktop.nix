@@ -40,7 +40,7 @@
 
       settings.screencast = {
         chooser_type = "dmenu";
-        chooser_cmd = "${pkgs.masterEnvironmentScripts.sway-share-picker}/bin/sway-share-picker";
+        chooser_cmd = "${pkgs.masterEnvironmentScripts.sway-region-selector}/bin/sway-region-selector";
       };
     };
   };
