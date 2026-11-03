@@ -133,34 +133,29 @@ class RegionParser:
 class RegionSelector:
 
     def select(self, labels: List[Label], regions: List[Region]) -> Optional[Label]:
-        # -r restricts the selection to the rectangles read from stdin, -f %l
-        # prints the label of the one that was picked.
         lines = [region.to_slurp_line() for region in regions]
-        return self._choose(
-            command=["slurp", "-r", "-f", "%l"],
-            stdin="\n".join(lines) + "\n",
-            labels=labels,
-        )
+        selected_line = self._slurp(lines)
+
+        for region in regions:
+            if region.label.description.rstrip() == selected_line.rstrip():
+                return region.label
+        return None
 
     @staticmethod
-    def _choose(command, stdin, labels: List[Label]) -> Optional[Label]:
-        """Run a chooser, return the label it selected, or None when cancelled."""
+    def _slurp(lines: List[str]) -> str:
         try:
             result = subprocess.run(
-                command, input=stdin, capture_output=True, text=True)
+                args=["slurp", "-r", "-f", "%l"],
+                input="\n".join(lines) + "\n",
+                capture_output=True,
+                text=True,
+            )
         except OSError:
             return None
         if result.returncode != 0 or not result.stdout:
             return None
 
-        # The portal matches the answer against its own labels verbatim, so always
-        # reply with the original line - a label can end in a space (an output
-        # without a description) and choosers tend to trim that away.
-        selected = result.stdout.splitlines()[0]
-        for label in labels:
-            if label.description.rstrip() == selected.rstrip():
-                return label
-        return None
+        return result.stdout.splitlines()[0]
 
 
 def main():
