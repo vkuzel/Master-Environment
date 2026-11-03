@@ -133,22 +133,14 @@ class RegionParser:
 class RegionSelector:
 
     def select(self, labels: List[Label], regions: List[Region]) -> Optional[Label]:
-        if regions:
-            # -r restricts the selection to the rectangles read from stdin, -f %l
-            # prints the label of the one that was picked.
-            lines = [region.to_slurp_line() for region in regions]
-            return self._choose(
-                command=["slurp", "-r", "-f", "%l"],
-                stdin="\n".join(lines) + "\n",
-                labels=labels,
-            )
-        else:
-            lines = [label.description for label in labels]
-            return self._choose(
-                command=["fuzzel", "--background=000f27ff", "--selection-color=eee8d5ff", "--dmenu", "--lines", "10"],
-                stdin="\n".join(lines) + "\n",
-                labels=labels,
-            )
+        # -r restricts the selection to the rectangles read from stdin, -f %l
+        # prints the label of the one that was picked.
+        lines = [region.to_slurp_line() for region in regions]
+        return self._choose(
+            command=["slurp", "-r", "-f", "%l"],
+            stdin="\n".join(lines) + "\n",
+            labels=labels,
+        )
 
     @staticmethod
     def _choose(command, stdin, labels: List[Label]) -> Optional[Label]:
