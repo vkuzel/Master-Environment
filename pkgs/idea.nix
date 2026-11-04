@@ -1,12 +1,12 @@
 { jetbrains }:
 
 jetbrains.idea.override {
-  forceWayland = true;
+  # TODO Consider enabling Wayland with new IDEA when context menu placement is fixed
+  forceWayland = false;
 
   vmopts = ''
     -Xmx4096m
 
-    -Dawt.toolkit.name=WLToolkit
     -Dsun.java2d.vulkan=true
   '';
 }
