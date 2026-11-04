@@ -27,7 +27,10 @@ import json
 import re
 import subprocess
 import sys
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
+
+Rect = Dict[str, int]
+Node = Dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -67,9 +70,9 @@ class RegionParser:
         except (OSError, ValueError, KeyError, subprocess.CalledProcessError):
             return []
 
-        regions = []
+        regions: List[Region] = []
         for label in labels:
-            rect = None
+            rect: Optional[Rect] = None
             if label.description.startswith(self._MONITOR_PREFIX):
                 name = label.description[len(self._MONITOR_PREFIX):].split(" ")[0]
                 rect = outputs.get(name)
@@ -93,15 +96,15 @@ class RegionParser:
         return regions
 
     @staticmethod
-    def _window_rects():
+    def _window_rects() -> Dict[str, List[Rect]]:
         """Visible windows grouped by title - titles are not unique."""
-        by_title = {}
+        by_title: Dict[str, List[Rect]] = {}
         for view in RegionParser._visible_views(RegionParser._swaymsg("get_tree"), []):
             by_title.setdefault(view.get("name"), []).append(view["rect"])
         return by_title
 
     @staticmethod
-    def _output_rects():
+    def _output_rects() -> Dict[str, Rect]:
         """Every active output, by name."""
         return {
             out["name"]: out["rect"]
@@ -110,7 +113,7 @@ class RegionParser:
         }
 
     @staticmethod
-    def _visible_views(node, found):
+    def _visible_views(node: Node, found: List[Node]) -> List[Node]:
         """Views the user can actually point at, in tree order.
 
         Containers without a `pid` are splits/workspaces/outputs, and `visible` is
@@ -123,7 +126,7 @@ class RegionParser:
         return found
 
     @staticmethod
-    def _swaymsg(message_type):
+    def _swaymsg(message_type: str) -> Any:
         out = subprocess.run(
             ["swaymsg", "-t", message_type, "-r"],
             check=True, capture_output=True, text=True).stdout
@@ -135,6 +138,8 @@ class RegionSelector:
     def select(self, labels: List[Label], regions: List[Region]) -> Optional[Label]:
         lines = [region.to_slurp_line() for region in regions]
         selected_line = self._slurp(lines)
+        if selected_line is None:
+            return None
 
         for region in regions:
             if region.label.description.rstrip() == selected_line.rstrip():
@@ -142,7 +147,7 @@ class RegionSelector:
         return None
 
     @staticmethod
-    def _slurp(lines: List[str]) -> str:
+    def _slurp(lines: List[str]) -> Optional[str]:
         try:
             result = subprocess.run(
                 args=["slurp", "-r", "-f", "%l"],
@@ -158,7 +163,7 @@ class RegionSelector:
         return result.stdout.splitlines()[0]
 
 
-def main():
+def main() -> int:
     label_parser = LabelParser()
     region_parser = RegionParser()
     region_selector = RegionSelector()
