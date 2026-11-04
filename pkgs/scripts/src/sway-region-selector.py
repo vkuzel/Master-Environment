@@ -135,7 +135,7 @@ class RegionParser:
 
 class RegionSelector:
 
-    def select(self, labels: List[Label], regions: List[Region]) -> Optional[Label]:
+    def select(self, regions: List[Region]) -> Optional[Label]:
         lines = [region.to_slurp_line() for region in regions]
         selected_line = self._slurp(lines)
         if selected_line is None:
@@ -175,7 +175,7 @@ def main() -> int:
 
     regions = region_parser.parse(labels)
 
-    label = region_selector.select(labels, regions)
+    label = region_selector.select(regions)
     if label is None:
         return 0
 
