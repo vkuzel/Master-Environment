@@ -39,12 +39,34 @@ class Label:
     text: str
 
 
-class LabelParser:
+@dataclass(frozen=True)
+class MonitorLabel(Label):
+    name: str
 
-    @staticmethod
-    def parse(stdin: str) -> List[Label]:
+
+@dataclass(frozen=True)
+class WindowLabel(Label):
+    title: str
+
+
+class LabelParser:
+    _MONITOR_PREFIX = "Monitor: "
+    _WINDOW_RE = re.compile(r"^Window: (?P<title>.*) \((?P<identifier>[^()]*)\)$")
+
+    def parse(self, stdin: str) -> List[Label]:
         lines = stdin.splitlines()
-        return [Label(line) for line in lines if line]
+
+        labels = []
+        for line in lines:
+            if line.startswith(self._MONITOR_PREFIX):
+                name = line[len(self._MONITOR_PREFIX):].split(" ")[0]
+                labels.append(MonitorLabel(line, name))
+            else:
+                match = self._WINDOW_RE.match(line)
+                if match:
+                    title = match.group("title")
+                    labels.append(WindowLabel(line, title))
+        return labels
 
 
 @dataclass(frozen=True)
@@ -60,8 +82,6 @@ class Region:
 
 
 class RegionParser:
-    _MONITOR_PREFIX = "Monitor: "
-    _WINDOW_RE = re.compile(r"^Window: (?P<title>.*) \((?P<identifier>[^()]*)\)$")
 
     def parse(self, labels: List[Label]) -> List[Region]:
         outputs = self._output_rects()
@@ -70,13 +90,10 @@ class RegionParser:
         regions = []
         for label in labels:
             rect = None
-            if label.text.startswith(self._MONITOR_PREFIX):
-                name = label.text[len(self._MONITOR_PREFIX):].split(" ")[0]
-                rect = outputs.get(name)
-            else:
-                match = self._WINDOW_RE.match(label.text)
-                if match:
-                    rect = windows.get(match.group("title"))
+            if isinstance(label, MonitorLabel):
+                rect = outputs.get(label.name)
+            elif isinstance(label, WindowLabel):
+                rect = windows.get(label.title)
 
             if rect and rect["width"] > 0 and rect["height"] > 0:
                 regions.append(Region(
