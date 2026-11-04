@@ -7,6 +7,7 @@ jetbrains.idea.override {
   vmopts = ''
     -Xmx4096m
 
+    -Dawt.toolkit.name=XToolkit
     -Dsun.java2d.vulkan=true
   '';
 }
