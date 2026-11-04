@@ -27,7 +27,8 @@ import json
 import re
 import subprocess
 import sys
-from typing import Any, Dict, List, Optional
+
+from typing import Any, Dict, List, Optional, cast
 
 Rect = Dict[str, int]
 Node = Dict[str, Any]
@@ -35,7 +36,7 @@ Node = Dict[str, Any]
 
 @dataclass(frozen=True)
 class Label:
-    description: str
+    text: str
 
 
 class LabelParser:
@@ -55,7 +56,7 @@ class Region:
     height: int
 
     def to_slurp_line(self) -> str:
-        return f"{self.x},{self.y} {self.width}x{self.height} {self.label.description}"
+        return f"{self.x},{self.y} {self.width}x{self.height} {self.label.text}"
 
 
 class RegionParser:
@@ -63,27 +64,19 @@ class RegionParser:
     _WINDOW_RE = re.compile(r"^Window: (?P<title>.*) \((?P<identifier>[^()]*)\)$")
 
     def parse(self, labels: List[Label]) -> List[Region]:
-        """Map the portal's labels onto rectangles, keeping the label as slurp's."""
-        try:
-            outputs = self._output_rects()
-            windows = self._window_rects()
-        except (OSError, ValueError, KeyError, subprocess.CalledProcessError):
-            return []
+        outputs = self._output_rects()
+        windows = self._window_rects()
 
-        regions: List[Region] = []
+        regions = []
         for label in labels:
-            rect: Optional[Rect] = None
-            if label.description.startswith(self._MONITOR_PREFIX):
-                name = label.description[len(self._MONITOR_PREFIX):].split(" ")[0]
+            rect = None
+            if label.text.startswith(self._MONITOR_PREFIX):
+                name = label.text[len(self._MONITOR_PREFIX):].split(" ")[0]
                 rect = outputs.get(name)
             else:
-                match = self._WINDOW_RE.match(label.description)
+                match = self._WINDOW_RE.match(label.text)
                 if match:
-                    # Several windows can share a title; hand them out in order so
-                    # each label still ends up on a rectangle of its own.
-                    candidates = windows.get(match.group("title"))
-                    if candidates and len(candidates) == 1:
-                        rect = candidates.pop(0)
+                    rect = windows.get(match.group("title"))
 
             if rect and rect["width"] > 0 and rect["height"] > 0:
                 regions.append(Region(
@@ -96,29 +89,35 @@ class RegionParser:
         return regions
 
     @staticmethod
-    def _window_rects() -> Dict[str, List[Rect]]:
-        """Visible windows grouped by title - titles are not unique."""
-        by_title: Dict[str, List[Rect]] = {}
-        for view in RegionParser._visible_views(RegionParser._swaymsg("get_tree"), []):
-            by_title.setdefault(view.get("name"), []).append(view["rect"])
-        return by_title
-
-    @staticmethod
     def _output_rects() -> Dict[str, Rect]:
-        """Every active output, by name."""
+        sway_outputs = RegionParser._swaymsg("get_outputs")
+
         return {
             out["name"]: out["rect"]
-            for out in RegionParser._swaymsg("get_outputs")
+            for out in sway_outputs
             if out.get("active") and out.get("rect")
         }
 
     @staticmethod
-    def _visible_views(node: Node, found: List[Node]) -> List[Node]:
-        """Views the user can actually point at, in tree order.
+    def _window_rects() -> Dict[str, Rect]:
+        sway_tree = RegionParser._swaymsg("get_tree")
 
-        Containers without a `pid` are splits/workspaces/outputs, and `visible` is
-        false for anything on an inactive workspace or in the scratchpad.
-        """
+        by_title = {}
+        for view in RegionParser._visible_views(sway_tree, []):
+            view_name = cast(str, view.get("name"))
+            by_title.setdefault(view_name, []).append(view["rect"])
+
+        # only windows with unique name (otherwise windows could be selected randomly
+        # we'll ignore windows with duplicate titles
+        by_title_unique = {}
+        for title, rects in by_title.items():
+            if len(rects) == 1:
+                by_title_unique[title] = rects[0]
+
+        return by_title_unique
+
+    @staticmethod
+    def _visible_views(node: Node, found: List[Node]) -> List[Node]:
         if node.get("pid") is not None and node.get("visible"):
             found.append(node)
         for child in node.get("nodes", []) + node.get("floating_nodes", []):
@@ -129,7 +128,10 @@ class RegionParser:
     def _swaymsg(message_type: str) -> Any:
         out = subprocess.run(
             ["swaymsg", "-t", message_type, "-r"],
-            check=True, capture_output=True, text=True).stdout
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
         return json.loads(out)
 
 
@@ -142,7 +144,7 @@ class RegionSelector:
             return None
 
         for region in regions:
-            if region.label.description.rstrip() == selected_line.rstrip():
+            if region.label.text.rstrip() == selected_line.rstrip():
                 return region.label
         return None
 
@@ -175,11 +177,11 @@ def main() -> int:
 
     regions = region_parser.parse(labels)
 
-    label = region_selector.select(regions)
-    if label is None:
+    selected_label = region_selector.select(regions)
+    if selected_label is None:
         return 0
 
-    print(label.description)
+    print(selected_label.text)
     return 0
 
 
