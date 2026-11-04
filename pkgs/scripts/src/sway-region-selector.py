@@ -1,26 +1,4 @@
 #!/usr/bin/env python3
-"""Pick a screen-share source with the mouse instead of from a list.
-
-xdg-desktop-portal-wlr runs this program when an application (Firefox, Teams,
-Meet, ...) asks to share the screen. It is the portal's "dmenu" chooser: the
-available sources arrive on stdin, one label per line,
-
-    Monitor: <name> <description>
-    Window: <title> (<identifier>)
-
-and exactly one of those lines has to be written back on stdout. Printing
-nothing means the user cancelled.
-
-Rather than showing a menu, every label is turned back into a rectangle on
-screen - window geometry comes from the sway tree, monitor geometry from sway's
-outputs - and the rectangles are handed to `slurp -r`, which dims the desktop
-and lets the source be picked by pointing at it. slurp always highlights the
-*smallest* rectangle under the cursor, so pointing at a window shares that
-window and pointing at the bar or a gap shares the whole monitor behind it.
-
-If the geometry cannot be resolved (sway not reachable, nothing visible), the
-script falls back to the plain fuzzel list, so sharing keeps working.
-"""
 from dataclasses import dataclass
 
 import json
@@ -205,6 +183,6 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except Exception as error:  # never exit 127, that means "no chooser"
+    except Exception as error:
         print(f"region-selector: {error}", file=sys.stderr)
         sys.exit(1)
