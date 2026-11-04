@@ -236,6 +236,13 @@ let
       runtimeInputs = [ sway jq gnugrep gawk coreutils ];
     };
 
+    sway-rearrange-displays = mkScript {
+      name = "sway-rearrange-displays";
+      src = ./src/sway-rearrange-displays.sh;
+      interpreter = sh;
+      runtimeInputs = [ sway jq gnugrep gawk coreutils ];
+    };
+
     sway-screenshot = mkScript {
       name = "sway-screenshot";
       src = ./src/sway-screenshot.sh;

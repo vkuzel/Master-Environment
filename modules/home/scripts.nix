@@ -22,6 +22,7 @@ in
     start-apps
     sway-lock
     sway-rearrange-workspaces
+    sway-rearrange-displays
     sway-screenshot
   ];
 }

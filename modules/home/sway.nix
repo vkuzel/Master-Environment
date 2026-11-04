@@ -113,6 +113,7 @@ in
         "${mod}+b" = "splith";
         "${mod}+v" = "splitv";
 
+        "${mod}+${alt}+r" = "exec ${scripts.sway-rearrange-displays}/bin/sway-rearrange-displays";
         "${mod}+Shift+r" = "exec ${scripts.sway-rearrange-workspaces}/bin/sway-rearrange-workspaces";
 
         "${mod}+f" = "fullscreen";
