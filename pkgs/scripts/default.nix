@@ -136,6 +136,12 @@ let
       interpreter = py;
     };
 
+    matrix-box = mkScript {
+      name = "matrix-box";
+      src = ./src/matrix-box.py;
+      interpreter = py;
+    };
+
     copilotw = mkScript {
       name = "copilotw";
       src = ./src/copilotw.py;

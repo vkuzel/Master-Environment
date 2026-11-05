@@ -8,6 +8,7 @@ in
     backup
     backup-phone
     blank-box
+    matrix-box
     copilotw
     dirty-writeback
     dockershell

@@ -22,7 +22,7 @@
 
 - workspace: 6
   check_pattern: Blank Box
-  cmd: blank-box
+  cmd: matrix-box
 
 - workspace: 2
 

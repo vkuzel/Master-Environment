@@ -88,5 +88,13 @@
     settings.StartupNotify = "false";
   };
 
+  xdg.desktopEntries.matrix-box = {
+    name = "Matrix Box";
+    exec = "${pkgs.masterEnvironmentScripts.matrix-box}/bin/matrix-box";
+    terminal = false;
+    categories = [ "Utility" ];
+    settings.StartupNotify = "false";
+  };
+
   xdg.configFile."app-launcher/apps.yaml".source = desktop-apps/apps.yaml;
 }
