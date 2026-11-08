@@ -13,6 +13,10 @@ check:
 update:
     ./.just/update.sh
 
+# Test the configuration in the current session w/o making it boot default
+test:
+    sudo nixos-rebuild switch --flake "."
+
 # Rebuild and switch to the current configuration
 switch:
     ./.just/switch.sh
