@@ -12,6 +12,7 @@
     bc
     p7zip
     unzip
+    zip
     util-linux # uuidgen
     whois
     bubblewrap
