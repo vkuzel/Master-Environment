@@ -11,7 +11,7 @@ check:
 
 # Update Flake and commit it
 update:
-    ./.just/update.sh
+    nix flake update
 
 # Test the configuration in the current session w/o making it boot default
 test:
