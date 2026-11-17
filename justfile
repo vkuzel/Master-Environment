@@ -19,4 +19,5 @@ test:
 
 # Rebuild and switch to the current configuration
 switch:
-    ./.just/switch.sh
+    sudo nixos-rebuild switch --flake "."
+    ./.just/fix-lock-file-owner.sh
