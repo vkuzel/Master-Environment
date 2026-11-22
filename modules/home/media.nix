@@ -1,6 +1,8 @@
 { lib, pkgs, ... }:
 
 {
+  home.packages = [ pkgs.ffmpeg ];
+
   programs.mpv = {
     enable = true;
     config = {
